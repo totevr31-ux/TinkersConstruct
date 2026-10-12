@@ -1,0 +1,5 @@
+PASS: 19850 upstream files match preserved SHA-256 inventory.
+PASS: Fabric metadata JSON / ID / entrypoint.
+PASS: published Fabric API POM version.
+PASS: license files present.
+NOT TESTED: Java compilation and Minecraft launch (environment blocker).

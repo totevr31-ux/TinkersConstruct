@@ -1,33 +1,65 @@
-name: build
-on: [ push, pull_request ]
+name: Build Radi's Construct
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: radisconstruct-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    strategy:
-      matrix:
-        java: [ 21 ]
+    name: Minecraft 26.3 / Java 25
     runs-on: ubuntu-latest
-    env:
-        PUBLISH_SUFFIX: snapshots
-        MAVEN_USER: ${{ secrets.MAVEN_USER }}
-        MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: checkout repository
-        uses: actions/checkout@v4
-
-      - name: setup jdk ${{ matrix.java }}
-        uses: actions/setup-java@v1
+      - name: Checkout project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          java-version: ${{ matrix.java }}
+          persist-credentials: false
 
-      - name: make gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      - name: build
-        run: ./gradlew buildOrPublish
-
-      - name: capture build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Set up Java 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
-          name: Artifacts
-          path: build/libs/
+          distribution: temurin
+          java-version: '25'
+
+      - name: Check preserved upstream snapshot
+        run: python3 scripts/verify_reference.py
+
+      - name: Build foundation with checked-in Gradle Wrapper
+        run: |
+          set -euo pipefail
+          mkdir -p ci-logs
+          java -version 2>&1 | tee ci-logs/java-version.log
+          bash ./gradlew --no-daemon --console=plain clean build --stacktrace 2>&1 | tee ci-logs/build.log
+
+      - name: Verify and stage runtime JAR
+        run: python3 scripts/verify_jar.py
+
+      - name: Upload compiled mod
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: radisconstruct-mc26.3-${{ github.run_number }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: build-diagnostics-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ci-logs/
+            build/reports/
+          if-no-files-found: warn
+          retention-days: 14

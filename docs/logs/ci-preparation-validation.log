@@ -1,0 +1,7 @@
+PASS: YAML parses; push, pull_request and workflow_dispatch configured.
+PASS: contents read-only permissions and bounded job timeout.
+PASS: action commits match verified official tag resolutions.
+PASS: embedded Bash syntax and Python syntax.
+PASS: all 19850 upstream files unchanged.
+PASS: verify_jar.py exits with error when no compiled JAR exists.
+NOT RUN: GitHub Actions, Gradle compilation, Minecraft runtime.

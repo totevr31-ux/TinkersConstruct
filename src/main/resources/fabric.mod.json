@@ -1,92 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "tconstruct",
+  "id": "radisconstruct",
   "version": "${version}",
-
-  "name": "Hephaestus",
-  "description": "A little of this, a little of that, a lot of tinkering, and a lot of tools.",
+  "name": "Radi's Construct",
+  "description": "Stage 1 foundation for a standalone Hephaestus-derived mod. Gameplay systems are not yet ported.",
   "authors": [
-    "Slime Knights",
-    "AlphaMode"
+    "Radi4"
   ],
-  "contact": {
-    "sources": "https://github.com/Alpha-s-Stuff/TinkersConstruct"
-  },
-
+  "contributors": [
+    "Slime Knights (original Tinkers Construct)",
+    "AlphaMode and Hephaestus contributors (Fabric port)"
+  ],
   "license": "MIT",
-  "icon": "logo.png",
-  "mixins": [
-    "hephaestus.mixins.json"
-  ],
   "environment": "*",
   "entrypoints": {
     "main": [
-      "slimeknights.tconstruct.TConstruct"
-    ],
-    "client": [
-      "slimeknights.tconstruct.shared.TinkerClient"
-    ],
-    "fabric-datagen": [
-      "slimeknights.tconstruct.TConstructData"
-    ],
-    "rei_client": [
-      "slimeknights.tconstruct.plugin.rei.REIPlugin"
-    ],
-    "rei_common": [
-      "slimeknights.tconstruct.plugin.rei.REIPluginServer"
-    ],
-    "jei_mod_plugin": [
-      "slimeknights.tconstruct.plugin.jei.JEIPlugin"
-    ],
-    "mixinsquared": [
-      "slimeknights.tconstruct.StarSodiumFixer"
-    ],
-    "cardinal-components": [
-      "slimeknights.tconstruct.gadgets.capability.PiggybackCapability",
-      "slimeknights.tconstruct.tools.logic.EquipmentChangeWatcher",
-      "slimeknights.tconstruct.library.tools.capability.TinkerDataCapability",
-      "slimeknights.tconstruct.library.tools.capability.PersistentDataCapability",
-      "slimeknights.tconstruct.library.tools.capability.EntityModifierCapability"
+      "com.radi.radisconstruct.RadisConstruct"
     ]
   },
-  "accessWidener": "tinkers.accesswidener",
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric": ">=${fabric_version}",
-    "minecraft": ">=${minecraft_version}",
-    "mantle": ">=${mantle_version}",
-    "porting_lib_accessors": ">=${port_lib_accessors_version}",
-    "porting_lib_attributes": ">=${port_lib_attributes_version}",
-    "porting_lib_base": ">=${port_lib_base_version}",
-    "porting_lib_brewing": ">=${port_lib_brewing_version}",
-    "porting_lib_client_events": ">=${port_lib_client_events_version}",
-    "porting_lib_core": ">=${port_lib_core_version}",
-    "porting_lib_config": ">=${port_lib_config_version}",
-    "porting_lib_common": ">=${port_lib_common_version}",
-    "porting_lib_data": ">=${port_lib_data_version}",
-    "porting_lib_entity": ">=${port_lib_entity_version}",
-    "porting_lib_extensions": ">=${port_lib_extensions_version}",
-    "porting_lib_items": ">=${port_lib_items_version}",
-    "porting_lib_fluids": ">=${port_lib_fluids_version}",
-    "porting_lib_lazy_registration": ">=${port_lib_lazy_registration_version}",
-    "porting_lib_loot": ">=${port_lib_loot_version}",
-    "porting_lib_utility": ">=${port_lib_utility_version}",
-    "porting_lib_models": ">=${port_lib_models_version}",
-    "porting_lib_model_loader": ">=${port_lib_model_loader_version}",
-    "porting_lib_networking": ">=${port_lib_common_version}",
-    "porting_lib_tags": ">=${port_lib_tags_version}",
-    "porting_lib_transfer": ">=${port_lib_transfer_version}",
-    "porting_lib_tool_actions": ">=${port_lib_tool_actions_version}",
-    "reach-entity-attributes": ">=${reach_entity_attributes_version}"
-  },
-  "custom": {
-    "cardinal-components": [
-      "tconstruct:piggyback",
-      "tconstruct:equipment_watcher",
-      "tconstruct:persistent_data",
-      "tconstruct:modifier_data",
-      "tconstruct:modifiers"
-    ],
-    "banner": "Mantle.png"
+    "minecraft": "=${minecraft_version}",
+    "java": ">=25",
+    "fabric-api": ">=${fabric_api_version}"
   }
 }

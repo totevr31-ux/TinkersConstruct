@@ -1,0 +1,265 @@
+Compiled from "OneDrive.java"
+public final class net.fabricmc.loom.util.OneDrive {
+  private static final java.util.List<java.lang.String> ENV_VARS;
+
+  private static final java.util.function.Supplier<java.util.List<java.nio.file.Path>> ONE_DRIVE_PATHS;
+
+  private static final org.slf4j.Logger LOGGER;
+
+  private net.fabricmc.loom.util.OneDrive();
+    Code:
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+
+  public static void verify(org.gradle.api.Project);
+    Code:
+         0: getstatic     #7                  // Field net/fabricmc/loom/util/Platform.CURRENT:Lnet/fabricmc/loom/util/Platform;
+         3: invokeinterface #13,  1           // InterfaceMethod net/fabricmc/loom/util/Platform.getOperatingSystem:()Lnet/fabricmc/loom/util/Platform$OperatingSystem;
+         8: invokevirtual #17                 // Method net/fabricmc/loom/util/Platform$OperatingSystem.isWindows:()Z
+        11: ifne          15
+        14: return
+        15: aload_0
+        16: invokeinterface #23,  1           // InterfaceMethod org/gradle/api/Project.getProjectDir:()Ljava/io/File;
+        21: invokevirtual #29                 // Method java/io/File.toPath:()Ljava/nio/file/Path;
+        24: astore_1
+        25: aload_1
+        26: invokestatic  #35                 // Method isInOneDrive:(Ljava/nio/file/Path;)Z
+        29: ifeq          43
+        32: getstatic     #41                 // Field LOGGER:Lorg/slf4j/Logger;
+        35: ldc           #45                 // String Project directory \'{}\' is located in OneDrive. This is known to cause issues and slower performance. Consider moving the project to a different location.
+        37: aload_1
+        38: invokeinterface #47,  3           // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;Ljava/lang/Object;)V
+        43: return
+
+  private static boolean isInOneDrive(java.nio.file.Path);
+    Code:
+         0: aload_0
+         1: invokeinterface #53,  1           // InterfaceMethod java/nio/file/Path.toAbsolutePath:()Ljava/nio/file/Path;
+         6: invokeinterface #58,  1           // InterfaceMethod java/nio/file/Path.normalize:()Ljava/nio/file/Path;
+        11: astore_1
+        12: getstatic     #61                 // Field ONE_DRIVE_PATHS:Ljava/util/function/Supplier;
+        15: invokeinterface #65,  1           // InterfaceMethod java/util/function/Supplier.get:()Ljava/lang/Object;
+        20: checkcast     #71                 // class java/util/List
+        23: invokeinterface #73,  1           // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+        28: astore_2
+        29: aload_2
+        30: invokeinterface #77,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+        35: ifeq          63
+        38: aload_2
+        39: invokeinterface #82,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+        44: checkcast     #54                 // class java/nio/file/Path
+        47: astore_3
+        48: aload_1
+        49: aload_3
+        50: invokeinterface #85,  2           // InterfaceMethod java/nio/file/Path.startsWith:(Ljava/nio/file/Path;)Z
+        55: ifeq          60
+        58: iconst_1
+        59: ireturn
+        60: goto          29
+        63: iconst_0
+        64: ireturn
+
+  private static java.util.List<java.nio.file.Path> getOneDrivePaths();
+    Code:
+         0: new           #88                 // class java/util/ArrayList
+         3: dup
+         4: invokespecial #90                 // Method java/util/ArrayList."<init>":()V
+         7: astore_0
+         8: getstatic     #91                 // Field ENV_VARS:Ljava/util/List;
+        11: invokeinterface #73,  1           // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+        16: astore_1
+        17: aload_1
+        18: invokeinterface #77,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+        23: ifeq          90
+        26: aload_1
+        27: invokeinterface #82,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+        32: checkcast     #95                 // class java/lang/String
+        35: astore_2
+        36: aload_2
+        37: invokestatic  #97                 // Method java/lang/System.getenv:(Ljava/lang/String;)Ljava/lang/String;
+        40: astore_3
+        41: aload_3
+        42: ifnull        17
+        45: aload_3
+        46: invokevirtual #103                // Method java/lang/String.isEmpty:()Z
+        49: ifeq          55
+        52: goto          17
+        55: aload_3
+        56: iconst_0
+        57: anewarray     #95                 // class java/lang/String
+        60: invokestatic  #106                // InterfaceMethod java/nio/file/Path.of:(Ljava/lang/String;[Ljava/lang/String;)Ljava/nio/file/Path;
+        63: astore        4
+        65: aload_0
+        66: aload         4
+        68: invokeinterface #53,  1           // InterfaceMethod java/nio/file/Path.toAbsolutePath:()Ljava/nio/file/Path;
+        73: invokeinterface #58,  1           // InterfaceMethod java/nio/file/Path.normalize:()Ljava/nio/file/Path;
+        78: invokevirtual #110                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+        81: pop
+        82: goto          87
+        85: astore        4
+        87: goto          17
+        90: aload_0
+        91: invokestatic  #116                // Method java/util/Collections.unmodifiableList:(Ljava/util/List;)Ljava/util/List;
+        94: areturn
+      Exception table:
+         from    to  target type
+            55    82    85   Class java/nio/file/InvalidPathException
+
+  static {};
+    Code:
+         0: ldc           #122                // String OneDrive
+         2: ldc           #124                // String OneDriveConsumer
+         4: ldc           #126                // String OneDriveCommercial
+         6: invokestatic  #128                // InterfaceMethod java/util/List.of:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+         9: putstatic     #91                 // Field ENV_VARS:Ljava/util/List;
+        12: invokedynamic #131,  0            // InvokeDynamic #0:get:()Ljava/util/function/Supplier;
+        17: invokestatic  #134                // Method net/fabricmc/loom/util/Lazy.of:(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;
+        20: putstatic     #61                 // Field ONE_DRIVE_PATHS:Ljava/util/function/Supplier;
+        23: ldc           #36                 // class net/fabricmc/loom/util/OneDrive
+        25: invokestatic  #139                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+        28: putstatic     #41                 // Field LOGGER:Lorg/slf4j/Logger;
+        31: return
+}
+Compiled from "LoomGradlePlugin.java"
+public class net.fabricmc.loom.LoomGradlePlugin implements org.gradle.api.Plugin<org.gradle.api.plugins.PluginAware> {
+  public static final java.lang.String NAME;
+
+  public static final com.google.gson.Gson GSON;
+
+  public static final java.lang.String LOOM_VERSION;
+
+  private static final java.util.List<java.lang.Class<? extends java.lang.Runnable>> SETUP_JOBS;
+
+  public net.fabricmc.loom.LoomGradlePlugin();
+    Code:
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+
+  public void apply(org.gradle.api.plugins.PluginAware);
+    Code:
+         0: aload_1
+         1: invokeinterface #7,  1            // InterfaceMethod org/gradle/api/plugins/PluginAware.getPlugins:()Lorg/gradle/api/plugins/PluginContainer;
+         6: ldc           #13                 // class net/fabricmc/loom/LoomRepositoryPlugin
+         8: invokeinterface #15,  2           // InterfaceMethod org/gradle/api/plugins/PluginContainer.apply:(Ljava/lang/Class;)Lorg/gradle/api/Plugin;
+        13: pop
+        14: aload_1
+        15: instanceof    #21                 // class org/gradle/api/Project
+        18: ifeq          31
+        21: aload_1
+        22: checkcast     #21                 // class org/gradle/api/Project
+        25: astore_2
+        26: aload_0
+        27: aload_2
+        28: invokevirtual #23                 // Method apply:(Lorg/gradle/api/Project;)V
+        31: return
+
+  private void apply(org.gradle.api.Project);
+    Code:
+         0: aload_1
+         1: invokeinterface #28,  1           // InterfaceMethod org/gradle/api/Project.getLogger:()Lorg/gradle/api/logging/Logger;
+         6: getstatic     #32                 // Field LOOM_VERSION:Ljava/lang/String;
+         9: invokedynamic #36,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+        14: invokeinterface #40,  2           // InterfaceMethod org/gradle/api/logging/Logger.lifecycle:(Ljava/lang/String;)V
+        19: invokestatic  #46                 // Method net/fabricmc/loom/util/LibraryLocationLogger.logLibraryVersions:()V
+        22: aload_1
+        23: invokestatic  #51                 // Method net/fabricmc/loom/util/OneDrive.verify:(Lorg/gradle/api/Project;)V
+        26: aload_1
+        27: ldc           #56                 // String plugin
+        29: ldc           #58                 // String java-library
+        31: invokestatic  #60                 // InterfaceMethod java/util/Map.of:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Map;
+        34: invokeinterface #66,  2           // InterfaceMethod org/gradle/api/Project.apply:(Ljava/util/Map;)V
+        39: aload_1
+        40: ldc           #56                 // String plugin
+        42: ldc           #69                 // String eclipse
+        44: invokestatic  #60                 // InterfaceMethod java/util/Map.of:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Map;
+        47: invokeinterface #66,  2           // InterfaceMethod org/gradle/api/Project.apply:(Ljava/util/Map;)V
+        52: aload_1
+        53: invokeinterface #71,  1           // InterfaceMethod org/gradle/api/Project.getExtensions:()Lorg/gradle/api/plugins/ExtensionContainer;
+        58: ldc           #75                 // class net/fabricmc/loom/api/LoomGradleExtensionAPI
+        60: ldc           #77                 // String loom
+        62: ldc           #79                 // class net/fabricmc/loom/extension/LoomGradleExtensionImpl
+        64: iconst_2
+        65: anewarray     #2                  // class java/lang/Object
+        68: dup
+        69: iconst_0
+        70: aload_1
+        71: aastore
+        72: dup
+        73: iconst_1
+        74: aload_1
+        75: invokestatic  #81                 // InterfaceMethod net/fabricmc/loom/extension/LoomFiles.create:(Lorg/gradle/api/Project;)Lnet/fabricmc/loom/extension/LoomFiles;
+        78: aastore
+        79: invokeinterface #87,  5           // InterfaceMethod org/gradle/api/plugins/ExtensionContainer.create:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+        84: pop
+        85: aload_1
+        86: invokeinterface #71,  1           // InterfaceMethod org/gradle/api/Project.getExtensions:()Lorg/gradle/api/plugins/ExtensionContainer;
+        91: ldc           #92                 // class net/fabricmc/loom/api/fabricapi/FabricApiExtension
+        93: ldc           #94                 // String fabricApi
+        95: ldc           #96                 // class net/fabricmc/loom/configuration/fabricapi/FabricApiExtensionImpl
+        97: iconst_0
+        98: anewarray     #2                  // class java/lang/Object
+       101: invokeinterface #87,  5           // InterfaceMethod org/gradle/api/plugins/ExtensionContainer.create:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+       106: pop
+       107: getstatic     #98                 // Field SETUP_JOBS:Ljava/util/List;
+       110: invokeinterface #102,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+       115: astore_2
+       116: aload_2
+       117: invokeinterface #108,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       122: ifeq          162
+       125: aload_2
+       126: invokeinterface #114,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       131: checkcast     #118                // class java/lang/Class
+       134: astore_3
+       135: aload_1
+       136: invokeinterface #120,  1          // InterfaceMethod org/gradle/api/Project.getObjects:()Lorg/gradle/api/model/ObjectFactory;
+       141: aload_3
+       142: iconst_0
+       143: anewarray     #2                  // class java/lang/Object
+       146: invokeinterface #124,  3          // InterfaceMethod org/gradle/api/model/ObjectFactory.newInstance:(Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;
+       151: checkcast     #130                // class java/lang/Runnable
+       154: invokeinterface #132,  1          // InterfaceMethod java/lang/Runnable.run:()V
+       159: goto          116
+       162: aload_1
+       163: ldc           #56                 // String plugin
+       165: ldc           #137                // String net.fabricmc.fabric-loom-companion
+       167: invokestatic  #60                 // InterfaceMethod java/util/Map.of:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Map;
+       170: invokeinterface #66,  2           // InterfaceMethod org/gradle/api/Project.apply:(Ljava/util/Map;)V
+       175: return
+
+  public void apply(java.lang.Object);
+    Code:
+         0: aload_0
+         1: aload_1
+         2: checkcast     #8                  // class org/gradle/api/plugins/PluginAware
+         5: invokevirtual #139                // Method apply:(Lorg/gradle/api/plugins/PluginAware;)V
+         8: return
+
+  static {};
+    Code:
+         0: new           #142                // class com/google/gson/GsonBuilder
+         3: dup
+         4: invokespecial #144                // Method com/google/gson/GsonBuilder."<init>":()V
+         7: invokevirtual #145                // Method com/google/gson/GsonBuilder.setPrettyPrinting:()Lcom/google/gson/GsonBuilder;
+        10: invokevirtual #149                // Method com/google/gson/GsonBuilder.create:()Lcom/google/gson/Gson;
+        13: putstatic     #152                // Field GSON:Lcom/google/gson/Gson;
+        16: ldc           #24                 // class net/fabricmc/loom/LoomGradlePlugin
+        18: invokevirtual #156                // Method java/lang/Class.getPackage:()Ljava/lang/Package;
+        21: invokevirtual #160                // Method java/lang/Package.getImplementationVersion:()Ljava/lang/String;
+        24: ldc           #166                // String 0.0.0+unknown
+        26: invokestatic  #168                // Method java/util/Objects.requireNonNullElse:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+        29: checkcast     #174                // class java/lang/String
+        32: putstatic     #32                 // Field LOOM_VERSION:Ljava/lang/String;
+        35: ldc           #176                // class net/fabricmc/loom/configuration/LoomConfigurations
+        37: ldc           #178                // class net/fabricmc/loom/configuration/CompileConfiguration
+        39: ldc           #180                // class net/fabricmc/loom/configuration/MavenPublication
+        41: ldc           #182                // class net/fabricmc/loom/task/RemapTaskConfiguration
+        43: ldc           #184                // class net/fabricmc/loom/task/LoomTasks
+        45: ldc           #186                // class net/fabricmc/loom/decompilers/DecompilerConfiguration
+        47: ldc           #188                // class net/fabricmc/loom/configuration/ide/idea/IdeaConfiguration
+        49: ldc           #190                // class net/fabricmc/loom/configuration/sandbox/SandboxConfiguration
+        51: invokestatic  #192                // InterfaceMethod java/util/List.of:(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+        54: putstatic     #98                 // Field SETUP_JOBS:Ljava/util/List;
+        57: return
+}

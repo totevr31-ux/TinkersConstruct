@@ -1,0 +1,20 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:tags_populated",
+      "values": [
+        "c:nuggets/aluminum"
+      ]
+    }
+  ],
+  "type": "tconstruct:melting",
+  "ingredient": {
+    "tag": "c:nuggets/aluminum"
+  },
+  "result": {
+    "amount": 1000,
+    "fluid": "tconstruct:molten_aluminum"
+  },
+  "temperature": 425,
+  "time": 16
+}

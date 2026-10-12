@@ -1,0 +1,22 @@
+{
+  "type": "tconstruct:swappable_modifier",
+  "allow_crystal": false,
+  "inputs": [
+    {
+      "tag": "c:nuggets/netherite_scrap"
+    },
+    {
+      "tag": "c:nuggets/netherite_scrap"
+    },
+    {
+      "tag": "c:nuggets/netherite_scrap"
+    }
+  ],
+  "result": {
+    "name": "tconstruct:embellishment",
+    "value": "tconstruct:debris"
+  },
+  "tools": {
+    "tag": "tconstruct:modifiable/embellishment/metal"
+  }
+}

@@ -1,0 +1,262 @@
+/*
+ * Tinkers Construct
+ * Master build file
+ * 
+ * Authors: boni, Sunstrike, ProgWML6
+ * Help from AbrarSyed
+ */
+
+//file:noinspection GroovyAssignabilityCheck
+plugins {
+    id "fabric-loom" version "1.5.+"
+    id "maven-publish"
+//    id "io.freefair.lombok"
+}
+
+repositories {
+    mavenCentral()
+    maven { url = "https://libraries.minecraft.net/" }
+    maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://maven.terraformersmc.com/releases/" }
+    maven { url = "https://maven.shedaniel.me/"  }
+    maven { url = "https://maven.wispforest.io" } // TOP
+    maven { url = "https://maven.blamejared.com" } // CraftTweaker, Immersive Engineering
+    maven { url = "https://www.cursemaven.com" }
+    maven { url = "https://maven.ladysnake.org/releases" }
+    maven { url = "https://mvn.devos.one/releases/" }
+    maven { url = "https://mvn.devos.one/snapshots/" }
+    maven { url = "https://maven.parchmentmc.org" }
+    maven { url = "https://maven.vram.io" }
+    maven { url = "https://jitpack.io" }
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+    maven {
+        url "https://maven.jamieswhiteshirt.com/libs-release"
+        content {
+            includeGroup "com.jamieswhiteshirt"
+        }
+    }
+}
+
+group = 'slimeknights.tconstruct'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+// sets version to the slimeKnights version format
+task buildInfo {
+    try {
+        def cmd = "git rev-parse --short HEAD"
+        def proc = cmd.execute()
+        proc.waitFor()
+        if (proc.exitValue() == 0) {
+            ext.revision = proc.text.trim()
+        } else {
+            ext.revision = "GITBORK"
+        }
+    } catch (all) {
+        ext.revision = "gitgud"
+    }
+
+    if (System.getenv().GITHUB_RUN_NUMBER != null) {
+        ext.buildNum = "${System.getenv().GITHUB_RUN_NUMBER}"
+    } else {
+        ext.buildNum = "DEV.${project.buildInfo.revision}"
+    }
+}
+ext.artifact_version = 'NFG'
+if (System.getenv().ARTIFACT_VERSION == null) {
+    artifact_version = "${mod_version}.${project.buildInfo.buildNum}"
+}
+if (System.getenv().ARTIFACT_VERSION != null) {
+    artifact_version = "${system.getenv().ARTIFACT_VERSION}"
+}
+
+version = "${minecraft_version}-${artifact_version}"
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/generated/resources"
+            //But exclude the cache of the generated data from what gets built
+            exclude '.cache'
+        }
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/tinkers.accesswidener")
+
+    runs {
+        datagen {
+            client()
+
+            name "Data Generation"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=tconstruct"
+            // from ae2
+            property "porting_lib.datagen.existing_resources", file("src/main/resources").absolutePath
+
+            runDir "build/datagen"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+
+    mappings loom.officialMojangMappings()
+
+    // dev environment
+    modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
+
+    // modRuntimeOnly("com.github.Andrew6rant:InventoryTabs:inventorytabs-${inventorytabs_version}")
+
+    // lombok
+    compileOnly("org.projectlombok:lombok:1.18.22")
+    annotationProcessor("org.projectlombok:lombok:1.18.22")
+
+    testCompileOnly("org.projectlombok:lombok:1.18.22")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.22")
+
+    // mockito (no idea what this is)
+    testCompileOnly("org.mockito:mockito-core:2.23.4")
+    implementation(include("com.google.code.findbugs:jsr305:3.0.2"))
+
+    // dependencies
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.1.1")))
+    for (String module in port_lib_modules.split(",")) {
+        modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$module:$port_lib_version+$minecraft_base_version"))
+    }
+
+    api(include('com.electronwill.night-config:core:3.6.6'))
+    api(include('com.electronwill.night-config:toml:3.6.6'))
+    modImplementation("dev.architectury:architectury-fabric:${architectury_version}"){
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modImplementation(include("slimeknights.mantle:Mantle:${minecraft_version}-${mantle_version}"))
+    modImplementation(include("io.github.tropheusj:milk-lib:${project.milk_lib_version}")) {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modApi(include("io.github.tropheusj:dripstone-fluid-lib:${project.dripstone_fluid_lib_version}")) {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+
+    modImplementation "me.alphamode:Star:1.5+${minecraft_version}"
+
+    // REI
+    modCompileOnlyApi("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"){
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modCompileOnlyApi("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+
+    // Sodium
+//    modImplementation "maven.modrinth:sodium:mc1.20.1-0.5.2"
+//    modImplementation("maven.modrinth:indium:1.0.25+mc1.20.1")
+
+    // compile against the JEI API but do not include it at runtime
+    modCompileOnlyApi "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    modCompileOnlyApi "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+
+    if (project.recipe_viewer == 'jei') {
+        // at runtime, use the full JEI jar for Fabric
+        modRuntimeOnly "mezz.jei:jei-1.19.4-fabric:${jei_version}"
+    } else if (project.recipe_viewer == 'rei') {
+        modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}") {
+            exclude(group: "net.fabricmc.fabric-api")
+        }
+    } else {
+        println("unknown recipe viewer: $recipe_viewer")
+    }
+}
+
+task buildOrPublish {
+    group = "build"
+    String mavenUser = System.getenv().MAVEN_USER
+    if (mavenUser != null && !mavenUser.isEmpty()) {
+        dependsOn(tasks.getByName("publish"))
+        println "prepared for publish"
+    } else {
+        dependsOn(tasks.getByName("build"))
+        println "prepared for build"
+    }
+}
+
+// process mods.toml to inject variables
+processResources {
+    Map<String, Object> properties = [
+        "version": version,
+        "minecraft_version": minecraft_version,
+        "loader_version": loader_version,
+        "fabric_version": fabric_version,
+        "mantle_version": mantle_version,
+        "reach_entity_attributes_version": reach_entity_attributes_version
+    ]
+    for (String module in port_lib_modules.split(","))
+        properties.put("port_lib_${module}_version".toString(), "$port_lib_version+$project.minecraft_base_version")
+    properties.put("port_lib_tags_version", "3.0") // the weird one
+
+    properties.forEach((k, v) -> inputs.property(k, v))
+
+    filesMatching("fabric.mod.json") {
+        expand properties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+
+    it.options.release = 17
+}
+
+java {
+    withSourcesJar()
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+
+    manifest {
+        attributes([
+            "Specification-Title"     : "Hephaestus",
+            "Specification-Vendor"    : "Slime Knights",
+            "Specification-Version"   : "1", // We are version 1 of ourselves
+            "Implementation-Title"    : project.name,
+            "Implementation-Version"  : "${version}",
+            "Implementation-Vendor"   : "Slime Knights",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url = "https://mvn.devos.one/${System.getenv().PUBLISH_SUFFIX}/"
+            credentials {
+                username = System.getenv().MAVEN_USER
+                password = System.getenv().MAVEN_PASS
+            }
+            authentication { basic(BasicAuthentication) }
+        }
+    }
+}
