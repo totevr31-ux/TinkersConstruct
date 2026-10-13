@@ -83,8 +83,17 @@ for metal in metals:
         # Retain upstream common tag IDs for the original crafting recipes.
         tag = metal + ('_blocks' if suffix == 'block' else '_' + suffix + 's')
         write(f'data/c/tags/item/{tag}.json', {'replace': False, 'values': ['tconstruct:' + name]})
-    for path in (f'blockstates/{metal}_block.json', f'models/block/storage/{metal}.json'):
-        copy(f'main/resources/{asset}/{path}', f'{asset}/{path}')
+    # Pig iron's original directional blockstate requires a facing property.
+    # The stage-one plain Block has none, so use its north-facing model until
+    # the original direction-aware block class is ported.
+    if metal == 'pig_iron':
+        write(f'{asset}/blockstates/{metal}_block.json',
+              {'variants': {'': {'model': f'tconstruct:block/storage/{metal}'}}})
+        copy(f'main/resources/{asset}/models/block/storage/{metal}.json',
+             f'{asset}/models/block/storage/{metal}.json')
+    else:
+        for path in (f'blockstates/{metal}_block.json', f'models/block/storage/{metal}.json'):
+            copy(f'main/resources/{asset}/{path}', f'{asset}/{path}')
     # Slimesteel and pig iron blocks use multiple original texture layers/faces.
     block_textures = {
         'slimesteel': ('slimesteel_slime', 'slimesteel_steel'),
