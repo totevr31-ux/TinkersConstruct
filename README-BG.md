@@ -1,79 +1,33 @@
-# Radi's Construct — Етап 1
+# Radi’s Construct — 0.2.0-materials
 
-Автор: Radi4 · Mod ID: `radisconstruct` · Package: `com.radi.radisconstruct`
-Цел: Minecraft Java 26.3 / Fabric / Java 25.
+Minecraft Java 26.3 · Fabric Loader 0.19.5 · Fabric API 0.162.0+26.3 · Java 25.
 
-**Статус: основата и анализът са създадени; build е блокиран от средата.
-Няма готов JAR за игра и няма доказано успешно зареждане. Етап 1 не е завършен.**
+Компилацията и зареждането на готовия JAR през Fabric са успешни.
+Първи пренесени материали: cobalt и manyullyn — слитъци, късчета и блокове.
+Запазени са оригиналните текстури, имена, свойства и 8 рецепти за
+преобразуване 9:1 и 1:9. Виж `docs/MATERIALS-PORT-BG.md`.
 
-## Продължение: готов GitHub Actions workflow
+## Проверки
 
-Отвори `START-HERE-BG.md` за качване и получаване на JAR без локален Gradle.
-Workflow: `.github/workflows/build.yml`. Точна диагноза: `docs/BUILD-DIAGNOSIS-BG.md`.
-CI още не е изпълнен: GitHub връзката не предоставя достъпно хранилище.
+GitHub Actions run: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38408424392
 
-## Какво съдържа проектът
+- 19 850 оригинални файла са непроменени.
+- Gradle build и проверката на JAR минават.
+- Истинският Fabric server launcher зарежда пакетирания JAR и регистрира материалите.
+- Тестът спира преди EULA/стартиране на свят. Не е клиентски или пълен gameplay тест.
 
-- `build.gradle`, `settings.gradle`, фиксирани `gradle.properties`.
-- Работещо стартиране на Gradle Wrapper с Gradle 9.6.0 и checksum проверка;
-  Loom 1.17.21 действително се изтегля и започва конфигуриране.
-- `src/main/java/com/radi/radisconstruct/RadisConstruct.java`: Fabric
-  ModInitializer с точния mod ID и лог при инициализация.
-- `src/main/resources/fabric.mod.json`: име, автор, entrypoint, MIT и точните
-  минимални зависимости. Minecraft е ограничен до 26.3.
-- `upstream/Hephaestus/`: целият оригинален source snapshot; не е включен в
-  активната компилация. Нито една оригинална механика още не е пренесена.
-- `LICENSE`, `NOTICE.md`, `licenses/`: оригинален MIT текст, авторски
-  уведомления, attribution за графика/звук и лиценз за Gradle Wrapper.
-- `docs/ARCHITECTURE-BG.md`: системи, зависимости, реални source пътища и Етап 2.
-- `docs/DEPENDENCIES-BG.md`, `docs/evidence/`: версии и първични източници.
-- `docs/logs/gradle-build-failed.log`: действителният Gradle stack trace.
-- `docs/upstream-sha256.json`: SHA-256 за всеки оригинален файл.
+## Използване
 
-## Защо няма JAR
+Замени стария JAR с `radisconstruct-0.2.0-materials+26.3.jar` в `mods`.
+Слитъците/късчетата са в Creative → Ingredients; блоковете — Building Blocks.
+Още няма руда в света, сплавяване, топилни, инструменти, станции или модификатори.
 
-Build стигна до конфигуриране на Fabric Loom и приключи с exit code 1:
+## Структура и build
 
-```
-Fabric Loom: 1.17.21
-java.lang.ExceptionInInitializerError
-Caused by: java.io.UncheckedIOException: java.net.SocketException: Operation not permitted
-at net.fabricmc.loom.util.CurrentPlatform.isUnixDomainSocketsSupported(CurrentPlatform.java:95)
-```
+`upstream/Hephaestus` пази пълния оригинал. `src/main/java` съдържа само
+мигрирания код. `scripts/port_material_resources.py` преобразува избрани
+оригинални ресурси към 26.3; `NOTICE.md` и `licenses/` пазят авторските уведомления.
 
-Loom проверява наличността на Unix domain sockets; средата отказва операцията.
-Това се случва преди задачата `compileJava`. Не е установена компилационна
-грешка в Java кода — компилаторът още не е достигнат. Не е доказано и че целият
-build ще бъде успешен на друга машина. Забраната на средата не е заобикаляна.
-Първоначалната мрежова/TLS настройка е решена с наличния proxy и системния
-trust store, без изключване на проверката на сертификати; тези специфични
-настройки не са записани в проекта.
-
-## Реална следваща стъпка за довършване на Етап 1
-
-В среда с JDK 25, интернет до Maven/Mojang/Gradle и поддръжка на необходимите
-локални sockets, от директорията на проекта:
-
-Windows PowerShell:
-```
-.\gradlew.bat --no-daemon clean build
-```
-Linux/macOS:
-```
-./gradlew --no-daemon clean build
-```
-
-Само ако build завърши успешно, очакваният runtime файл е
-`build/libs/radisconstruct-0.1.0-stage1+26.3.jar`.
-Файлът с `-sources.jar` не е мод за инсталиране.
-
-За runtime тест: отделна инсталация Minecraft 26.3 с Fabric Loader 0.19.5,
-Fabric API 0.162.0+26.3 и получения runtime JAR. Провери `latest.log` за:
-`Radi's Construct initialized: stage 1 foundation (no gameplay modules ported yet).`
-Отвори тестов свят и провери за crash при зареждане/излизане. За dedicated
-server тест може да се използва `./gradlew runServer`; приемането на Minecraft
-EULA е действие на оператора на тестовия сървър. Тези runtime тестове още
-НЕ са изпълнени. На този етап няма предмети, рецепти или машини в играта.
-
-Продължението е от този проект. Първо довършваме build и runtime проверката
-на Етап 1; след това започваме пренасянето, описано в Етап 2.
+`bash ./gradlew --no-daemon clean build` изисква Java 25 и Python 3.
+CI допълнително изпълнява `verify_reference.py`, `verify_jar.py` и `smoke_server.py`.
+Локалната UNIX socket забрана остава; GitHub Actions е работещата build среда.

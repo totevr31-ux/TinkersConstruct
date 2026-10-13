@@ -1,3 +1,9 @@
+> Актуализация 13.10.2026: основата се компилира и минава Fabric bootstrap тест.
+> Започнат е Етап 2 с cobalt/manyullyn storage content. Registry namespace `tconstruct`
+> е запазен за оригиналните материали; mod ID остава `radisconstruct`.
+> Долните раздели описват първоначалния анализ; текущият статус е в STAGE1-STATUS.json
+> и MATERIALS-PORT-BG.md. Пълните material/tool системи още не са пренесени.
+
 # Hephaestus → Radi's Construct: технически анализ
 
 Изследван източник: GittuMC/Hephaestus, клон 1.20.1, commit
