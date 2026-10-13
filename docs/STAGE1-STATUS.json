@@ -1,6 +1,6 @@
 {
   "stage": 1,
-  "status": "CI_REQUESTED",
+  "status": "BLOCKED_CI_NOT_STARTED",
   "minecraft": "26.3",
   "source_created": true,
   "upstream_preserved": true,
@@ -13,8 +13,8 @@
   "runtime_tested": false,
   "gameplay_ported": false,
   "playable_jar_available": false,
-  "blocker": "Loom CurrentPlatform.isUnixDomainSocketsSupported: java.net.SocketException: Operation not permitted",
-  "next_step": "Run existing GitHub Actions workflow on radisconstruct-stage1 and inspect real build logs.",
+  "blocker": "GitHub accepted source update but reports zero workflow runs. Browser sign-in to inspect Actions setup requires explicit user approval.",
+  "next_step": "Authorize browser sign-in to GitHub account totevr31-ux, inspect Actions availability, then start stage 1 build.",
   "ci_workflow_prepared": true,
   "ci_executed": false,
   "github_accessible_repositories": 1,
