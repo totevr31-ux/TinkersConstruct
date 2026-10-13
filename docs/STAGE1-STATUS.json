@@ -1,6 +1,6 @@
 {
   "stage": 1,
-  "status": "BLOCKED_ENVIRONMENT",
+  "status": "CI_REQUESTED",
   "minecraft": "26.3",
   "source_created": true,
   "upstream_preserved": true,
@@ -14,9 +14,13 @@
   "gameplay_ported": false,
   "playable_jar_available": false,
   "blocker": "Loom CurrentPlatform.isUnixDomainSocketsSupported: java.net.SocketException: Operation not permitted",
-  "next_step": "Upload project contents to repository root, run the supplied GitHub Actions workflow, then test the compiled JAR in Minecraft 26.3.",
+  "next_step": "Run existing GitHub Actions workflow on radisconstruct-stage1 and inspect real build logs.",
   "ci_workflow_prepared": true,
   "ci_executed": false,
-  "github_accessible_repositories": 0,
-  "local_build_retried_in_continuation": false
+  "github_accessible_repositories": 1,
+  "local_build_retried_in_continuation": false,
+  "github_repository": "totevr31-ux/TinkersConstruct",
+  "github_branch": "radisconstruct-stage1",
+  "upstream_verified_files": 19850,
+  "continuation_date": "2026-10-13"
 }
