@@ -65,6 +65,12 @@ with zipfile.ZipFile(jar) as z:
         assert f'assets/tconstruct/textures/block/storage/pig_iron/{face}.png' in names
     for texture in ('slimesteel_slime', 'slimesteel_steel'):
         assert f'assets/tconstruct/textures/block/storage/{texture}.png' in names
+    staged_stats = json.loads(z.read('assets/radisconstruct/material_stats.json'))
+    assert len(staged_stats['materials']) == 7
+    assert staged_stats['materials']['cobalt']['head']['durability'] == 800
+    assert staged_stats['materials']['manyullyn']['head']['attack_damage'] == 3.5
+    assert staged_stats['materials']['slimesteel']['handle']['durability'] == 1.2
+    assert staged_stats['materials']['pig_iron']['handle']['mining_speed'] == 0.85
     assert not any(n.endswith('.java') for n in names), 'Sources JAR selected'
 out = root / 'dist'
 out.mkdir(exist_ok=True)
