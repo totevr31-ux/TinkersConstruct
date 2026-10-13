@@ -1,6 +1,6 @@
 {
   "stage": 1,
-  "status": "BLOCKED_CI_NOT_STARTED",
+  "status": "CI_REQUESTED",
   "minecraft": "26.3",
   "source_created": true,
   "upstream_preserved": true,
@@ -13,8 +13,8 @@
   "runtime_tested": false,
   "gameplay_ported": false,
   "playable_jar_available": false,
-  "blocker": "GitHub accepted source update but reports zero workflow runs. Browser sign-in to inspect Actions setup requires explicit user approval.",
-  "next_step": "Authorize browser sign-in to GitHub account totevr31-ux, inspect Actions availability, then start stage 1 build.",
+  "blocker": null,
+  "next_step": "Inspect GitHub Actions build following Actions activation.",
   "ci_workflow_prepared": true,
   "ci_executed": false,
   "github_accessible_repositories": 1,
@@ -22,5 +22,6 @@
   "github_repository": "totevr31-ux/TinkersConstruct",
   "github_branch": "radisconstruct-stage1",
   "upstream_verified_files": 19850,
-  "continuation_date": "2026-10-13"
+  "continuation_date": "2026-10-13",
+  "github_actions_enabled": true
 }
