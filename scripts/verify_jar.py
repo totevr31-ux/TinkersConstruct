@@ -52,6 +52,19 @@ with zipfile.ZipFile(jar) as z:
             assert 'id' in recipe['result'] and 'item' not in recipe['result']
             expected_count = 9 if conversion in ('nugget_from_ingot', 'ingot_from_block') else 1
             assert recipe['result'].get('count', 1) == expected_count
+    # Additional stage-one port regressions: exact item IDs and models.
+    for metal in ('slimesteel', 'pig_iron'):
+        for suffix in ('ingot', 'nugget', 'block'):
+            assert f'assets/tconstruct/models/item/{metal}_{suffix}.json' in names
+        assert f'assets/tconstruct/blockstates/{metal}_block.json' in names
+    pig_state = json.loads(z.read('assets/tconstruct/blockstates/pig_iron_block.json'))
+    assert set(pig_state['variants']) == {''}, 'Pig iron references unsupported facing state'
+    for suffix in ('ingot', 'nugget'):
+        assert f'assets/tconstruct/textures/item/materials/pigiron_{suffix}.png' in names
+    for face in ('top', 'bottom', 'front', 'right', 'back', 'left'):
+        assert f'assets/tconstruct/textures/block/storage/pig_iron/{face}.png' in names
+    for texture in ('slimesteel_slime', 'slimesteel_steel'):
+        assert f'assets/tconstruct/textures/block/storage/{texture}.png' in names
     assert not any(n.endswith('.java') for n in names), 'Sources JAR selected'
 out = root / 'dist'
 out.mkdir(exist_ok=True)
