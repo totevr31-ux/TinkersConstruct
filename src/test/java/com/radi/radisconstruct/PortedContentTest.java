@@ -47,10 +47,13 @@ public class PortedContentTest {
                 tags.put(TagKey.create(Registries.ITEM, id("c:" + name)), values);
             }
         }
-        ((MappedRegistry<Item>) BuiltInRegistries.ITEM).bindTags(tags);
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
+        MappedRegistry<Item> items = (MappedRegistry<Item>) BuiltInRegistries.ITEM;
+        items.bindAllTagsToEmpty();
+        items.bindTags(tags);
+        items.freeze(); // Finalize holder tag membership, as normal world loading does.
         ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
