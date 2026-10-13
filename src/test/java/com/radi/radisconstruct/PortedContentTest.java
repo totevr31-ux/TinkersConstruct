@@ -34,7 +34,7 @@ public class PortedContentTest {
     @BeforeAll static void bootstrap() throws Exception {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
-        assertEquals(5, TinkerMaterials.METALS.size());
+        assertEquals(7, TinkerMaterials.METALS.size());
         assertNotNull(TinkerWorld.rawCobalt);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
@@ -88,7 +88,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(22, checked);
+        assertEquals(30, checked);
     }
     @Test void blastingAcceptsBothCobaltInputs() throws Exception {
         Recipe<?> decoded = Recipe.DIRECT_CODEC.parse(ops, json(ROOT.resolve("data/tconstruct/recipe/common/materials/cobalt_ingot_smelting.json"))).getOrThrow();
@@ -117,7 +117,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(7, checked);
+        assertEquals(9, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {
