@@ -27,7 +27,7 @@ PATTERN = re.compile(
     r"addMaterialStats\(MaterialIds\.(?P<name>\w+),\s*"
     r"new HeadMaterialStats\((?P<dur>\d+),\s*(?P<speed>[\d.]+)f?,\s*"
     r"(?P<tier>WOOD|STONE|IRON|GOLD|DIAMOND|NETHERITE),\s*"
-    r"(?P<damage>[\d.]+)f?\),\s*"
+    r"(?P<damage>[\d.]+)f?\),(?:[ \t]*//[^\n]*)?\s*"
     r"HandleMaterialStats\.DEFAULT(?P<handle>(?:\.with\w+\([\d.]+f?\))*),",
     re.MULTILINE,
 )
