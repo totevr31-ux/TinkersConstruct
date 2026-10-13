@@ -155,5 +155,5 @@ for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
-                                         'scope': '5 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
+                                         'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
