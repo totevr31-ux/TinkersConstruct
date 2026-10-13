@@ -62,7 +62,7 @@ digest = hashlib.sha256(jar.read_bytes()).hexdigest()
     "Radi's Construct 0.3 — Minecraft Java 26.3 / Java 25.\n"
     "Fabric Loader 0.19.5 и Fabric API 0.162.0+26.3.\n"
     "Замени предишния radisconstruct JAR в mods с този файл.\n"
-    "Метали: cobalt, manyullyn, amethyst bronze, rose gold, hepatizon.\n"
+    "Метали: cobalt, manyullyn, amethyst bronze, rose gold, hepatizon, slimesteel, pig iron.\n"
     "Кобалтова руда в нови Nether чанкове, суров кобалт и суров блок.\n"
     "Кобалтът се преработва в blast furnace.\n"
     "Останалите сплави са достъпни през Creative; топилня още няма.\n"
