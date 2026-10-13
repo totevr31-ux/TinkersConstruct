@@ -14,6 +14,7 @@ public final class RadisConstruct implements ModInitializer {
     @Override
     public void onInitialize() {
         TinkerMaterials.initialize();
-        LOGGER.info("Radi's Construct initialized: cobalt and manyullyn registered (2 blocks, 6 items).");
+        slimeknights.tconstruct.world.TinkerWorld.initialize();
+        LOGGER.info("Radi's Construct initialized: 5 metals and cobalt ore registered (7 blocks, 18 items).");
     }
 }

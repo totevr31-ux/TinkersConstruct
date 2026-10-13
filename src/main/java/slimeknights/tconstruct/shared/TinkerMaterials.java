@@ -1,6 +1,6 @@
 /* Derived from Hephaestus shared/TinkerMaterials.java and common/TinkerModule.java.
  * Original authors: Slime Knights and Hephaestus contributors, MIT.
- * Incremental 26.3 port: only cobalt and manyullyn are activated here.
+ * Incremental 26.3 port: storage metals are activated here.
  * The complete original implementation remains in upstream/Hephaestus.
  */
 package slimeknights.tconstruct.shared;
@@ -24,6 +24,11 @@ public final class TinkerMaterials {
     // Preserve original registry IDs and metalBuilder properties.
     public static final MetalItems cobalt = registerMetal("cobalt", MapColor.COLOR_BLUE);
     public static final MetalItems manyullyn = registerMetal("manyullyn", MapColor.COLOR_PURPLE);
+
+    public static final MetalItems amethystBronze = registerMetal("amethyst_bronze", MapColor.COLOR_PURPLE);
+    public static final MetalItems roseGold = registerMetal("rose_gold", MapColor.TERRACOTTA_WHITE);
+    public static final MetalItems hepatizon = registerMetal("hepatizon", MapColor.TERRACOTTA_BLUE);
+    public static final java.util.List<MetalItems> METALS = java.util.List.of(cobalt, manyullyn, amethystBronze, roseGold, hepatizon);
 
     private TinkerMaterials() {}
 
@@ -51,14 +56,13 @@ public final class TinkerMaterials {
 
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
-            output.accept(cobalt.ingot());
-            output.accept(cobalt.nugget());
-            output.accept(manyullyn.ingot());
-            output.accept(manyullyn.nugget());
+            for (MetalItems metal : METALS) {
+                output.accept(metal.ingot());
+                output.accept(metal.nugget());
+            }
         });
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(output -> {
-            output.accept(cobalt.block());
-            output.accept(manyullyn.block());
+            for (MetalItems metal : METALS) output.accept(metal.block());
         });
     }
 }
