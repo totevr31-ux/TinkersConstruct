@@ -64,7 +64,7 @@ def port_loot(name):
 
 asset = 'assets/tconstruct'
 recipe_dir = 'data/tconstruct/recipe/common/materials'
-metals = ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon')
+metals = ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon', 'slimesteel', 'pig_iron')
 lang_source = json.loads((UPSTREAM / f'main/resources/{asset}/lang/en_us.json').read_text())
 translations = {}
 for metal in metals:
@@ -76,13 +76,23 @@ for metal in metals:
         key = ('block' if suffix == 'block' else 'item') + '.tconstruct.' + name
         translations[key] = lang_source[key]
         if suffix != 'block':
-            texture = f'{asset}/textures/item/materials/{name}.png'
-            copy(f'main/resources/{texture}', texture)
+            # Upstream pig iron uses pigiron_*.png, while its registry ID is pig_iron_*.
+            texture_file = name.replace('pig_iron_', 'pigiron_')
+            source_texture = f'{asset}/textures/item/materials/{texture_file}.png'
+            copy(f'main/resources/{source_texture}', source_texture)
         # Retain upstream common tag IDs for the original crafting recipes.
         tag = metal + ('_blocks' if suffix == 'block' else '_' + suffix + 's')
         write(f'data/c/tags/item/{tag}.json', {'replace': False, 'values': ['tconstruct:' + name]})
-    for path in (f'blockstates/{metal}_block.json', f'models/block/storage/{metal}.json',
-                 f'textures/block/storage/{metal}.png'):
+    for path in (f'blockstates/{metal}_block.json', f'models/block/storage/{metal}.json'):
+        copy(f'main/resources/{asset}/{path}', f'{asset}/{path}')
+    # Slimesteel and pig iron blocks use multiple original texture layers/faces.
+    block_textures = {
+        'slimesteel': ('slimesteel_slime', 'slimesteel_steel'),
+        'pig_iron': tuple('pig_iron/' + face for face in
+                          ('top', 'bottom', 'front', 'right', 'back', 'left')),
+    }.get(metal, (metal,))
+    for texture in block_textures:
+        path = f'textures/block/storage/{texture}.png'
         copy(f'main/resources/{asset}/{path}', f'{asset}/{path}')
     port_loot(f'{metal}_block')
     for name in ('ingot_from_nuggets', 'nugget_from_ingot', 'block_from_ingots', 'ingot_from_block'):
