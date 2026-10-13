@@ -1,33 +1,35 @@
-# Radi’s Construct — 0.2.0-materials
+# Radi’s Construct — 0.3.0-cobalt
 
 Minecraft Java 26.3 · Fabric Loader 0.19.5 · Fabric API 0.162.0+26.3 · Java 25.
 
-Компилацията и зареждането на готовия JAR през Fabric са успешни.
-Първи пренесени материали: cobalt и manyullyn — слитъци, късчета и блокове.
-Запазени са оригиналните текстури, имена, свойства и 8 рецепти за
-преобразуване 9:1 и 1:9. Виж `docs/MATERIALS-PORT-BG.md`.
-
-## Проверки
-
-GitHub Actions run: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38408424392
-
-- 19 850 оригинални файла са непроменени.
-- Gradle build и проверката на JAR минават.
-- Истинският Fabric server launcher зарежда пакетирания JAR и регистрира материалите.
-- Тестът спира преди EULA/стартиране на свят. Не е клиентски или пълен gameplay тест.
+Материали: cobalt, manyullyn, amethyst bronze, rose gold и hepatizon —
+слитъци, късчета и блокове. Кобалтова руда в Nether, суров кобалт и суров блок.
+Общо 7 блока, 18 предмета и 23 оригинални рецепти. Виж `docs/MATERIALS-PORT-BG.md`.
 
 ## Използване
 
-Замени стария JAR с `radisconstruct-0.2.0-materials+26.3.jar` в `mods`.
-Слитъците/късчетата са в Creative → Ingredients; блоковете — Building Blocks.
-Още няма руда в света, сплавяване, топилни, инструменти, станции или модификатори.
+Замени стария JAR с `radisconstruct-0.3.0-cobalt+26.3.jar` в `mods`.
+Слитъците/късчетата са в Creative → Ingredients; металните блокове — Building Blocks;
+рудата/суровият блок — Natural Blocks. Кобалтът се преработва в blast furnace.
+Рудата се добавя само при генериране на нови Nether чанкове.
+Останалите сплави засега са Creative съдържание; няма още топилня/сплавяване.
+Инструменти, станции и модификатори предстоят.
+
+## Проверки
+
+Текущият резултат и конкретният CI run са в `docs/STAGE1-STATUS.json`.
+- 19 850 оригинални файла са запазени непроменени.
+- Gradle build, проверка на JAR и оригиналните ресурсни хешове.
+- JUnit: Minecraft codecs, реално съвпадение/резултати на крафт рецептите,
+  blast furnace, loot таблици и конфигурации на рудата.
+- Fabric launcher зарежда пакетирания JAR до EULA gate.
+- Няма стартиран свят или клиентски render/gameplay тест.
 
 ## Структура и build
 
-`upstream/Hephaestus` пази пълния оригинал. `src/main/java` съдържа само
-мигрирания код. `scripts/port_material_resources.py` преобразува избрани
-оригинални ресурси към 26.3; `NOTICE.md` и `licenses/` пазят авторските уведомления.
+`upstream/Hephaestus` пази пълния оригинал. `src/main/java` съдържа мигрирания код.
+`scripts/port_material_resources.py` преобразува избраните оригинални ресурси;
+`NOTICE.md` и `licenses/` пазят авторските уведомления.
 
 `bash ./gradlew --no-daemon clean build` изисква Java 25 и Python 3.
 CI допълнително изпълнява `verify_reference.py`, `verify_jar.py` и `smoke_server.py`.
-Локалната UNIX socket забрана остава; GitHub Actions е работещата build среда.
