@@ -28,7 +28,10 @@ public final class TinkerMaterials {
     public static final MetalItems amethystBronze = registerMetal("amethyst_bronze", MapColor.COLOR_PURPLE);
     public static final MetalItems roseGold = registerMetal("rose_gold", MapColor.TERRACOTTA_WHITE);
     public static final MetalItems hepatizon = registerMetal("hepatizon", MapColor.TERRACOTTA_BLUE);
-    public static final java.util.List<MetalItems> METALS = java.util.List.of(cobalt, manyullyn, amethystBronze, roseGold, hepatizon);
+    public static final MetalItems slimesteel = registerMetal("slimesteel", MapColor.COLOR_LIGHT_GREEN);
+    public static final MetalItems pigIron = registerMetal("pig_iron", MapColor.COLOR_PINK);
+    public static final java.util.List<MetalItems> METALS = java.util.List.of(
+        cobalt, manyullyn, amethystBronze, roseGold, hepatizon, slimesteel, pigIron);
 
     private TinkerMaterials() {}
 
