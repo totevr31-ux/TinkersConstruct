@@ -3,7 +3,7 @@
   "id": "radisconstruct",
   "version": "${version}",
   "name": "Radi's Construct",
-  "description": "Incremental Hephaestus port: cobalt and manyullyn storage blocks, ingots and nuggets. Tools, smeltery and world generation are not yet ported.",
+  "description": "Incremental Hephaestus port: five storage metals and cobalt ore with Nether generation. Tools and smeltery are not yet ported.",
   "authors": [
     "Radi4"
   ],

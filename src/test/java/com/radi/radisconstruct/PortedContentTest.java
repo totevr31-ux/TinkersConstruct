@@ -48,7 +48,10 @@ public class PortedContentTest {
             }
         }
         ((MappedRegistry<Item>) BuiltInRegistries.ITEM).bindTags(tags);
-        ops = VanillaRegistries.createWorldLookup().createSerializationContext(JsonOps.INSTANCE);
+        HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
+        // Since 26.2, item defaults are bound after the dynamic registries exist.
+        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
+        ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
         Path dir = ROOT.resolve("data/tconstruct/recipe/common/materials");
@@ -59,9 +62,6 @@ public class PortedContentTest {
                 Recipe<?> decoded = Recipe.DIRECT_CODEC.parse(ops, data).getOrThrow();
                 if (!(decoded instanceof CraftingRecipe recipe)) continue;
                 String filename = path.getFileName().toString();
-                String inputSuffix = filename.contains("from_nuggets") ? "_nugget" :
-                    filename.contains("from_ingots") || filename.contains("nugget_from_ingot") ? "_ingot" : "_block";
-                String prefix = filename.substring(0, filename.indexOf("_"));
                 String output = data.getAsJsonObject("result").get("id").getAsString();
                 // Use original JSON ingredient IDs/tags to construct a homogeneous valid grid.
                 String input;
