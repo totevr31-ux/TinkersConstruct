@@ -24,11 +24,11 @@ MATERIALS = {
 FIELDS = ("durability", "mining_speed", "attack_speed", "attack_damage")
 METHODS = ("Durability", "MiningSpeed", "AttackSpeed", "AttackDamage")
 PATTERN = re.compile(
-    r"addMaterialStats\\(MaterialIds\\.(?P<name>\\w+),\\s*"
-    r"new HeadMaterialStats\\((?P<dur>\\d+),\\s*(?P<speed>[\\d.]+)f?,\\s*"
-    r"(?P<tier>WOOD|STONE|IRON|GOLD|DIAMOND|NETHERITE),\\s*"
-    r"(?P<damage>[\\d.]+)f?\\),\\s*"
-    r"HandleMaterialStats\\.DEFAULT(?P<handle>(?:\\.with\\w+\\([\\d.]+f?\\))*),",
+    r"addMaterialStats\(MaterialIds\.(?P<name>\w+),\s*"
+    r"new HeadMaterialStats\((?P<dur>\d+),\s*(?P<speed>[\d.]+)f?,\s*"
+    r"(?P<tier>WOOD|STONE|IRON|GOLD|DIAMOND|NETHERITE),\s*"
+    r"(?P<damage>[\d.]+)f?\),\s*"
+    r"HandleMaterialStats\.DEFAULT(?P<handle>(?:\.with\w+\([\d.]+f?\))*),",
     re.MULTILINE,
 )
 text = SOURCE.read_text(encoding="utf-8")
@@ -39,7 +39,7 @@ result = {}
 for registry_name, java_name in MATERIALS.items():
     match = matches[java_name]
     handle = {field: 1.0 for field in FIELDS}
-    for method, value in re.findall(r"\\.with(\\w+)\\(([\\d.]+)f?\\)", match.group("handle")):
+    for method, value in re.findall(r"\.with(\w+)\(([\d.]+)f?\)", match.group("handle")):
         if method not in METHODS:
             raise SystemExit(f"Unexpected handle property {method} on {java_name}")
         handle[FIELDS[METHODS.index(method)]] = float(value)
