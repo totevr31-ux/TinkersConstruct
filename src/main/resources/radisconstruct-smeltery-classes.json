@@ -6,6 +6,7 @@
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule$FuelInfo.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule$FuelRecipe.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule.class",
+  "slimeknights/tconstruct/smeltery/block/entity/module/NativeFuelContext.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock$StructureData.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockCuboid$CuboidSide.class",

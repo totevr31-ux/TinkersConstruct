@@ -149,3 +149,22 @@ a live controller. No world startup, fuel recipe reload or client rendering was 
 `CookingFuel.burnTime()` returning a contextual `ResolvableInt`; do not reintroduce
 the old static FuelRegistry. Item crafting remainders are ItemStackTemplate values.
 Resolve these native services in the controller adapter before enabling live fuel use.
+
+## Stage 1E — native fuel services
+
+Added NativeFuelContext implementing the required FuelModule.Context against native
+Minecraft 26.3 and Fabric APIs. It refreshes sided fluid/item storage lookups without
+loading absent chunks, marks the parent dirty, creates fresh crafting-remainder stacks,
+and spawns leftover items on the server with the original random offsets/pickup delay.
+Solid fuel uses COOKING_FUEL and ResolvableInt.getFromItem in the same
+CONTAINER_PROCESS loot context as vanilla BaseContainerBlockEntity (block state,
+block entity, origin, container). The FuelModule retains the original /4 burn duration.
+Recipe lookup is a required function consulted afresh, allowing later reload-aware
+MeltingFuel lookup integration; no hardcoded recipe table is introduced.
+
+Four tests verify component overrides using native constant providers, fresh vanilla
+remainder templates, refreshed recipe lookup/dirty marking, and rejection of detached
+world operations. Live ServerLevel lookup, contextual reference providers and entity
+spawning are compiled but not exercised by these fixtures. NativeFuelContext is not
+instantiated by a registered Smeltery controller yet. Fuel recipes, live controller,
+seared blocks and melting/casting remain pending.
