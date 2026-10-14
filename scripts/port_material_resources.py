@@ -167,4 +167,5 @@ write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_reso
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy
 runpy.run_path(str(ROOT / 'scripts/port_material_stats.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_tool_parts_index.py'), run_name='__main__')
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')

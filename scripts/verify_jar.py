@@ -71,6 +71,10 @@ with zipfile.ZipFile(jar) as z:
     assert staged_stats['materials']['manyullyn']['head']['attack_damage'] == 3.5
     assert staged_stats['materials']['slimesteel']['handle']['durability'] == 1.2
     assert staged_stats['materials']['pig_iron']['handle']['mining_speed'] == 0.85
+    parts = json.loads(z.read('assets/radisconstruct/tool_part_index.json'))
+    assert len(parts['part_stats_type']) == 14
+    assert parts['part_stats_type']['tool_binding'] == 'ExtraMaterialStats'
+    assert parts['part_stats_type']['bowstring'] == 'BowstringMaterialStats'
     assert not any(n.endswith('.java') for n in names), 'Sources JAR selected'
 out = root / 'dist'
 out.mkdir(exist_ok=True)
