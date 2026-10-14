@@ -11,12 +11,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MaterialStackDataTest {
     @BeforeAll static void setup() {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
+        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(VanillaRegistries.createWorldLookup())
+            .forEach(pending -> pending.apply());
     }
 
     @Test void stackRoundTripAndPreservationOfUnrelatedCustomData() {
