@@ -67,6 +67,17 @@ with zipfile.ZipFile(jar) as z:
         assert f'assets/tconstruct/textures/block/storage/pig_iron/{face}.png' in names
     for texture in ('slimesteel_slime', 'slimesteel_steel'):
         assert f'assets/tconstruct/textures/block/storage/{texture}.png' in names
+    # Native Smeltery formation milestone: registered controller + original assets.
+    for name in ('seared_bricks', 'smeltery_controller'):
+        assert f'assets/tconstruct/blockstates/{name}.json' in names
+        assert f'assets/tconstruct/items/{name}.json' in names
+        assert f'data/tconstruct/loot_table/blocks/{name}.json' in names
+    state = json.loads(z.read('assets/tconstruct/blockstates/smeltery_controller.json'))
+    assert len(state['variants']) == 16
+    assert 'data/tconstruct/tags/block/smeltery/floor.json' in names
+    assert 'data/tconstruct/tags/block/smeltery/wall.json' in names
+    assert 'data/tconstruct/tags/block/smeltery/tanks.json' in names
+    assert 'data/tconstruct/tags/block/smeltery.json' in names
     staged_stats = json.loads(z.read('assets/radisconstruct/material_stats.json'))
     assert len(staged_stats['materials']) == 7
     assert staged_stats['materials']['cobalt']['head']['durability'] == 800

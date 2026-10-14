@@ -156,12 +156,79 @@ for feature_type in ('configured_feature', 'placed_feature'):
             write(resource.replace('/configured_feature/', '/feature/'), feature)
         else:
             copy(f'generated/resources/{resource}', resource)
+
+# Stage 1F: port original Smeltery Controller / Seared Bricks assets.
+# Static controller templates keep the original geometry, but remove the
+# Mantle custom loaders until dynamic fluid rendering and retexturing are ported.
+for name in ('seared_bricks', 'smeltery_controller'):
+    copy(f'main/resources/{asset}/models/item/{name}.json', f'{asset}/models/item/{name}.json')
+    write(f'{asset}/items/{name}.json',
+          {'model': {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}})
+    translations['block.tconstruct.' + name] = lang_source['block.tconstruct.' + name]
+copy(f'main/resources/{asset}/blockstates/seared_bricks.json',
+     f'{asset}/blockstates/seared_bricks.json')
+copy(f'main/resources/{asset}/models/block/smeltery/seared/bricks.json',
+     f'{asset}/models/block/smeltery/seared/bricks.json')
+copy(f'main/resources/{asset}/textures/block/smeltery/seared/bricks.png',
+     f'{asset}/textures/block/smeltery/seared/bricks.png')
+for model in ('controller', 'controller_fluid'):
+    source = UPSTREAM / f'main/resources/{asset}/models/block/template/{model}.json'
+    data = json.loads(source.read_text())
+    for custom in ('loader', 'fluids', 'colors', 'retextured'):
+        data.pop(custom, None)
+    write(f'{asset}/models/block/template/{model}.json', data)
+for kind in ('unformed', 'inactive', 'active'):
+    name = 'smeltery_' + kind
+    copy(f'main/resources/{asset}/models/block/smeltery/controller/{name}.json',
+         f'{asset}/models/block/smeltery/controller/{name}.json')
+    copy(f'main/resources/{asset}/textures/block/smeltery/controller/{name}.png',
+         f'{asset}/textures/block/smeltery/controller/{name}.png')
+copy(f'main/resources/{asset}/textures/block/smeltery/controller/smeltery_active.png.mcmeta',
+     f'{asset}/textures/block/smeltery/controller/smeltery_active.png.mcmeta')
+for tex in ('smeltery/io/back.png', 'black.png'):
+    copy(f'main/resources/{asset}/textures/block/{tex}', f'{asset}/textures/block/{tex}')
+# Include ACTIVE=false in every variant: the 26.3 block declares all three properties.
+variants = {}
+for formed in (False, True):
+    for active in (False, True):
+        mode = 'smeltery_' + ('unformed' if not formed else ('active' if active else 'inactive'))
+        for facing, rotation in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
+            key = f'in_structure={str(formed).lower()},active={str(active).lower()},facing={facing}'
+            value = {'model': 'tconstruct:block/smeltery/controller/' + mode}
+            if rotation: value['y'] = rotation
+            variants[key] = value
+write(f'{asset}/blockstates/smeltery_controller.json', {'variants': variants})
+port_loot('seared_bricks')
+# Upstream controller loot also has Mantle fill_retextured_block, not yet
+# available on 26.3. Retain block drop/explosion condition for now.
+write('data/tconstruct/loot_table/blocks/smeltery_controller.json', {
+    'type': 'minecraft:block',
+    'pools': [{
+        'rolls': 1.0, 'bonus_rolls': 0.0,
+        'condition': {'type': 'minecraft:survives_explosion'},
+        'entries': [{'type': 'minecraft:item', 'name': 'tconstruct:smeltery_controller'}]
+    }]
+})
+# Original Smeltery references a larger seared catalog. Only registered
+# blocks go in tags until those blocks/tanks are ported.
+for tag, values in (
+    ('seared_blocks', ['tconstruct:seared_bricks']),
+    ('smeltery/floor', ['tconstruct:seared_bricks']),
+    ('smeltery/wall', ['tconstruct:seared_bricks']),
+    ('smeltery/tanks', []),
+    ('smeltery', ['#tconstruct:smeltery/floor',
+                  '#tconstruct:smeltery/wall', '#tconstruct:smeltery/tanks']),
+):
+    write(f'data/tconstruct/tags/block/{tag}.json', {'replace': False, 'values': values})
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
     original = json.loads(source.read_text())['values']
     blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
+    if tag == 'mineable/pickaxe':
+        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller'))
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
