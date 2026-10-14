@@ -80,7 +80,8 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     @Override public void notifyFluidsChanged(FluidChange type, FluidStack fluid) {
         setChanged();
         if (type == FluidChange.ORDER_CHANGED || type == FluidChange.ADDED
-                || type == FluidChange.REMOVED) {
+                || type == FluidChange.REMOVED
+                || (type == FluidChange.CHANGED && fluid.isEmpty())) {
             FluidStack bottom = IDisplayFluidListener.normalizeFluid(tank.getFluidInTank(0));
             displayListeners.removeIf(ref -> {
                 IDisplayFluidListener listener = ref.get();
