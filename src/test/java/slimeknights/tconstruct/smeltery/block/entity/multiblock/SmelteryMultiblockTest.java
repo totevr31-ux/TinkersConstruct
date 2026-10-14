@@ -7,7 +7,7 @@ import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,13 +20,13 @@ class SmelteryMultiblockTest {
     SharedConstants.tryDetectVersion(); Bootstrap.bootStrap();
   }
   static final class Master extends BlockEntity implements IMasterLogic {
-    Master(BlockPos pos) { super(BlockEntityType.FURNACE, pos, Blocks.FURNACE.defaultBlockState()); }
+    Master(BlockPos pos) { super(BlockEntityTypes.FURNACE, pos, Blocks.FURNACE.defaultBlockState()); }
     public void notifyChange(IServantLogic servant, BlockPos pos, BlockState state) {}
   }
   static final class Servant extends BlockEntity implements IServantLogic {
     final IMasterLogic owner;
     Servant(BlockPos pos, IMasterLogic owner) {
-      super(BlockEntityType.FURNACE, pos, Blocks.FURNACE.defaultBlockState()); this.owner = owner;
+      super(BlockEntityTypes.FURNACE, pos, Blocks.FURNACE.defaultBlockState()); this.owner = owner;
     }
     public BlockPos getMasterPos() { return owner.getMasterPos(); }
     public boolean isValidMaster(IMasterLogic master) { return master == owner; }
