@@ -1,6 +1,6 @@
 package com.radi.radisconstruct.partbuilder;
 
-import com.radi.radisconstruct.material.PartBuilderIngotIngredients;
+import com.radi.radisconstruct.material.PartBuilderMaterialInputs;
 import com.radi.radisconstruct.material.PartBuilderPatternItems;
 import net.minecraft.world.item.ItemStack;
 
@@ -28,11 +28,7 @@ public final class PartBuilderSlotRouting {
     }
 
     public static boolean isSupportedMaterial(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return false;
-        for (var entry : PartBuilderIngotIngredients.load().values()) {
-            if (PartBuilderIngotIngredients.matches(stack, entry.material())) return true;
-        }
-        return false;
+        return PartBuilderMaterialInputs.isSupported(stack);
     }
 
     /**
