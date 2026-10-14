@@ -7,6 +7,9 @@
  */
 package slimeknights.tconstruct.smeltery.block.entity.controller;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +25,14 @@ import slimeknights.tconstruct.smeltery.block.controller.SmelteryControllerBlock
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructureMultiblock;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.MultiblockResult;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.SmelteryMultiblock;
+import slimeknights.tconstruct.smeltery.block.entity.tank.FluidStack;
+import slimeknights.tconstruct.smeltery.block.entity.tank.IDisplayFluidListener;
+import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler;
+import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,8 +40,17 @@ import java.util.Objects;
  * Structure data is persisted; live worlds are rescanned (also after a reload).
  * No controller is ever marked active until the fuel/heating stage is ported.
  */
-public final class SmelteryControllerBlockEntity extends BlockEntity implements IMasterLogic {
+public final class SmelteryControllerBlockEntity extends BlockEntity implements IMasterLogic, ISmelteryTankHandler {
     private static final String STRUCTURE_TAG = "structure";
+    private static final String FLUIDS_TAG = "tank_fluids";
+    private static final String CAPACITY_TAG = "tank_capacity";
+    /** Upstream SmelteryBlockEntity: 12 ingots of fluid storage per interior block. */
+    private static final long CAPACITY_PER_BLOCK = FluidConstants.INGOT * 12;
+    /** Upstream SmelteryBlockEntity: per 15 wall blocks the fuel cost increases. */
+    private static final int BLOCKS_PER_FUEL = 15;
+    private final SmelteryTank<SmelteryControllerBlockEntity> tank = new SmelteryTank<>(this);
+    private final List<WeakReference<IDisplayFluidListener>> displayListeners = new ArrayList<>();
+    private int fuelRate = 81;
     private final SmelteryMultiblock<SmelteryControllerBlockEntity> detector = new SmelteryMultiblock<>(this);
     private HeatingStructureMultiblock.StructureData structure;
     private boolean needsStructureCheck = true;
@@ -43,6 +62,70 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     public HeatingStructureMultiblock.StructureData getStructure() {
         return structure;
     }
+
+    @Override public SmelteryTank<SmelteryControllerBlockEntity> getTank() {
+        return tank;
+    }
+
+    /** Original controller exposes its shared tank only when the multiblock is formed. */
+    @Override public SlottedStorage<FluidVariant> getFluidCapability() {
+        return structure == null ? null : tank;
+    }
+
+    /** The controller's authoritative fluid snapshot is read from native 26.3 save data. */
+    @Override public void updateFluidsFromPacket(List<FluidStack> fluids) {
+        tank.setFluids(fluids);
+    }
+
+    @Override public void notifyFluidsChanged(FluidChange type, FluidStack fluid) {
+        setChanged();
+        if (type == FluidChange.ORDER_CHANGED || type == FluidChange.ADDED
+                || type == FluidChange.REMOVED
+                || (type == FluidChange.CHANGED && fluid.isEmpty())) {
+            FluidStack bottom = IDisplayFluidListener.normalizeFluid(tank.getFluidInTank(0));
+            displayListeners.removeIf(ref -> {
+                IDisplayFluidListener listener = ref.get();
+                if (listener == null) return true;
+                listener.notifyDisplayFluidUpdated(bottom);
+                return false;
+            });
+        }
+    }
+
+    @Override public void addDisplayListener(IDisplayFluidListener listener) {
+        Objects.requireNonNull(listener);
+        displayListeners.removeIf(ref -> ref.get() == null);
+        for (WeakReference<IDisplayFluidListener> ref : displayListeners) {
+            if (ref.get() == listener) return;
+        }
+        displayListeners.add(new WeakReference<>(listener));
+        listener.notifyDisplayFluidUpdated(
+            IDisplayFluidListener.normalizeFluid(tank.getFluidInTank(0)));
+    }
+
+    /**
+     * Client network transport is NOT enabled at this milestone.
+     * Never silently imply that a local change reached clients.
+     */
+    @Override public void syncFluids(List<FluidStack> fluids) {
+        throw new UnsupportedOperationException("Smeltery ordered-fluid sync packet not ported yet");
+    }
+
+    /** Original 12-ingots-per-interior-block rule. */
+    static long tankCapacityFor(int innerX, int innerY, int innerZ) {
+        if (innerX < 1 || innerY < 1 || innerZ < 1) throw new IllegalArgumentException("Invalid Smeltery interior");
+        return Math.multiplyExact(CAPACITY_PER_BLOCK,
+            Math.multiplyExact(Math.multiplyExact((long)innerX, innerY), innerZ));
+    }
+
+    /** Original fuel rate calculation from SmelteryBlockEntity.setStructure(). */
+    static int fuelRateFor(int innerX, int innerY, int innerZ) {
+        if (innerX < 1 || innerY < 1 || innerZ < 1) throw new IllegalArgumentException("Invalid Smeltery interior");
+        long perimeter = 2L * innerX * innerY + 2L * innerY * innerZ + (long)innerX * innerZ;
+        return Math.toIntExact(Math.multiplyExact(1L + perimeter / BLOCKS_PER_FUEL, 810L));
+    }
+
+    public int getFuelRate() { return fuelRate; }
 
     public MultiblockResult getLastStructureResult() {
         return detector.getLastResult();
@@ -79,6 +162,11 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         }
 
         structure = updated;
+        if (updated != null) {
+            tank.setCapacity(tankCapacityFor(updated.getInnerX(), updated.getInnerY(), updated.getInnerZ()));
+            fuelRate = fuelRateFor(updated.getInnerX(), updated.getInnerY(), updated.getInnerZ());
+        }
+        // Retain contained fluids on structure destruction. Shrinking must never discard them.
         needsStructureCheck = false;
         boolean formed = updated != null;
         if (currentState.getValue(SmelteryControllerBlock.IN_STRUCTURE) != formed
@@ -109,6 +197,8 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     protected void saveAdditional(ValueOutput out) {
         super.saveAdditional(out);
         if (structure != null) out.store(STRUCTURE_TAG, CompoundTag.CODEC, structure.writeToTag());
+        out.store(FLUIDS_TAG, FluidStack.CODEC.listOf(), tank.getFluids());
+        out.putLong(CAPACITY_TAG, tank.getCapacity());
     }
 
     @Override
@@ -116,6 +206,8 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         super.loadAdditional(in);
         structure = in.read(STRUCTURE_TAG, CompoundTag.CODEC)
             .map(detector::readFromTag).orElse(null);
+        tank.setFluids(in.read(FLUIDS_TAG, FluidStack.CODEC.listOf()).orElseGet(List::of));
+        tank.setCapacity(Math.max(0L, in.getLong(CAPACITY_TAG).orElse(0L)));
         needsStructureCheck = true;
     }
 }
