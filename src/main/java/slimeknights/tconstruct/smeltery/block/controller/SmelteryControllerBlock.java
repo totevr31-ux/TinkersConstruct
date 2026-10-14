@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -60,7 +61,7 @@ public final class SmelteryControllerBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide() || type != SmelteryContent.CONTROLLER_BLOCK_ENTITY) return null;
         return (world, pos, current, entity) ->
@@ -74,14 +75,14 @@ public final class SmelteryControllerBlock extends BaseEntityBlock {
             controller.updateStructure();
             var structure = controller.getStructure();
             if (structure != null) {
-                player.displayClientMessage(Component.literal("Smeltery formed: "
+                ((ServerPlayer)player).sendSystemMessage(Component.literal("Smeltery formed: "
                     + structure.getInnerX() + " x " + structure.getInnerY() + " x " + structure.getInnerZ()
-                    + " interior blocks. Melting/casting still being ported."), true);
+                    + " interior blocks. Melting/casting still being ported."));
             } else {
                 var result = controller.getLastStructureResult();
-                player.displayClientMessage(Component.literal(
+                ((ServerPlayer)player).sendSystemMessage(Component.literal(
                     "Smeltery not formed: " + result.getMessage().getString()
-                    + (result.getPos() == null ? "" : " at " + result.getPos().toShortString())), true);
+                    + (result.getPos() == null ? "" : " at " + result.getPos().toShortString())));
             }
         }
         return InteractionResult.SUCCESS;
