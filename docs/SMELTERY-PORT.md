@@ -110,3 +110,28 @@ Tested commit: `06eb24a2a2248fc0631fcd7df7bf4d9564248399`.
 27 tests passed (6 servant, 9 tank, 7 multiblock, 5 existing material), zero failed/skipped.
 JAR verification and production Fabric bootstrap passed; world startup and client
 rendering remain untested. No playable Smeltery or main-branch merge is claimed.
+
+## Stage 1D — fuel module
+
+Ported the original FuelModule's liquid/solid acquisition, first-layer fuel selection,
+fluid-capability precedence, quarter furnace burn time, 800-degree solid temperature,
+container remainders, consumption, six ContainerData fields, fuel display and persistence.
+The required Context and FuelRecipe interfaces isolate the still-unported world/recipe
+services. No default recipe table, material registration or substitute furnace is added.
+The controller must provide native sided storage lookup, recipe lookup, vanilla burn
+values/remainders, item drops and dirty marking before this module can run in-world.
+That adapter, fuel recipe registration/serialization, GUI and live controller remain pending.
+
+Native transactions now require exact extraction before committing or crediting fuel.
+Simulation actually checks extractability and aborts. Partial/locked extraction cannot
+create fuel; container leftovers are inserted transactionally or dropped after commit.
+Removed tank positions are excluded and storage/display lookups are refreshed each time
+instead of retaining Porting Lib capability caches. The display invalidation entry point
+therefore requires no retained-cache mutation. No fuel-display functionality is removed.
+Original NBT names are kept; reading the last-tank compound fixes the old numeric-type
+check, and an optional fuel_quality field preserves the display scale after reload.
+Negative consumption and fuel-counter overflow are rejected without consuming input.
+
+Nine tests cover simulation, exact/partial extraction, replaced/removed tanks, locked
+solid inventory, remainder insertion/drop, liquid precedence, invalid fuel/overflow,
+legacy-shaped NBT plus six-field sync, and multi-tank display aggregation.
