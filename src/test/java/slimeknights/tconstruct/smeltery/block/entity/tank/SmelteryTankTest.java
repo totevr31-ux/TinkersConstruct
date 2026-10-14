@@ -75,6 +75,16 @@ class SmelteryTankTest {
     try(var tx=Transaction.openOuter()) { assertEquals(0,slot.extract(lava(),10,tx)); assertEquals(10,slot.extract(water(),10,tx)); tx.commit(); }
     assertEquals(40,h.tank.getFluidInTank(0).amount()); assertEquals(20,slot.getAmount());
   }
+  @Test void emptySlotTracksInsertionAndRollsBackItsBinding() {
+    var h=new Handler(100); var slot=h.tank.getSlot(0);
+    try(var tx=Transaction.openOuter()) {
+      assertEquals(30,slot.insert(water(),30,tx)); assertEquals(water(),slot.getResource());
+      assertEquals(30,slot.getAmount()); assertEquals(0,slot.insert(lava(),10,tx));
+    }
+    assertTrue(slot.isResourceBlank()); assertEquals(0,h.tank.getContained());
+    try(var tx=Transaction.openOuter()) { assertEquals(40,slot.insert(lava(),40,tx)); tx.commit(); }
+    assertEquals(lava(),slot.getResource()); assertEquals(40,slot.getAmount());
+  }
   @Test void shrinkingCapacityNeverDeletesFluid() {
     var h=new Handler(100); fill(h,water(),80); h.tank.setCapacity(20);
     assertEquals(80,h.tank.getContained()); assertEquals(0,h.tank.getRemainingSpace());

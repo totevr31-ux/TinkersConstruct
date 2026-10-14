@@ -51,3 +51,29 @@ Tested commit: `9b64648350ca131c56b6a7241d9a33fe34b9d8ce`.
 production Fabric bootstrap passed. Machine-readable evidence: `SMELTERY-STATUS.json`.
 No live controller, fluid transfer or heating cycle has been exercised; this branch's
 JAR is an internal build with the base material version, not a new gameplay release.
+
+## Stage 1B — ordered fluid storage
+
+Ported `SmelteryTank`, `ISmelteryTankHandler` and the display-listener contract from
+`upstream/Hephaestus/src/main/java/slimeknights/tconstruct/smeltery/block/entity/tank/`.
+The ordered layers, shared capacity, selected bottom fluid, slot access and persistence
+remain. Native immutable `FluidStack` values carry Fabric variants, components and long
+droplet amounts (81,000 per bucket). No molten-fluid registrations or recipes changed.
+
+All content mutations share the tank's snapshot participant. Slot views track resource
+identity across reordering; their own snapshots only restore an initially empty view's
+resource binding. Nested aborts restore pending notifications as well as amounts. This
+fixes rollback/slot hazards in the older mutable implementation without removing storage
+operations. Shrinking capacity retains existing contents and blocks further insertion
+until enough fluid is extracted.
+
+Persistence uses version 1 native Fabric variant codecs. This is a new 26.3 save format;
+legacy 1.20.1 tank saves are explicitly rejected, not silently discarded. Legacy world
+migration remains unfinished. The required `syncFluids` hook and display-listener
+contract are transport/render boundaries; packets, controller wiring and the original
+Mantle render-model property have **not** been ported in this increment. No live-world
+fluid transfer, molten metal, fuel, heating, alloying or casting is available yet.
+
+Nine storage tests cover shared capacity/order, outer/nested rollback, delayed callbacks,
+resource-bound slots, empty-slot binding rollback, capacity shrink, invalid input and
+long-amount NBT round trips. Existing multiblock and material tests run unchanged.

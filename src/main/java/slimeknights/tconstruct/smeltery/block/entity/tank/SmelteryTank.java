@@ -138,13 +138,19 @@ public class SmelteryTank<T extends ISmelteryTankHandler> extends SnapshotPartic
     for (Change change : committed) parent.notifyFluidsChanged(change.type(), change.fluid());
   }
   /** A view identifies its fluid, so reorder/removal/rollback cannot redirect a pipe. */
-  public final class FluidStackSlot implements SingleSlotStorage<FluidVariant> {
-    private final FluidVariant resource;
+  public final class FluidStackSlot extends SnapshotParticipant<FluidVariant> implements SingleSlotStorage<FluidVariant> {
+    private FluidVariant resource;
     private FluidStackSlot(FluidVariant resource) { this.resource = resource; }
+    @Override protected FluidVariant createSnapshot() { return resource; }
+    @Override protected void readSnapshot(FluidVariant snapshot) { resource = snapshot; }
     @Override public long insert(FluidVariant variant, long maxAmount, TransactionContext transaction) {
       StoragePreconditions.notBlankNotNegative(variant, maxAmount);
       if (!resource.isBlank() && !resource.equals(variant)) return 0;
-      return SmelteryTank.this.insert(variant, maxAmount, transaction);
+      long inserted = SmelteryTank.this.insert(variant, maxAmount, transaction);
+      if (inserted > 0 && resource.isBlank()) {
+        updateSnapshots(transaction); resource = variant;
+      }
+      return inserted;
     }
     @Override public long extract(FluidVariant variant, long maxAmount, TransactionContext transaction) {
       StoragePreconditions.notBlankNotNegative(variant, maxAmount);
