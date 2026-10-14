@@ -19,5 +19,6 @@ public final class RadisConstruct implements ModInitializer {
         ToolPartItems.initialize();
         slimeknights.tconstruct.world.TinkerWorld.initialize();
         LOGGER.info("Radi's Construct initialized; {} original material definitions loaded.", MaterialStatsCatalog.load().all().size());
+        LOGGER.info("Radi's Construct registered {} original tool part item IDs.", ToolPartItems.all().size());
     }
 }
