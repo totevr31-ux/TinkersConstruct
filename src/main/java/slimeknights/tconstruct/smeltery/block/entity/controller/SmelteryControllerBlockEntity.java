@@ -55,6 +55,7 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     private static final int BLOCKS_PER_FUEL = 15;
     private final SmelteryTank<SmelteryControllerBlockEntity> tank = new SmelteryTank<>(this);
     private final List<WeakReference<IDisplayFluidListener>> displayListeners = new ArrayList<>();
+    private HeatingStructureMultiblock.StructureData structure;
     /**
      * Original fuel-search module wired to native sided fluid storage.
      * Fuel is only PREVIEWED until melting/alloying demand is implemented:
@@ -65,7 +66,6 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         () -> structure == null ? List.of() : structure.getTanks());
     private int fuelRate = 81;
     private final SmelteryMultiblock<SmelteryControllerBlockEntity> detector = new SmelteryMultiblock<>(this);
-    private HeatingStructureMultiblock.StructureData structure;
     private boolean needsStructureCheck = true;
 
     public SmelteryControllerBlockEntity(BlockPos pos, BlockState state) {
