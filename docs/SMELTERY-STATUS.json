@@ -1,21 +1,23 @@
 {
-  "stage": "1D",
-  "scope": "Original multiblock, fluid tank, servant ownership and fuel module; live controller and recipe adapters pending",
+  "stage": "1F",
+  "scope": "Native Smeltery Controller and Seared Bricks registered, original multiblock detector wired with server-side rescans and persistence; fuel/tank/casting gameplay pending",
   "branch": "radisconstruct-smeltery",
   "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
-  "tested_commit": "674f1d688a09a79f7d285ed987ea59a345944b4c",
-  "ci_run": 38546874737,
-  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38546874737",
+  "tested_commit": "d7b14b8483063398d66dd25d917d3b8302863d00",
+  "ci_run": 38618270503,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38618270503",
   "build": "success",
   "tests": {
-    "total": 36,
+    "total": 42,
     "smeltery_multiblock": 7,
     "smeltery_tank": 9,
+    "servant_ownership": 6,
+    "fuel_module": 9,
+    "native_fuel_context": 4,
+    "controller_registration": 2,
     "existing_materials": 5,
     "failures": 0,
-    "skipped": 0,
-    "servant_ownership": 6,
-    "fuel_module": 9
+    "skipped": 0
   },
   "jar_verification": "passed",
   "fabric_bootstrap": "passed; stopped before world startup",
@@ -26,7 +28,6 @@
   "material_components_modified": false,
   "isolated_shared_commit": "80123aa29649b6e7e736497a7c273d990f766f3c",
   "original_files_preserved": 19850,
-  "jar_sha256": "538ac910d684e746f8549b54e1e4d2dc2af43626708e88a7b9004e83d1dc0020",
   "original_sources": {
     "smeltery/block/entity/multiblock/MultiblockResult.java": "9ddd40d0f65c808605765e64aeeb7d3e12524407aaf5a98328fa871ce89c5257",
     "smeltery/block/entity/multiblock/MultiblockCuboid.java": "99b21131f99640414813f6c033d606286066bd4d4b69203c4fd56f033962c23d",
@@ -41,10 +42,16 @@
     "common/multiblock/ServantTileEntity.java": "52633e8e221c955c0c985e11d8e50b5c17baab91dabf0d1c45a6375defe78c4d",
     "smeltery/block/entity/module/FuelModule.java": "d9a0e786c85567031f71ee373140b3d16268e232c8c894e338ad7ddd29150a1e"
   },
-  "next": "Native fuel Context and melting-fuel recipe adapters, melting module and live controller/seared block integration",
+  "next": "Wire original native Smeltery controller to fuel, melting and ordered fluid tank; port seared tank and casting devices; launch a real world/gameplay test.",
   "legacy_tank_save_migration": false,
-  "artifacts": {
-    "mod": 11884971637,
-    "diagnostics": 11884912127
-  }
+  "merged_commit": "d4b379e6dedf52270b6de092f2425964cf99eb27",
+  "registered_blocks": [
+    "tconstruct:seared_bricks",
+    "tconstruct:smeltery_controller"
+  ],
+  "native_controller_formation": true,
+  "live_controller_registered": true,
+  "live_melting_enabled": false,
+  "live_fuel_enabled": false,
+  "casting_enabled": false
 }
