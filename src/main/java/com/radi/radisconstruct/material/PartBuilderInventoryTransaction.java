@@ -26,6 +26,6 @@ public final class PartBuilderInventoryTransaction {
     public static boolean stillApplicable(Transaction preview, int currentAvailableUnits) {
         Objects.requireNonNull(preview, "preview");
         return preview.accepted() && currentAvailableUnits >= 0
-            && (long) currentAvailableUnits >= preview.consumedUnits();
+            && (long) currentAvailableUnits == (long) preview.consumedUnits() + preview.remainingUnits();
     }
 }
