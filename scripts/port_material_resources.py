@@ -174,6 +174,32 @@ for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
+# Original blank Pattern: retain upstream art, craft quantities and tag IDs.
+# This is the minimal reusable input for Part Builder, not an invented cast.
+pattern_model = f'{asset}/models/item/pattern.json'
+pattern_texture = f'{asset}/textures/item/materials/pattern.png'
+copy(f'main/resources/{pattern_model}', pattern_model)
+copy(f'main/resources/{pattern_texture}', pattern_texture)
+write(f'{asset}/items/pattern.json',
+      {'model': {'type': 'minecraft:model', 'model': 'tconstruct:item/pattern'}})
+translations['item.tconstruct.pattern'] = lang_source['item.tconstruct.pattern']
+original_pattern_tag = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/tags/items/patterns/default.json').read_text())
+write('data/tconstruct/tags/item/patterns/default.json', original_pattern_tag)
+# Keep the original shared rod tag, providing the vanilla stick baseline.
+write('data/c/tags/item/wooden_rods.json',
+      {'replace': False, 'values': ['minecraft:stick']})
+upstream_pattern_recipe = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/recipes/tables/pattern.json').read_text())
+upstream_pattern_recipe['key'] = {
+    key: ingredient(value) for key, value in upstream_pattern_recipe['key'].items()
+}
+upstream_pattern_recipe['result']['id'] = upstream_pattern_recipe['result'].pop('item')
+write('data/tconstruct/recipe/tables/pattern.json', upstream_pattern_recipe)
+# The translation resource was already written above for the original
+# material/part items; re-emit with the Pattern entry included.
+write(f'{asset}/lang/en_us.json', translations)
+
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy
