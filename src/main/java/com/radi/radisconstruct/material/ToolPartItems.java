@@ -33,7 +33,11 @@ public final class ToolPartItems {
 
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
-            for (ToolPartItem item : REGISTERED.values()) output.accept(item);
+            for (ToolPartItem item : REGISTERED.values()) {
+                for (String metal : MaterialStatsCatalog.load().all().keySet()) {
+                    output.accept(item.withMaterial(new MaterialVariantId("tconstruct", metal, "")));
+                }
+            }
         });
     }
 }
