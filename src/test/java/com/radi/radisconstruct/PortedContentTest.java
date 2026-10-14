@@ -333,4 +333,57 @@ public class PortedContentTest {
         assertEquals(1, inputs.get(2).getCount());
     }
 
+
+    @Test void stationAssemblyPreviewsAllOriginalLayoutsWithoutCreatingFakeTools() {
+        var original = com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.load();
+        assertEquals(15, original.size());
+        var cobalt = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
+        for (var entry : original.entrySet()) {
+            String toolId = entry.getKey();
+            var shapes = entry.getValue().parts();
+            var inputs = new java.util.ArrayList<ItemStack>();
+            for (var part : shapes) {
+                inputs.add(com.radi.radisconstruct.material.ToolPartItems.all()
+                    .get(part.partId()).withMaterial(cobalt));
+            }
+            var plan = com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation.preview(toolId, inputs);
+            assertNotNull(plan, toolId);
+            assertEquals(toolId, plan.toolId());
+            assertEquals(entry.getValue().outputCount(), plan.outputCount());
+            assertEquals(shapes.size(), plan.parts().size());
+            assertTrue(plan.stillApplicable(inputs), toolId);
+            assertEquals(shapes.stream().mapToInt(p -> p.weight()).sum(), plan.totalOriginalWeight());
+            assertEquals(shapes.size(), plan.materialsInOrder().size());
+
+            // Snapshot may not expose live mutable input stacks.
+            ItemStack copy = plan.parts().get(0).identity();
+            copy.shrink(1);
+            assertTrue(plan.stillApplicable(inputs), toolId);
+
+            var wrongQuantity = new java.util.ArrayList<>(inputs);
+            ItemStack doubled = inputs.get(0).copy();
+            doubled.setCount(2);
+            wrongQuantity.set(0, doubled);
+            assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation
+                .preview(toolId, wrongQuantity), toolId + " must reject doubled parts");
+            assertFalse(plan.stillApplicable(wrongQuantity), toolId);
+
+            var wrongMaterial = new java.util.ArrayList<>(inputs);
+            ItemStack noMaterial = inputs.get(0).copy();
+            com.radi.radisconstruct.material.MaterialStackData.clear(noMaterial);
+            wrongMaterial.set(0, noMaterial);
+            assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation
+                .preview(toolId, wrongMaterial));
+            assertFalse(plan.stillApplicable(wrongMaterial));
+
+            var missing = new java.util.ArrayList<>(inputs);
+            missing.remove(missing.size() - 1);
+            assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation
+                .preview(toolId, missing));
+            assertFalse(plan.stillApplicable(missing));
+        }
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation
+            .preview("nonexistent_tool", java.util.List.of()));
+    }
+
 }
