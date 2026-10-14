@@ -1,6 +1,7 @@
 package slimeknights.tconstruct.smeltery.block.entity.tank;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -16,7 +17,7 @@ public record FluidStack(FluidVariant resource, long amount) {
   public static final FluidStack EMPTY = new FluidStack(FluidVariant.blank(), 0);
   public static final Codec<FluidStack> CODEC = RecordCodecBuilder.create(instance -> instance.group(
       FluidVariant.CODEC.fieldOf("variant").forGetter(FluidStack::resource),
-      Codec.longRange(0, Long.MAX_VALUE).fieldOf("amount").forGetter(FluidStack::amount)
+      Codec.LONG.validate(value -> value >= 0 ? DataResult.success(value) : DataResult.error(() -> "Negative fluid amount")).fieldOf("amount").forGetter(FluidStack::amount)
   ).apply(instance, FluidStack::new));
   public static final StreamCodec<RegistryFriendlyByteBuf, FluidStack> STREAM_CODEC = StreamCodec.composite(
       FluidVariant.PACKET_CODEC, FluidStack::resource, ByteBufCodecs.VAR_LONG, FluidStack::amount, FluidStack::new);
