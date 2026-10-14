@@ -47,6 +47,25 @@ public final class PartBuilderRecipeCatalog {
 
     public int size() { return recipes.size(); }
 
+    /** Filter exact original recipe types, preserving upstream order and data. */
+    public Map<String, JsonObject> byType(String recipeType) {
+        java.util.Objects.requireNonNull(recipeType, "recipeType");
+        Map<String, JsonObject> selected = new LinkedHashMap<>();
+        recipes.forEach((path, recipe) -> {
+            if (recipeType.equals(recipe.get("type").getAsString())) {
+                selected.put(path, recipe.deepCopy());
+            }
+        });
+        return Collections.unmodifiableMap(selected);
+    }
+
+    /** Returns available upstream recipe types, not supported runtime serializers. */
+    public java.util.Set<String> originalTypes() {
+        java.util.Set<String> types = new java.util.LinkedHashSet<>();
+        recipes.values().forEach(recipe -> types.add(recipe.get("type").getAsString()));
+        return Collections.unmodifiableSet(types);
+    }
+
     /** Retrieve an original recipe safely, without exposing mutable catalog state. */
     public JsonObject find(String originalSourcePath) {
         JsonObject recipe = recipes.get(originalSourcePath);
