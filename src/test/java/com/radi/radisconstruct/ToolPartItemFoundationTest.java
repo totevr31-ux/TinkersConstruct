@@ -23,7 +23,10 @@ public class ToolPartItemFoundationTest {
 
     @Test void partKeepsOriginalMaterialAndCorrectStatsKind() {
         var key = ResourceKey.create(Registries.ITEM, Identifier.parse("radisconstruct:foundation_test_head"));
-        var part = new ToolPartItem(new Item.Properties().setId(key), "pick_head", ToolPartCatalog.load());
+        var catalog = ToolPartCatalog.load();
+        assertEquals("HeadMaterialStats", catalog.requireStatType("pick_head"));
+        var properties = new Item.Properties().setId(key);
+        var part = new ToolPartItem(properties, "pick_head", catalog);
         var material = MaterialVariantId.parse("tconstruct:cobalt#polished");
         var stack = part.withMaterial(material);
         assertEquals(material, part.getMaterial(stack));
