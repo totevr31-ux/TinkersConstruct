@@ -1,4 +1,4 @@
-# Smeltery port — stages 1A/1B: multiblock core and ordered tank
+# Smeltery port — stages 1A–1C: multiblock, tank and servant ownership
 
 Branch: `radisconstruct-smeltery`. Base: `0815a295a07d8d75bda0da6ac364d0d8144a5160`.
 
@@ -101,3 +101,12 @@ routing, same-position block refresh and native persistence (including malformed
 The read-only world boundary is shared with the multiblock detector. This class is not
 yet registered to live seared blocks; controller heating modules and block integration
 remain pending. These tests do not constitute a live-world Smeltery test.
+
+## Stage 1C verified build
+
+CI: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38543047619
+
+Tested commit: `06eb24a2a2248fc0631fcd7df7bf4d9564248399`.
+27 tests passed (6 servant, 9 tank, 7 multiblock, 5 existing material), zero failed/skipped.
+JAR verification and production Fabric bootstrap passed; world startup and client
+rendering remain untested. No playable Smeltery or main-branch merge is claimed.

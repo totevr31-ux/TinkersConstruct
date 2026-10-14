@@ -1,19 +1,20 @@
 {
-  "stage": "1B",
-  "scope": "Original multiblock core and ordered transactional fluid tank; not yet connected to in-game controller",
+  "stage": "1C",
+  "scope": "Original multiblock core, ordered fluid tank and servant ownership; not yet registered to live seared blocks",
   "branch": "radisconstruct-smeltery",
   "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
-  "tested_commit": "1e44277400458887a9353ccf47b12b2b9aa4a836",
-  "ci_run": 38535658564,
-  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38535658564",
+  "tested_commit": "06eb24a2a2248fc0631fcd7df7bf4d9564248399",
+  "ci_run": 38543047619,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38543047619",
   "build": "success",
   "tests": {
-    "total": 21,
+    "total": 27,
     "smeltery_multiblock": 7,
     "smeltery_tank": 9,
     "existing_materials": 5,
     "failures": 0,
-    "skipped": 0
+    "skipped": 0,
+    "servant_ownership": 6
   },
   "jar_verification": "passed",
   "fabric_bootstrap": "passed; stopped before world startup",
@@ -24,7 +25,7 @@
   "material_components_modified": false,
   "isolated_shared_commit": "80123aa29649b6e7e736497a7c273d990f766f3c",
   "original_files_preserved": 19850,
-  "jar_sha256": "9bcb3e6632a296079e3563311d82e09bb34c122fb6324b3f0b5a3383dc085510",
+  "jar_sha256": "fcd2f2865ac07ae9d6161458dd8ac5f2adfa5bd043c36a233eee88e60c27b11d",
   "original_sources": {
     "smeltery/block/entity/multiblock/MultiblockResult.java": "9ddd40d0f65c808605765e64aeeb7d3e12524407aaf5a98328fa871ce89c5257",
     "smeltery/block/entity/multiblock/MultiblockCuboid.java": "99b21131f99640414813f6c033d606286066bd4d4b69203c4fd56f033962c23d",
@@ -35,12 +36,13 @@
     "common/multiblock/IServantLogic.java": "70cb89894db67cd399124f59fd07e57ea7a39879b769c61cb0f349f543e33dd2",
     "smeltery/block/entity/tank/SmelteryTank.java": "35ca1ed4945eda7c5e847e4d100adb8dda5478fef0ef07436b7d8f5dd8c13674",
     "smeltery/block/entity/tank/ISmelteryTankHandler.java": "baa42627607e72356443e22a81cb7c38d587443dcd0d40bfa4622a36dcc737da",
-    "smeltery/block/entity/tank/IDisplayFluidListener.java": "57afafbb1e855dee79077ef646c0dd85d001906caaf499bd3f642d90c10f5fe1"
+    "smeltery/block/entity/tank/IDisplayFluidListener.java": "57afafbb1e855dee79077ef646c0dd85d001906caaf499bd3f642d90c10f5fe1",
+    "common/multiblock/ServantTileEntity.java": "52633e8e221c955c0c985e11d8e50b5c17baab91dabf0d1c45a6375defe78c4d"
   },
-  "next": "Original controller/servant integration, fluid transport, then fuel/melting/alloying modules",
+  "next": "Controller heating modules and live seared block integration, then transport/casting",
   "legacy_tank_save_migration": false,
   "artifacts": {
-    "mod": 11879789155,
-    "diagnostics": 11879744419
+    "mod": 11882739425,
+    "diagnostics": 11883167184
   }
 }
