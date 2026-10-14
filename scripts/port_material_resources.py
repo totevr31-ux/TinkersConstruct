@@ -185,5 +185,6 @@ runpy.run_path(str(ROOT / 'scripts/port_tool_part_masks.py'), run_name='__main__
 runpy.run_path(str(ROOT / 'scripts/port_tool_part_fallback_models.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/generate_material_part_textures.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_recipes.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/report_part_builder_recipe_shapes.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/validate_tool_part_masks.py'), run_name='__main__')
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
