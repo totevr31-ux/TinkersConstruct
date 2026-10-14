@@ -16,6 +16,9 @@
   "entrypoints": {
     "main": [
       "com.radi.radisconstruct.RadisConstruct"
+    ],
+    "client": [
+      "com.radi.radisconstruct.partbuilder.PartBuilderClient"
     ]
   },
   "depends": {

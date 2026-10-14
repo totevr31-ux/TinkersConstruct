@@ -200,6 +200,47 @@ write('data/tconstruct/recipe/tables/pattern.json', upstream_pattern_recipe)
 # material/part items; re-emit with the Pattern entry included.
 write(f'{asset}/lang/en_us.json', translations)
 
+# Original Part Builder table: port the vanilla-compatible geometry and art.
+# The upstream custom table model loader/retexturing requires unported code.
+table = f'{asset}/models/block/table/'
+copy(f'main/resources/{table}table.json', f'{table}table.json')
+upstream_part_model = json.loads((UPSTREAM / f'main/resources/{table}part_builder.json').read_text())
+for key in ('loader', 'retextured', 'items'):
+    upstream_part_model.pop(key, None)
+write(f'{table}part_builder.json', upstream_part_model)
+for name in ('part_builder_top', 'side', 'bottom'):
+    path = f'{asset}/textures/block/table/{name}.png'
+    copy(f'main/resources/{path}', path)
+copy(f'main/resources/{asset}/blockstates/part_builder.json', f'{asset}/blockstates/part_builder.json')
+copy(f'main/resources/{asset}/models/item/part_builder.json', f'{asset}/models/item/part_builder.json')
+write(f'{asset}/items/part_builder.json',
+      {'model': {'type': 'minecraft:model', 'model': 'tconstruct:item/part_builder'}})
+translations['block.tconstruct.part_builder'] = lang_source['block.tconstruct.part_builder']
+write(f'{asset}/lang/en_us.json', translations)
+# The original crafting recipe needs Mantle retexturing. Keep its 2x2
+# pattern and ingredient identities while disabling unported color matching.
+upstream_builder = json.loads((UPSTREAM /
+    'generated/resources/data/tconstruct/recipes/tables/part_builder.json').read_text())
+ported_builder = {
+    'type': 'minecraft:crafting_shaped',
+    'category': upstream_builder['category'],
+    'key': {k: ingredient(v) for k,v in upstream_builder['key'].items()},
+    'pattern': upstream_builder['pattern'],
+    'result': {'id': upstream_builder['result']['item']},
+    'show_notification': upstream_builder['show_notification'],
+}
+write('data/tconstruct/recipe/tables/part_builder.json', ported_builder)
+# Original tag has unported custom-wood entries; retain vanilla planks until
+# lavawood/blazewood/nahuatl items exist, avoiding missing-required tag entries.
+write('data/tconstruct/tags/item/planklike.json',
+      {'replace': False, 'values': ['#minecraft:planks']})
+write('data/tconstruct/loot_table/blocks/part_builder.json', {
+    'type': 'minecraft:block',
+    'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item',
+                                      'name': 'tconstruct:part_builder'}],
+               'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
+})
+
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy

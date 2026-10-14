@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import com.radi.radisconstruct.material.MaterialStatsCatalog;
 import com.radi.radisconstruct.material.ToolPartItems;
 import com.radi.radisconstruct.material.PartBuilderPatternItems;
+import com.radi.radisconstruct.partbuilder.PartBuilderContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import slimeknights.tconstruct.shared.TinkerMaterials;
@@ -19,6 +20,7 @@ public final class RadisConstruct implements ModInitializer {
         TinkerMaterials.initialize();
         ToolPartItems.initialize();
         PartBuilderPatternItems.initialize();
+        PartBuilderContent.initialize();
         slimeknights.tconstruct.world.TinkerWorld.initialize();
         LOGGER.info("Radi's Construct initialized; {} original material definitions loaded.", MaterialStatsCatalog.load().all().size());
         LOGGER.info("Radi's Construct registered {} original tool part item IDs.", ToolPartItems.all().size());

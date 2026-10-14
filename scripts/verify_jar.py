@@ -84,6 +84,30 @@ with zipfile.ZipFile(jar) as z:
         assert original['material'] == 'tconstruct:' + metal
         assert original['needed'] == original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_ingots'
+    # A real block, persistent inventory and synced menu must ship together.
+    for name in (
+        'com/radi/radisconstruct/partbuilder/PartBuilderBlock.class',
+        'com/radi/radisconstruct/partbuilder/PartBuilderBlockEntity.class',
+        'com/radi/radisconstruct/partbuilder/PartBuilderContent.class',
+        'com/radi/radisconstruct/partbuilder/PartBuilderMenu.class',
+        'com/radi/radisconstruct/partbuilder/PartBuilderClient.class',
+        'com/radi/radisconstruct/partbuilder/PartBuilderScreen.class',
+        'assets/tconstruct/blockstates/part_builder.json',
+        'assets/tconstruct/models/block/table/table.json',
+        'assets/tconstruct/models/block/table/part_builder.json',
+        'assets/tconstruct/models/item/part_builder.json',
+        'assets/tconstruct/items/part_builder.json',
+        'assets/tconstruct/textures/block/table/part_builder_top.png',
+        'data/tconstruct/recipe/tables/part_builder.json',
+        'data/tconstruct/loot_table/blocks/part_builder.json',
+    ):
+        assert name in names, f'Missing live Part Builder component: {name}'
+    assert meta['entrypoints']['client'] == ['com.radi.radisconstruct.partbuilder.PartBuilderClient']
+    original_builder = json.loads(z.read('data/tconstruct/recipe/tables/part_builder.json'))
+    assert original_builder['type'] == 'minecraft:crafting_shaped'
+    assert original_builder['pattern'] == ['pp', 'ww']
+    assert original_builder['key']['p'] == 'tconstruct:pattern'
+    assert original_builder['key']['w'] == '#tconstruct:planklike'
     # Part Builder's original blank Pattern is now registered and packed.
     for name in (
         'com/radi/radisconstruct/material/PartBuilderPatternItems.class',
