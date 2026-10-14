@@ -41,3 +41,13 @@ additional Smeltery classes while retaining the existing strict class-set compar
 4. Station/anvil and tool assembly, then original modifiers.
 
 Do not merge this branch into radisconstruct-stage1 until reviewed and all CI checks pass.
+
+## Verified build
+
+CI: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38512384798
+
+Tested commit: `9b64648350ca131c56b6a7241d9a33fe34b9d8ce`.
+12 tests passed (7 Smeltery + 5 existing), none failed/skipped. JAR verification and
+production Fabric bootstrap passed. Machine-readable evidence: `SMELTERY-STATUS.json`.
+No live controller, fluid transfer or heating cycle has been exercised; this branch's
+JAR is an internal build with the base material version, not a new gameplay release.

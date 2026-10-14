@@ -1,0 +1,36 @@
+{
+  "stage": "1A",
+  "scope": "Original Smeltery multiblock core; not yet connected to in-game controller",
+  "branch": "radisconstruct-smeltery",
+  "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
+  "tested_commit": "9b64648350ca131c56b6a7241d9a33fe34b9d8ce",
+  "ci_run": 38512384798,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38512384798",
+  "build": "success",
+  "tests": {
+    "total": 12,
+    "smeltery": 7,
+    "failures": 0,
+    "skipped": 0
+  },
+  "jar_verification": "passed",
+  "fabric_bootstrap": "passed; stopped before world startup",
+  "world_tested": false,
+  "client_tested": false,
+  "smeltery_in_game": false,
+  "main_branch_merged": false,
+  "material_components_modified": false,
+  "isolated_shared_commit": "80123aa29649b6e7e736497a7c273d990f766f3c",
+  "original_files_preserved": 19850,
+  "jar_sha256": "567702b3b3abe5c334fa13250612e7ce56462b74e3a8091c42a8f1a46f5901b6",
+  "original_sources": {
+    "smeltery/block/entity/multiblock/MultiblockResult.java": "9ddd40d0f65c808605765e64aeeb7d3e12524407aaf5a98328fa871ce89c5257",
+    "smeltery/block/entity/multiblock/MultiblockCuboid.java": "99b21131f99640414813f6c033d606286066bd4d4b69203c4fd56f033962c23d",
+    "smeltery/block/entity/multiblock/MultiblockStructureData.java": "8da17bd989793fc414cb4fd807cda7ce6c7a018f54ea82b4ea11d7519de6604b",
+    "smeltery/block/entity/multiblock/HeatingStructureMultiblock.java": "ee93417664e58b6a205a8fdc96dd142d48c64d17a9fb40d4db65b84352f18e6d",
+    "smeltery/block/entity/multiblock/SmelteryMultiblock.java": "95be0ff33bd7e9bb8ae94aa8af16ee873e85d1bec9f9f2c27a9f7f92a4795404",
+    "common/multiblock/IMasterLogic.java": "41f6f24e9163b8784858cd9fe1c7d69798d4160e344370f2f69d10b249d96faa",
+    "common/multiblock/IServantLogic.java": "70cb89894db67cd399124f59fd07e57ea7a39879b769c61cb0f349f543e33dd2"
+  },
+  "next": "Original controller and servant block entities, then fluid/fuel/melting modules; no replacement furnace implementation"
+}
