@@ -1,7 +1,7 @@
 package com.radi.radisconstruct.partbuilder;
 
 import com.radi.radisconstruct.material.MaterialVariantId;
-import com.radi.radisconstruct.material.PartBuilderIngotIngredients;
+import com.radi.radisconstruct.material.PartBuilderMaterialInputs;
 import com.radi.radisconstruct.material.PartBuilderIngotStation;
 import com.radi.radisconstruct.material.PartBuilderOutput;
 import com.radi.radisconstruct.material.PartBuilderPatternItems;
@@ -62,19 +62,16 @@ public final class PartBuilderMenu extends AbstractContainerMenu {
         // No client-provided recipes/material identity are trusted.
         if (player.level().isClientSide()) return true;
         String partId = PART_IDS.get(idx);
-        for (String metal : PartBuilderIngotIngredients.load().keySet()) {
-            var material = new MaterialVariantId("tconstruct", metal, "");
-            if (PartBuilderIngotIngredients.matches(station.getItem(0), material)
-                && PartBuilderOutput.canProduce(partId, material,
-                    ToolPartCatalog.load(), MaterialStatsCatalog.load())) {
-                boolean crafted = PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
-                    PartBuilderIngotStation.capture(station.getItem(0)),
-                    partId, material, "tconstruct:" + partId, 1);
-                if (crafted) broadcastChanges();
-                return crafted;
-            }
-        }
-        return false;
+        var denomination = PartBuilderMaterialInputs.resolve(station.getItem(0));
+        if (denomination == null) return false;
+        var material = denomination.material();
+        if (!PartBuilderOutput.canProduce(partId, material,
+            ToolPartCatalog.load(), MaterialStatsCatalog.load())) return false;
+        boolean crafted = PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+            PartBuilderIngotStation.capture(station.getItem(0)),
+            partId, material, "tconstruct:" + partId, 1);
+        if (crafted) broadcastChanges();
+        return crafted;
     }
 
     @Override public ItemStack quickMoveStack(Player player, int index) {
