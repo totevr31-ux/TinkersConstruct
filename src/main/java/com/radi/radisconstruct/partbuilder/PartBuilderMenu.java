@@ -41,11 +41,7 @@ public final class PartBuilderMenu extends AbstractContainerMenu {
         station.startOpen(player.player);
         addSlot(new Slot(station, 0, 62, 17) {
             @Override public boolean mayPlace(ItemStack stack) {
-                for (String metal : PartBuilderIngotIngredients.load().keySet()) {
-                    if (PartBuilderIngotIngredients.matches(stack, new MaterialVariantId("tconstruct", metal, "")))
-                        return true;
-                }
-                return false;
+                return PartBuilderSlotRouting.isSupportedMaterial(stack);
             }
         });
         addSlot(new Slot(station, 1, 80, 17) {
@@ -60,6 +56,7 @@ public final class PartBuilderMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {
+        if (!stillValid(player)) return false;
         int idx = button - 100;
         if (idx < 0 || idx >= PART_IDS.size()) return false;
         // No client-provided recipes/material identity are trusted.
@@ -81,8 +78,31 @@ public final class PartBuilderMenu extends AbstractContainerMenu {
     }
 
     @Override public ItemStack quickMoveStack(Player player, int index) {
-        // Disable shift-click until slot transfer validation covers all paths.
-        return ItemStack.EMPTY;
+        // A shift-click never triggers a craft; parts were already paid for
+        // when put into the output slot by the server craft-button handler.
+        if (!stillValid(player) || index < 0 || index >= slots.size()) return ItemStack.EMPTY;
+        Slot source = slots.get(index);
+        if (!source.hasItem() || !source.mayPickup(player)) return ItemStack.EMPTY;
+
+        ItemStack live = source.getItem();
+        ItemStack original = live.copy();
+        PartBuilderSlotRouting.Range range = PartBuilderSlotRouting.primary(index, live);
+        if (range == null) return ItemStack.EMPTY;
+
+        boolean moved = moveItemStackTo(live, range.start(), range.end(), range.reverse());
+        if (!moved && index >= PartBuilderSlotRouting.STATION_SLOTS) {
+            // A full/mismatched input cannot trap inventory items; use the
+            // conventional main-inventory <-> hotbar fallback.
+            PartBuilderSlotRouting.Range fallback = PartBuilderSlotRouting.playerFallback(index);
+            moved = fallback != null
+                && (fallback.start() != range.start() || fallback.end() != range.end())
+                && moveItemStackTo(live, fallback.start(), fallback.end(), fallback.reverse());
+        }
+        if (!moved) return ItemStack.EMPTY;
+
+        if (live.isEmpty()) source.setByPlayer(ItemStack.EMPTY);
+        else source.setChanged();
+        return original;
     }
 
     @Override public boolean stillValid(Player player) {
