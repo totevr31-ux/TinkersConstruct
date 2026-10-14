@@ -5,6 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import java.util.Objects;
+import java.util.List;
+import net.minecraft.world.item.component.CustomModelData;
 
 /**
  * Incremental port of original Hephaestus MaterialItem#getMaterial storage.
@@ -34,6 +36,10 @@ public final class MaterialStackData {
         Objects.requireNonNull(material, "material");
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
             data -> data.putString(MATERIAL_KEY, material.toString()));
+        if (stack.getItem() instanceof ToolPartItem && "tconstruct".equals(material.namespace())) {
+            stack.set(DataComponents.CUSTOM_MODEL_DATA,
+                new CustomModelData(List.of(), List.of(), List.of(material.path()), List.of()));
+        }
     }
 
     /** Removes only our material identifier, leaving other custom data intact. */
@@ -41,5 +47,8 @@ public final class MaterialStackData {
         Objects.requireNonNull(stack, "stack");
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
             data -> data.remove(MATERIAL_KEY));
+        if (stack.getItem() instanceof ToolPartItem) {
+            stack.remove(DataComponents.CUSTOM_MODEL_DATA);
+        }
     }
 }
