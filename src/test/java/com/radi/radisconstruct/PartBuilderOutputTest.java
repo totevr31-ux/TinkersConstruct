@@ -23,5 +23,15 @@ public class PartBuilderOutputTest {
         assertFalse(PartBuilderOutput.canProduce("pick_head",
             new MaterialVariantId("minecraft", "iron", ""), parts, stats));
         assertFalse(PartBuilderOutput.canProduce("pick_head", null, parts, stats));
+        // Creative inventory must not suggest unported limb/bowstring/extra stat systems.
+        int supported = 0;
+        for (String part : parts.all().keySet()) {
+            for (String metal : stats.all().keySet()) {
+                if (PartBuilderOutput.canProduce(part,
+                        new MaterialVariantId("tconstruct", metal, ""), parts, stats)) supported++;
+            }
+        }
+        assertTrue(supported > 0);
+        assertTrue(supported < parts.all().size() * stats.all().size());
     }
 }
