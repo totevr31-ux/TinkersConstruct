@@ -1,0 +1,15 @@
+[
+  "slimeknights/tconstruct/common/multiblock/IMasterLogic.class",
+  "slimeknights/tconstruct/common/multiblock/IServantLogic.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock$StructureData.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockCuboid$CuboidSide.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockCuboid.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockResult.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockStructureData.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockWorldView$1.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockWorldView.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/SmelteryMultiblock.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/SmelteryStructureTags.class",
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/StructureTagUtil.class"
+]
