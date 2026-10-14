@@ -39,6 +39,7 @@ public final class PartBuilderRecipeCatalog {
                     throw new IllegalStateException("Invalid upstream recipe: " + entry.getKey());
                 result.put(entry.getKey(), original.deepCopy());
             }
+            if (result.size() != 17) throw new IllegalStateException("Unexpected Part Builder recipe count");
             return new PartBuilderRecipeCatalog(result);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read original Part Builder recipes", e);
