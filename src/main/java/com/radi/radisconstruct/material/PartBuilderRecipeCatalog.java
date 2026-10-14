@@ -39,6 +39,12 @@ public final class PartBuilderRecipeCatalog {
                     throw new IllegalStateException("Invalid upstream recipe: " + entry.getKey());
                 result.put(entry.getKey(), original.deepCopy());
             }
+            long building = result.values().stream()
+                .filter(r -> BUILD_TYPE.equals(r.get("type").getAsString())).count();
+            long recycling = result.values().stream()
+                .filter(r -> RECYCLING_TYPE.equals(r.get("type").getAsString())).count();
+            if (result.size() != 17 || building != 15 || recycling != 2)
+                throw new IllegalStateException("Unexpected original recipe types/counts");
             return new PartBuilderRecipeCatalog(result);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read original Part Builder recipes", e);
