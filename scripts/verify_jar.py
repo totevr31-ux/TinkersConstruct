@@ -84,6 +84,18 @@ with zipfile.ZipFile(jar) as z:
         assert original['material'] == 'tconstruct:' + metal
         assert original['needed'] == original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_ingots'
+    # Original Tinker Station layouts are read-only until tool item behavior ports.
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerStationBlueprints.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerStationBlueprints$Blueprint.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerStationBlueprints$Part.class' in names
+    blueprints = json.loads(z.read('assets/radisconstruct/upstream_tinker_station_blueprints.json'))
+    assert blueprints['count'] == 15
+    assert len(blueprints['tools']) == 15
+    assert len(blueprints['excluded_without_station_layout']) == 4
+    assert blueprints['tools']['pickaxe']['result'] == 'tconstruct:pickaxe'
+    assert [p['item'] for p in blueprints['tools']['pickaxe']['parts']] == [
+        'tconstruct:pick_head', 'tconstruct:tool_handle', 'tconstruct:tool_binding']
+    assert blueprints['tools']['dagger']['result_count'] == 2
     # Stage three: seven authentic nugget material recipes, 9 items = 1 unit.
     assert 'com/radi/radisconstruct/material/PartBuilderNuggetIngredients.class' in names
     assert 'com/radi/radisconstruct/material/PartBuilderMaterialInputs.class' in names
