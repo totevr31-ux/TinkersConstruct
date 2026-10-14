@@ -75,6 +75,22 @@ with zipfile.ZipFile(jar) as z:
     assert len(parts['part_stats_type']) == 14
     assert parts['part_stats_type']['tool_binding'] == 'ExtraMaterialStats'
     assert parts['part_stats_type']['bowstring'] == 'BowstringMaterialStats'
+    # Part Builder's original blank Pattern is now registered and packed.
+    for name in (
+        'com/radi/radisconstruct/material/PartBuilderPatternItems.class',
+        'com/radi/radisconstruct/material/PartBuilderPatternMatcher.class',
+        'com/radi/radisconstruct/material/PartBuilderStationSlots.class',
+        'assets/tconstruct/models/item/pattern.json',
+        'assets/tconstruct/items/pattern.json',
+        'assets/tconstruct/textures/item/materials/pattern.png',
+        'data/tconstruct/tags/item/patterns/default.json',
+        'data/tconstruct/recipe/tables/pattern.json',
+    ):
+        assert name in names, f'Missing Part Builder Pattern asset/class: {name}'
+    pattern_tag = json.loads(z.read('data/tconstruct/tags/item/patterns/default.json'))
+    assert 'tconstruct:pattern' in pattern_tag['values']
+    pattern_recipe = json.loads(z.read('data/tconstruct/recipe/tables/pattern.json'))
+    assert pattern_recipe['result'] == {'count': 3, 'id': 'tconstruct:pattern'}
     assert not any(n.endswith('.java') for n in names), 'Sources JAR selected'
 out = root / 'dist'
 out.mkdir(exist_ok=True)
