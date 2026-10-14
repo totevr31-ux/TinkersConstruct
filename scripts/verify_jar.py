@@ -107,6 +107,8 @@ with zipfile.ZipFile(jar) as z:
         assert original['needed'] == 9 and original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_nuggets'
         assert 'leftover' not in original
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation$Plan.class' in names
     # Stage-two inventory routing is a compiled server component, not just GUI text.
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting.class' in names
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting$Range.class' in names
