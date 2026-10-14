@@ -22,7 +22,7 @@ public class ToolPartFallbackModelTest {
             var item = JsonParser.parseString(Files.readString(
                 base.resolve("items/" + name + ".json"))).getAsJsonObject();
             assertEquals("tconstruct:item/" + name,
-                item.getAsJsonObject("model").get("model").getAsString());
+                item.getAsJsonObject("model").getAsJsonObject("fallback").get("model").getAsString());
         }
     }
 }
