@@ -24,3 +24,6 @@ for path, entry in sorted(records.items()):
 output = root / "build/portedResources/assets/radisconstruct/part_builder_recipe_shapes.json"
 output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 print("Original Part Builder recipe shapes:", report["types"])
+
+for name, recipe in sorted(report['recipes'].items()):
+    print('PART_BUILDER_SCHEMA', name, recipe['fields'], recipe['item_fields'])
