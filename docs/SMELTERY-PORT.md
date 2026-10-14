@@ -1,4 +1,4 @@
-# Smeltery port — stages 1A–1C: multiblock, tank and servant ownership
+# Smeltery port — stages 1A–1D: structure, tank, ownership and fuel
 
 Branch: `radisconstruct-smeltery`. Base: `0815a295a07d8d75bda0da6ac364d0d8144a5160`.
 
@@ -135,3 +135,17 @@ Negative consumption and fuel-counter overflow are rejected without consuming in
 Nine tests cover simulation, exact/partial extraction, replaced/removed tanks, locked
 solid inventory, remainder insertion/drop, liquid precedence, invalid fuel/overflow,
 legacy-shaped NBT plus six-field sync, and multi-tank display aggregation.
+
+## Stage 1D verified build
+
+CI: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38546874737
+
+Tested commit: `674f1d688a09a79f7d285ed987ea59a345944b4c`.
+36 tests passed (9 fuel module plus previous 27), zero failed/skipped. JAR verification
+and production Fabric bootstrap passed. Fuel tests use required Context fixtures, not
+a live controller. No world startup, fuel recipe reload or client rendering was tested.
+
+26.3 integration note: furnace fuel now uses `DataComponents.COOKING_FUEL` with
+`CookingFuel.burnTime()` returning a contextual `ResolvableInt`; do not reintroduce
+the old static FuelRegistry. Item crafting remainders are ItemStackTemplate values.
+Resolve these native services in the controller adapter before enabling live fuel use.
