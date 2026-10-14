@@ -3,6 +3,7 @@ package com.radi.radisconstruct;
 
 import net.fabricmc.api.ModInitializer;
 import com.radi.radisconstruct.material.MaterialStatsCatalog;
+import com.radi.radisconstruct.material.ToolPartItems;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import slimeknights.tconstruct.shared.TinkerMaterials;
@@ -15,6 +16,7 @@ public final class RadisConstruct implements ModInitializer {
     @Override
     public void onInitialize() {
         TinkerMaterials.initialize();
+        ToolPartItems.initialize();
         slimeknights.tconstruct.world.TinkerWorld.initialize();
         LOGGER.info("Radi's Construct initialized; {} original material definitions loaded.", MaterialStatsCatalog.load().all().size());
     }
