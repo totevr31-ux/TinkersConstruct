@@ -86,3 +86,18 @@ Tested commit: `1e44277400458887a9353ccf47b12b2b9aa4a836`.
 21 tests passed: 9 tank, 7 multiblock and 5 existing material tests; none failed or skipped.
 JAR verification and production Fabric bootstrap passed. Bootstrap stops before world
 startup; no in-game controller, heating cycle or rendering has been tested.
+
+## Stage 1C — servant ownership
+
+Ported original `common/multiblock/ServantTileEntity` to native BlockEntity and
+26.3 ValueInput/ValueOutput persistence. Controller identity, replacement checks,
+change notifications and matching-owner release retain the original behavior.
+NBT retains `masterPos` with lowercase x/y/z and `masterBlock` registry identifier.
+Reloading absent/invalid ownership now clears a stale prior link; assigned positions
+are immutable. Native `setChanged()` replaces Mantle's persistence notification.
+
+Six fixture tests exercise competing controllers, removal/reassignment, notification
+routing, same-position block refresh and native persistence (including malformed saves).
+The read-only world boundary is shared with the multiblock detector. This class is not
+yet registered to live seared blocks; controller heating modules and block integration
+remain pending. These tests do not constitute a live-world Smeltery test.

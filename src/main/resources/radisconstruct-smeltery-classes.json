@@ -1,6 +1,7 @@
 [
   "slimeknights/tconstruct/common/multiblock/IMasterLogic.class",
   "slimeknights/tconstruct/common/multiblock/IServantLogic.class",
+  "slimeknights/tconstruct/common/multiblock/ServantTileEntity.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock$StructureData.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/HeatingStructureMultiblock.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockCuboid$CuboidSide.class",
