@@ -6,6 +6,7 @@ package slimeknights.tconstruct.smeltery;
 
 import com.radi.radisconstruct.RadisConstruct;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,6 +21,8 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import slimeknights.tconstruct.smeltery.block.controller.SmelteryControllerBlock;
+import slimeknights.tconstruct.smeltery.block.component.SearedFuelTankBlock;
+import slimeknights.tconstruct.smeltery.block.entity.component.SearedFuelTankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryControllerBlockEntity;
 
 /**
@@ -61,11 +64,27 @@ public final class SmelteryContent {
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("smeltery"),
             FabricBlockEntityTypeBuilder.create(SmelteryControllerBlockEntity::new, CONTROLLER).build());
 
+    private static final ResourceKey<Block> FUEL_TANK_KEY = blockKey("seared_fuel_tank");
+    public static final SearedFuelTankBlock FUEL_TANK = Registry.register(
+        BuiltInRegistries.BLOCK, FUEL_TANK_KEY,
+        new SearedFuelTankBlock(BlockBehaviour.Properties.of().setId(FUEL_TANK_KEY)
+            .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
+    public static final Item FUEL_TANK_ITEM = item("seared_fuel_tank", FUEL_TANK);
+
+    public static final BlockEntityType<SearedFuelTankBlockEntity> FUEL_TANK_BLOCK_ENTITY =
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("seared_fuel_tank"),
+            FabricBlockEntityTypeBuilder.create(SearedFuelTankBlockEntity::new, FUEL_TANK).build());
+
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)
             .register(output -> output.accept(SEARED_BRICKS_ITEM));
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)
-            .register(output -> output.accept(CONTROLLER_ITEM));
-        RadisConstruct.LOGGER.info("Registered original Smeltery Controller and Seared Bricks; formation detection enabled.");
+            .register(output -> {
+                output.accept(CONTROLLER_ITEM);
+                output.accept(FUEL_TANK_ITEM);
+            });
+        FluidStorage.SIDED.registerForBlockEntity(
+            (blockEntity, direction) -> blockEntity.getFluidStorage(), FUEL_TANK_BLOCK_ENTITY);
+        RadisConstruct.LOGGER.info("Registered original Smeltery Controller, Seared Bricks, four-bucket Fuel Tank and native fluid capability.");
     }
 }
