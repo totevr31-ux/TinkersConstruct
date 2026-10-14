@@ -40,6 +40,8 @@ with zipfile.ZipFile(jar) as z:
     expected_classes = {'slimeknights/tconstruct/shared/TinkerMaterials.class',
                         'slimeknights/tconstruct/shared/TinkerMaterials$MetalItems.class',
                         'slimeknights/tconstruct/world/TinkerWorld.class'}
+    if 'radisconstruct-smeltery-classes.json' in names:
+        expected_classes.update(json.loads(z.read('radisconstruct-smeltery-classes.json')))
     assert {n for n in names if n.startswith('slimeknights/') and n.endswith('.class')} == expected_classes
     manifest = json.loads(z.read('radisconstruct-port-manifest.json'))
     for name, source in manifest['copied_resources'].items():
