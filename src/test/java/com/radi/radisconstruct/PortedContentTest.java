@@ -20,6 +20,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import slimeknights.tconstruct.shared.TinkerMaterials;
 import slimeknights.tconstruct.world.TinkerWorld;
+import slimeknights.tconstruct.smeltery.SmelteryContent;
 
 /** Decode actual generated data with Minecraft codecs and exercise recipe matching.
  * No dedicated server/world is started; these are not gameplay or render tests.
@@ -36,6 +37,8 @@ public class PortedContentTest {
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
         assertNotNull(TinkerWorld.rawCobalt);
+        // Register ported Smeltery items before ITEM registry tag binding/freezing.
+        assertNotNull(SmelteryContent.CONTROLLER_ITEM);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
             for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
@@ -117,7 +120,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(9, checked);
+        assertEquals(11, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {
