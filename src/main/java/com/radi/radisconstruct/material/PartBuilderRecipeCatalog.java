@@ -47,6 +47,17 @@ public final class PartBuilderRecipeCatalog {
 
     public int size() { return recipes.size(); }
 
+    /** Retrieve an original recipe safely, without exposing mutable catalog state. */
+    public JsonObject find(String originalSourcePath) {
+        JsonObject recipe = recipes.get(originalSourcePath);
+        return recipe == null ? null : recipe.deepCopy();
+    }
+
+    /** Whether this original recipe exists; does not imply it is craftable yet. */
+    public boolean contains(String originalSourcePath) {
+        return recipes.containsKey(originalSourcePath);
+    }
+
     public Map<String, JsonObject> all() {
         Map<String, JsonObject> copy = new LinkedHashMap<>();
         recipes.forEach((key, value) -> copy.put(key, value.deepCopy()));

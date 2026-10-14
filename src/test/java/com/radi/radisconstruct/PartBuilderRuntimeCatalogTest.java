@@ -12,6 +12,13 @@ public class PartBuilderRuntimeCatalogTest {
         String key = first.getKey();
         first.getValue().addProperty("test_mutation", true);
         assertFalse(catalog.all().get(key).has("test_mutation"));
+        assertTrue(catalog.contains(key));
+        assertNotNull(catalog.find(key));
+        var changed = catalog.find(key);
+        changed.addProperty("lookup_mutation", true);
+        assertFalse(catalog.find(key).has("lookup_mutation"));
+        assertFalse(catalog.contains("not/a/real/recipe.json"));
+        assertNull(catalog.find("not/a/real/recipe.json"));
         assertThrows(UnsupportedOperationException.class, () -> catalog.all().clear());
     }
 }
