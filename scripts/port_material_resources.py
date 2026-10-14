@@ -227,6 +227,8 @@ for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     original = json.loads(source.read_text())['values']
     blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
+    if tag == 'mineable/pickaxe':
+        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller'))
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
