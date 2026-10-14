@@ -84,6 +84,9 @@ with zipfile.ZipFile(jar) as z:
         assert original['material'] == 'tconstruct:' + metal
         assert original['needed'] == original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_ingots'
+    # Stage-two inventory routing is a compiled server component, not just GUI text.
+    assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting.class' in names
+    assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting$Range.class' in names
     # A real block, persistent inventory and synced menu must ship together.
     for name in (
         'com/radi/radisconstruct/partbuilder/PartBuilderBlock.class',

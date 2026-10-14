@@ -51,6 +51,16 @@ public final class PartBuilderBlockEntity extends BlockEntity implements Contain
         setChanged();
     }
 
+    /** Enforce the same recipe-safe rules for hoppers as for GUI slots. */
+    @Override public boolean canPlaceItem(int index, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+        return switch (index) {
+            case 0 -> PartBuilderSlotRouting.isSupportedMaterial(stack);
+            case 1 -> stack.is(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+            default -> false; // The result slot is crafted server-side only.
+        };
+    }
+
     @Override public boolean stillValid(Player player) {
         return Container.stillValidBlockEntity(this, player);
     }
