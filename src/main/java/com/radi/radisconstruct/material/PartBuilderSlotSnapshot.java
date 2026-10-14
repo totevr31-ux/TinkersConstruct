@@ -34,6 +34,20 @@ public final class PartBuilderSlotSnapshot {
         return now != null && matches(expected, now, transaction);
     }
 
+    public record StackIdentity(net.minecraft.world.item.Item item, Slot slot) {}
+
+    public static StackIdentity capture(ItemStack stack) {
+        Slot slot = fromStack(stack);
+        return slot == null ? null : new StackIdentity(stack.getItem(), slot);
+    }
+
+    public static boolean matchesIdentity(StackIdentity expected, ItemStack current,
+                                          PartBuilderInventoryTransaction.Transaction transaction) {
+        return expected != null && current != null && !current.isEmpty()
+            && current.getItem() == expected.item()
+            && matchesStack(expected.slot(), current, transaction);
+    }
+
     public static boolean matches(Slot expected, Slot current,
                                   PartBuilderInventoryTransaction.Transaction transaction) {
         Objects.requireNonNull(expected, "expected");
