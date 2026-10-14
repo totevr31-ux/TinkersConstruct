@@ -297,4 +297,40 @@ public class PortedContentTest {
     }
 
 
+    @Test void originalTinkerStationRequiresExactOrderedMaterialBearingParts() {
+        var shapes = com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.load();
+        assertEquals(15, shapes.size());
+        var pick = shapes.get("pickaxe");
+        assertEquals(1, pick.outputCount());
+        assertEquals(List.of("pick_head", "tool_handle", "tool_binding"),
+            pick.parts().stream().map(p -> p.partId()).toList());
+        var parts = com.radi.radisconstruct.material.ToolPartItems.all();
+        var cobalt = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
+        var manyullyn = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "manyullyn", "");
+        var inputs = new ArrayList<ItemStack>(List.of(
+            parts.get("pick_head").withMaterial(cobalt),
+            parts.get("tool_handle").withMaterial(manyullyn),
+            parts.get("tool_binding").withMaterial(cobalt)));
+        assertTrue(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts("pickaxe", inputs));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts(
+            "sword", inputs), "Sword needs a blade plus two handles, not a pick head");
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts(
+            "unknown", inputs));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts(
+            "pickaxe", inputs.subList(0, 2)));
+        var saved = inputs.get(0);
+        inputs.set(0, parts.get("tool_handle").withMaterial(cobalt));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts("pickaxe", inputs));
+        inputs.set(0, saved);
+        inputs.set(1, new ItemStack(parts.get("tool_handle")));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationBlueprints.matchesParts(
+            "pickaxe", inputs), "Missing material identity must be rejected");
+        inputs.set(1, parts.get("tool_handle").withMaterial(manyullyn));
+        assertEquals(1, inputs.get(1).getCount());
+        // Read-only matching must never eat any ingredients.
+        assertEquals(1, inputs.get(0).getCount());
+        assertEquals(1, inputs.get(1).getCount());
+        assertEquals(1, inputs.get(2).getCount());
+    }
+
 }
