@@ -8,9 +8,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MaterialStackDataTest {
+    @BeforeAll static void setup() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+    }
+
     @Test void stackRoundTripAndPreservationOfUnrelatedCustomData() {
         ItemStack stack = new ItemStack(Items.STICK);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putString("AnotherMod", "preserve"));
