@@ -237,7 +237,8 @@ write('data/tconstruct/tags/item/planklike.json',
 write('data/tconstruct/loot_table/blocks/part_builder.json', {
     'type': 'minecraft:block',
     'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item',
-                                      'name': 'tconstruct:part_builder'}]}]
+                                      'name': 'tconstruct:part_builder'}],
+               'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
 })
 
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
