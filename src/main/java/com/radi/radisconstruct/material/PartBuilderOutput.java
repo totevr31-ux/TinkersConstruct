@@ -19,7 +19,8 @@ public final class PartBuilderOutput {
         if (partId == null || material == null) return false;
         String type = parts.all().get(partId);
         if (!("HeadMaterialStats".equals(type) || "HandleMaterialStats".equals(type))) return false;
-        return "tconstruct".equals(material.namespace()) && stats.all().containsKey(material.path());
+        return "tconstruct".equals(material.namespace()) && !material.hasVariant()
+            && stats.all().containsKey(material.path());
     }
 
     /**
