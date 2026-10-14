@@ -12,6 +12,20 @@ public final class PartBuilderProductionPlan {
     public record Plan(boolean craftable, String partId, MaterialVariantId material,
                        int remainingUnits, int outputCount) {}
 
+    /**
+     * Plans with the authentic Hephaestus recipe cost for the selected part.
+     * Pattern ingredient matching and inventory mutation belong to the station.
+     * Rejects parts with no original recipe.
+     */
+    public static Plan planFromOriginalRecipe(String partId, MaterialVariantId material,
+                                              int availableUnits, int requestedParts,
+                                              ToolPartCatalog parts, MaterialStatsCatalog stats) {
+        var recipe = PartBuilderRecipeCosts.load().find(partId);
+        if (recipe == null) return new Plan(false, partId, material, availableUnits, 0);
+        return plan(partId, material, availableUnits, recipe.materialUnits(),
+                    requestedParts, parts, stats);
+    }
+
     public static Plan plan(String partId, MaterialVariantId material, int availableUnits,
                             int canonicalCostPerPart, int requestedParts,
                             ToolPartCatalog parts, MaterialStatsCatalog stats) {
