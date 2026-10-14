@@ -47,9 +47,13 @@ public final class PartBuilderScreen extends AbstractContainerScreen<PartBuilder
             craftButton.setMessage(Component.literal("No supported parts"));
             craftButton.active = false;
         } else {
-            craftButton.setMessage(Component.literal("Craft: " +
-                PartBuilderMenu.PART_IDS.get(selected).replace('_', ' ')));
-            craftButton.active = true;
+            String part = PartBuilderMenu.PART_IDS.get(selected);
+            var recipe = com.radi.radisconstruct.material.PartBuilderRecipeCosts.load().find(part);
+            int units = recipe == null ? 0 : recipe.materialUnits();
+            // Display the actual upstream material cost rather than a guessed number.
+            craftButton.setMessage(Component.literal(units + "x ")
+                .append(Component.translatable("item.tconstruct." + part)));
+            craftButton.active = recipe != null;
         }
     }
 
