@@ -35,6 +35,10 @@ public class PortedContentTest {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
+        // Include the new authentic table and Pattern before the test freezes
+        // item registries for codec and datapack-tag validation.
+        assertNotNull(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+        assertNotNull(com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK_ITEM);
         assertNotNull(TinkerWorld.rawCobalt);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
