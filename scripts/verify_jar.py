@@ -84,6 +84,17 @@ with zipfile.ZipFile(jar) as z:
         assert original['material'] == 'tconstruct:' + metal
         assert original['needed'] == original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_ingots'
+    # Stage three: seven authentic nugget material recipes, 9 items = 1 unit.
+    assert 'com/radi/radisconstruct/material/PartBuilderNuggetIngredients.class' in names
+    assert 'com/radi/radisconstruct/material/PartBuilderMaterialInputs.class' in names
+    assert 'com/radi/radisconstruct/material/PartBuilderMaterialInputs$Match.class' in names
+    nugget_manifest = json.loads(z.read('assets/radisconstruct/upstream_part_builder_nuggets.json'))
+    assert nugget_manifest['count'] == 7
+    for metal, original in nugget_manifest['nuggets'].items():
+        assert original['material'] == 'tconstruct:' + metal
+        assert original['needed'] == 9 and original['value'] == 1
+        assert original['ingredient']['tag'] == 'c:' + metal + '_nuggets'
+        assert 'leftover' not in original
     # Stage-two inventory routing is a compiled server component, not just GUI text.
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting.class' in names
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting$Range.class' in names
