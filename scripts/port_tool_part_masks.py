@@ -20,7 +20,7 @@ for part, definition in models.items():
     source = assets / namespace / "textures" / (sprite + ".png")
     if not source.is_file():
         raise SystemExit(f"Missing upstream sprite mask for {part}: {source}")
-    target = destination / namespace / "textures" / (sprite + ".png")
+    target = destination / "assets" / namespace / "textures" / (sprite + ".png")
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     report[part] = {
