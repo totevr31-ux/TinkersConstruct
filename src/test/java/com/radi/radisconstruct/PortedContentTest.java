@@ -121,6 +121,8 @@ public class PortedContentTest {
                     assertTrue(roundTrip.contains("minecraft:silk_touch"));
                     assertTrue(roundTrip.contains("minecraft:fortune"));
                     assertTrue(roundTrip.contains("tconstruct:raw_cobalt"));
+                } else if (path.getFileName().toString().equals("part_builder.json")) {
+                    assertTrue(roundTrip.contains("tconstruct:part_builder"));
                 } else assertTrue(roundTrip.contains("minecraft:survives_explosion"));
                 checked++;
             }
@@ -142,6 +144,12 @@ public class PortedContentTest {
         var input = new net.minecraft.world.SimpleContainer(3);
         input.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 2));
         input.setItem(1, new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+        assertTrue(com.radi.radisconstruct.material.PartBuilderIngotIngredients.matches(input.getItem(0), metal),
+            "Original cobalt ingot must be tagged as c:cobalt_ingots");
+        assertTrue(com.radi.radisconstruct.material.PartBuilderPatternMatcher.matches(input.getItem(1),
+            "pick_head", "tconstruct:pick_head"), "Original reusable Pattern must match");
+        assertTrue(com.radi.radisconstruct.material.PartBuilderInventoryTransaction.previewExact(
+            "pick_head", metal, 2, 1).accepted(), "Original pick-head material cost");
         var before = com.radi.radisconstruct.material.PartBuilderIngotStation.capture(input.getItem(0));
         assertTrue(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(input, 0, 1, 2,
             before, "pick_head", metal, "tconstruct:pick_head", 1));
