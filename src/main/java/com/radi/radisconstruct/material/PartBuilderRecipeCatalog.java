@@ -45,6 +45,19 @@ public final class PartBuilderRecipeCatalog {
         }
     }
 
+    public static final String BUILD_TYPE = "tconstruct:part_builder";
+    public static final String RECYCLING_TYPE = "tconstruct:part_builder_tool_recycling";
+
+    /** The authentic part-building recipes (not tool-recycling), still reference-only. */
+    public Map<String, JsonObject> buildingRecipes() {
+        return byType(BUILD_TYPE);
+    }
+
+    /** Distinct original recycling recipes; never treat these as part production. */
+    public Map<String, JsonObject> recyclingRecipes() {
+        return byType(RECYCLING_TYPE);
+    }
+
     public int size() { return recipes.size(); }
 
     /** Filter exact original recipe types, preserving upstream order and data. */
