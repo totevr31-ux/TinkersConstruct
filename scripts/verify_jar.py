@@ -75,6 +75,15 @@ with zipfile.ZipFile(jar) as z:
     assert len(parts['part_stats_type']) == 14
     assert parts['part_stats_type']['tool_binding'] == 'ExtraMaterialStats'
     assert parts['part_stats_type']['bowstring'] == 'BowstringMaterialStats'
+    # Original 7 Hephaestus tconstruct:material ingot inputs.
+    assert 'com/radi/radisconstruct/material/PartBuilderIngotIngredients.class' in names
+    assert 'com/radi/radisconstruct/material/PartBuilderIngotStation.class' in names
+    ingot_manifest = json.loads(z.read('assets/radisconstruct/upstream_part_builder_ingots.json'))
+    assert ingot_manifest['count'] == 7
+    for metal, original in ingot_manifest['ingots'].items():
+        assert original['material'] == 'tconstruct:' + metal
+        assert original['needed'] == original['value'] == 1
+        assert original['ingredient']['tag'] == 'c:' + metal + '_ingots'
     # Part Builder's original blank Pattern is now registered and packed.
     for name in (
         'com/radi/radisconstruct/material/PartBuilderPatternItems.class',
