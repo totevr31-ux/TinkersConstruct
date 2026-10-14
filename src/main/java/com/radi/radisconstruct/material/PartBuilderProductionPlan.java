@@ -31,19 +31,7 @@ public final class PartBuilderProductionPlan {
                     requestedParts, parts, stats);
     }
 
-    public static Plan plan(String partId, MaterialVariantId material, int availableUnits,
-                            int canonicalCostPerPart, int requestedParts,
-                            ToolPartCatalog parts, MaterialStatsCatalog stats) {
-        Objects.requireNonNull(parts, "parts");
-        Objects.requireNonNull(stats, "stats");
-        var budget = PartBuilderMaterialBudget.simulateUpTo(
-            availableUnits, canonicalCostPerPart, requestedParts);
-        boolean validPart = PartBuilderOutput.canProduce(partId, material, parts, stats);
-        if (!validPart || !budget.craftable())
-            return new Plan(false, partId, material, availableUnits, 0);
-        return new Plan(true, partId, material, budget.remaining(), budget.outputCount());
-    }
-}    public static Plan planExact(String partId, MaterialVariantId material, int availableUnits,
+    public static Plan planExact(String partId, MaterialVariantId material, int availableUnits,
                                  int canonicalCostPerPart, int requestedParts,
                                  ToolPartCatalog parts, MaterialStatsCatalog stats) {
         Objects.requireNonNull(parts, "parts");
