@@ -139,7 +139,7 @@ public class PortedContentTest {
     }
     @Test void realPartBuilderTransactionConsumesIngotButPreservesPattern() {
         var metal = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
-        var input = new SimpleContainer(3);
+        var input = new net.minecraft.world.SimpleContainer(3);
         input.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 2));
         input.setItem(1, new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
         var before = com.radi.radisconstruct.material.PartBuilderIngotStation.capture(input.getItem(0));
