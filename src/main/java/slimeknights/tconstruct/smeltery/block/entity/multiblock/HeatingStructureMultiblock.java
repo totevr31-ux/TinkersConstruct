@@ -102,6 +102,10 @@ public abstract class HeatingStructureMultiblock<T extends BlockEntity & IMaster
    * Checks if this structure can expand up by one block
    * @return  True if this structure can expand
    */
+  public boolean canExpand(StructureData data, Level world) {
+    return canExpand(data, MultiblockWorldView.of(world));
+  }
+
   public boolean canExpand(StructureData data, MultiblockWorldView world) {
     // note that if the structure has neither a floor nor ceiling, this will only expand upwards
     // I really doubt we ever will want a structure with neither... if we did they can override this logic

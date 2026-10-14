@@ -85,6 +85,13 @@ public abstract class MultiblockCuboid<T extends MultiblockStructureData> {
   public MultiblockResult getLastResult() { return lastResult; }
   protected void setLastResult(MultiblockResult result) { lastResult = result; }
 
+  public boolean isInnerBlock(Level world, BlockPos pos) {
+    return isInnerBlock(MultiblockWorldView.of(world), pos);
+  }
+  public boolean shouldUpdate(Level world, MultiblockStructureData data, BlockPos pos, BlockState state) {
+    return shouldUpdate(MultiblockWorldView.of(world), data, pos, state);
+  }
+
   public T detectMultiblock(Level world, BlockPos master, Direction facing) {
     return detectMultiblock(MultiblockWorldView.of(world), master, facing);
   }
