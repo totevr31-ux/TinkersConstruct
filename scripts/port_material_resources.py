@@ -214,12 +214,46 @@ write('data/tconstruct/loot_table/blocks/smeltery_controller.json', {
 for tag, values in (
     ('seared_blocks', ['tconstruct:seared_bricks']),
     ('smeltery/floor', ['tconstruct:seared_bricks']),
-    ('smeltery/wall', ['tconstruct:seared_bricks']),
-    ('smeltery/tanks', []),
+    ('smeltery/wall', ['tconstruct:seared_bricks', 'tconstruct:seared_fuel_tank']),
+    ('smeltery/tanks', ['tconstruct:seared_fuel_tank']),
+    ('seared_tanks', ['tconstruct:seared_fuel_tank']),
     ('smeltery', ['#tconstruct:smeltery/floor',
                   '#tconstruct:smeltery/wall', '#tconstruct:smeltery/tanks']),
 ):
     write(f'data/tconstruct/tags/block/{tag}.json', {'replace': False, 'values': values})
+
+
+# Stage 1H: original four-bucket Seared Fuel Tank graphics/identifiers.
+# The upstream tank_knob loader is a legacy custom renderer: retain its
+# vanilla cube + knob geometry, while deferring dynamic fluid visualization.
+name = 'seared_fuel_tank'
+for part in (f'blockstates/{name}.json', f'models/item/{name}.json',
+             'models/block/smeltery/tank/fuel_tank.json'):
+    copy(f'main/resources/{asset}/{part}', f'{asset}/{part}')
+write(f'{asset}/items/{name}.json',
+      {'model': {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}})
+tank_template = json.loads((UPSTREAM /
+    f'main/resources/{asset}/models/block/template/tank_knob.json').read_text())
+for unsupported in ('loader', 'fluid'):
+    tank_template.pop(unsupported, None)
+# The legacy 'gui' custom model extension is omitted pending Mantle migration.
+tank_template.pop('gui', None)
+write(f'{asset}/models/block/template/tank_knob.json', tank_template)
+for texture in ('fuel_tank', 'tank_top'):
+    rel = f'textures/block/smeltery/tank/{texture}.png'
+    copy(f'main/resources/{asset}/{rel}', f'{asset}/{rel}')
+translations['block.tconstruct.seared_fuel_tank'] = lang_source['block.tconstruct.seared_fuel_tank']
+# Vanilla drops until the original component-aware tank item is ported.
+write('data/tconstruct/loot_table/blocks/seared_fuel_tank.json', {
+    'type': 'minecraft:block',
+    'pools': [{'rolls': 1.0, 'bonus_rolls': 0.0,
+               'condition': {'type': 'minecraft:survives_explosion'},
+               'entries': [{'type': 'minecraft:item', 'name': 'tconstruct:seared_fuel_tank'}]}]
+})
+# Keep the exact upstream lava recipe data for parity tests without activating
+# a non-registered tconstruct:melting_fuel JSON serializer in the live datapack.
+copy('generated/resources/data/tconstruct/recipes/smeltery/melting/fuel/lava.json',
+     'assets/radisconstruct/reference/smeltery/lava_fuel.json')
 
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
@@ -228,7 +262,7 @@ for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
     if tag == 'mineable/pickaxe':
-        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller'))
+        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller', 'tconstruct:seared_fuel_tank'))
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})

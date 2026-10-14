@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +26,9 @@ import slimeknights.tconstruct.smeltery.block.controller.SmelteryControllerBlock
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.HeatingStructureMultiblock;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.MultiblockResult;
 import slimeknights.tconstruct.smeltery.block.entity.multiblock.SmelteryMultiblock;
+import slimeknights.tconstruct.smeltery.block.entity.module.FuelModule;
+import slimeknights.tconstruct.smeltery.block.entity.module.NativeFuelContext;
+import slimeknights.tconstruct.smeltery.block.entity.module.NativeMeltingFuelLookup;
 import slimeknights.tconstruct.smeltery.block.entity.tank.FluidStack;
 import slimeknights.tconstruct.smeltery.block.entity.tank.IDisplayFluidListener;
 import slimeknights.tconstruct.smeltery.block.entity.tank.ISmelteryTankHandler;
@@ -44,15 +48,24 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     private static final String STRUCTURE_TAG = "structure";
     private static final String FLUIDS_TAG = "tank_fluids";
     private static final String CAPACITY_TAG = "tank_capacity";
+    private static final String FUEL_MODULE_TAG = "fuel_module";
     /** Upstream SmelteryBlockEntity: 12 ingots of fluid storage per interior block. */
     private static final long CAPACITY_PER_BLOCK = FluidConstants.INGOT * 12;
     /** Upstream SmelteryBlockEntity: per 15 wall blocks the fuel cost increases. */
     private static final int BLOCKS_PER_FUEL = 15;
     private final SmelteryTank<SmelteryControllerBlockEntity> tank = new SmelteryTank<>(this);
     private final List<WeakReference<IDisplayFluidListener>> displayListeners = new ArrayList<>();
+    private HeatingStructureMultiblock.StructureData structure;
+    /**
+     * Original fuel-search module wired to native sided fluid storage.
+     * Fuel is only PREVIEWED until melting/alloying demand is implemented:
+     * original SmelteryBlockEntity only consumes a new fuel charge when work exists.
+     */
+    private final FuelModule fuelModule = new FuelModule(
+        new NativeFuelContext(this, new SimpleContainer(0), NativeMeltingFuelLookup::find),
+        () -> structure == null ? List.of() : structure.getTanks());
     private int fuelRate = 81;
     private final SmelteryMultiblock<SmelteryControllerBlockEntity> detector = new SmelteryMultiblock<>(this);
-    private HeatingStructureMultiblock.StructureData structure;
     private boolean needsStructureCheck = true;
 
     public SmelteryControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -127,6 +140,15 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
 
     public int getFuelRate() { return fuelRate; }
 
+    public FuelModule getFuelModule() { return fuelModule; }
+
+    /** Non-consuming fuel-temperature probe; does not start a heating cycle. */
+    public int getAvailableFuelTemperature() {
+        Level world = level;
+        if (world == null || world.isClientSide() || structure == null || !structure.hasTanks()) return 0;
+        return fuelModule.hasFuel() ? fuelModule.getTemperature() : fuelModule.findFuel(false);
+    }
+
     public MultiblockResult getLastStructureResult() {
         return detector.getLastResult();
     }
@@ -199,6 +221,7 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         if (structure != null) out.store(STRUCTURE_TAG, CompoundTag.CODEC, structure.writeToTag());
         out.store(FLUIDS_TAG, FluidStack.CODEC.listOf(), tank.getFluids());
         out.putLong(CAPACITY_TAG, tank.getCapacity());
+        out.store(FUEL_MODULE_TAG, CompoundTag.CODEC, fuelModule.writeToTag(new CompoundTag()));
     }
 
     @Override
@@ -208,6 +231,7 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
             .map(detector::readFromTag).orElse(null);
         tank.setFluids(in.read(FLUIDS_TAG, FluidStack.CODEC.listOf()).orElseGet(List::of));
         tank.setCapacity(Math.max(0L, in.getLong(CAPACITY_TAG).orElse(0L)));
+        fuelModule.readFromTag(in.read(FUEL_MODULE_TAG, CompoundTag.CODEC).orElseGet(CompoundTag::new));
         needsStructureCheck = true;
     }
 }

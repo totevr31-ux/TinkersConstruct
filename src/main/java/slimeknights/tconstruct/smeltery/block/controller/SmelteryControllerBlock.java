@@ -77,7 +77,8 @@ public final class SmelteryControllerBlock extends BaseEntityBlock {
             if (structure != null) {
                 ((ServerPlayer)player).sendSystemMessage(Component.literal("Smeltery formed: "
                     + structure.getInnerX() + " x " + structure.getInnerY() + " x " + structure.getInnerZ()
-                    + " interior blocks. Melting/casting still being ported."));
+                    + " interior blocks; fuel heat (preview): " + controller.getAvailableFuelTemperature()
+                    + " C. Melting/casting still being ported."));
             } else {
                 var result = controller.getLastStructureResult();
                 ((ServerPlayer)player).sendSystemMessage(Component.literal(

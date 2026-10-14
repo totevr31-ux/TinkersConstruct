@@ -120,7 +120,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(11, checked);
+        assertEquals(12, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {
