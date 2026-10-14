@@ -11,5 +11,13 @@
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/MultiblockWorldView.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/SmelteryMultiblock.class",
   "slimeknights/tconstruct/smeltery/block/entity/multiblock/SmelteryStructureTags.class",
-  "slimeknights/tconstruct/smeltery/block/entity/multiblock/StructureTagUtil.class"
+  "slimeknights/tconstruct/smeltery/block/entity/multiblock/StructureTagUtil.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/FluidStack.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/IDisplayFluidListener.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/ISmelteryTankHandler$FluidChange.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/ISmelteryTankHandler.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank$Change.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank$FluidSnapshot.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank$FluidStackSlot.class",
+  "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank.class"
 ]
