@@ -69,4 +69,42 @@ public class OriginalIngotInputsTest {
         assertFalse(PartBuilderIngotIngredients.matches(
             new ItemStack(Items.STICK), new MaterialVariantId("tconstruct","cobalt","polished")));
     }
+    @Test void originalNuggetCatalogUsesNinePhysicalItemsPerMaterialUnit() throws Exception {
+        var index = JsonParser.parseString(Files.readString(Path.of(
+            "build/portedResources/assets/radisconstruct/upstream_part_builder_nuggets.json"
+        ))).getAsJsonObject();
+        assertEquals(7, index.get("count").getAsInt());
+        var entries = com.radi.radisconstruct.material.PartBuilderNuggetIngredients.load();
+        assertEquals(7, entries.size());
+        for (var entry : index.getAsJsonObject("nuggets").entrySet()) {
+            String metal = entry.getKey();
+            var copied = entry.getValue().getAsJsonObject();
+            var upstream = JsonParser.parseString(
+                Files.readString(Path.of(copied.get("source").getAsString()))).getAsJsonObject();
+            assertEquals(upstream.get("ingredient"), copied.get("ingredient"), metal);
+            assertEquals(upstream.get("needed"), copied.get("needed"), metal);
+            assertEquals(upstream.get("value"), copied.get("value"), metal);
+            assertEquals(upstream.get("material"), copied.get("material"), metal);
+            assertEquals(new MaterialVariantId("tconstruct", metal, ""), entries.get(metal).material());
+            assertEquals(9, entries.get(metal).needed(), metal);
+            assertEquals(1, entries.get(metal).value(), metal);
+            assertEquals("c:" + metal + "_nuggets", entries.get(metal).ingredientTag().toString());
+        }
+    }
+
+    @Test void physicalMaterialCostNeverRoundsNuggetsUpOrDown() {
+        var mat = new MaterialVariantId("tconstruct", "cobalt", "");
+        var nugget = new com.radi.radisconstruct.material.PartBuilderMaterialInputs.Match(mat, 9);
+        var ingot = new com.radi.radisconstruct.material.PartBuilderMaterialInputs.Match(mat, 1);
+        assertEquals(0, nugget.availableUnits(new ItemStack(Items.IRON_NUGGET, 8)));
+        assertEquals(1, nugget.availableUnits(new ItemStack(Items.IRON_NUGGET, 9)));
+        assertEquals(2, nugget.availableUnits(new ItemStack(Items.IRON_NUGGET, 20)));
+        assertEquals(18, nugget.itemsForUnits(2));
+        assertEquals(2, ingot.itemsForUnits(2));
+        assertThrows(IllegalArgumentException.class, () -> nugget.itemsForUnits(-1));
+        assertThrows(ArithmeticException.class, () -> nugget.itemsForUnits(Integer.MAX_VALUE));
+        assertThrows(IllegalArgumentException.class,
+            () -> new com.radi.radisconstruct.material.PartBuilderMaterialInputs.Match(mat, 8));
+    }
+
 }

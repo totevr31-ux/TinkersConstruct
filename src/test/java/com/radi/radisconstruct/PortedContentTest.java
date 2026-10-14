@@ -235,4 +235,66 @@ public class PortedContentTest {
         assertEquals(1, table.getItem(1).getCount());
     }
 
+    @Test void allSevenNuggetsCraftCanonicalPartWithoutEatingChangeOrPattern() {
+        String[] names = {"cobalt", "manyullyn", "amethyst_bronze", "rose_gold",
+            "hepatizon", "slimesteel", "pig_iron"};
+        for (int i = 0; i < names.length; ++i) {
+            var material = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", names[i], "");
+            var station = new net.minecraft.world.SimpleContainer(3);
+            station.setItem(0, new ItemStack(TinkerMaterials.METALS.get(i).nugget(), 20));
+            station.setItem(1, new ItemStack(
+                com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+            var input = com.radi.radisconstruct.material.PartBuilderMaterialInputs.resolve(station.getItem(0));
+            assertNotNull(input, names[i] + " nuggets must match their original tag");
+            assertEquals(material, input.material(), names[i]);
+            assertEquals(9, input.itemsPerUnit(), names[i]);
+            assertEquals(2, input.availableUnits(station.getItem(0)), names[i]);
+            assertTrue(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.isSupportedMaterial(
+                station.getItem(0)), names[i] + " shift-click routing");
+            assertTrue(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(
+                station, 0, 1, 2,
+                com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+                "pick_head", material, "tconstruct:pick_head", 1), names[i]);
+            assertEquals(2, station.getItem(0).getCount(), "18 nuggets spent, 2 remain: " + names[i]);
+            assertEquals(1, station.getItem(1).getCount(), "Reusable pattern: " + names[i]);
+            assertEquals(id("tconstruct:pick_head"),
+                BuiltInRegistries.ITEM.getKey(station.getItem(2).getItem()), names[i]);
+            assertEquals(material,
+                com.radi.radisconstruct.material.MaterialStackData.read(station.getItem(2)),
+                names[i]);
+            station.setItem(2, ItemStack.EMPTY);
+            assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(
+                station, 0, 1, 2,
+                com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+                "pick_head", material, "tconstruct:pick_head", 1),
+                "Two leftover nuggets cannot yield a new 2-unit part: " + names[i]);
+            assertEquals(2, station.getItem(0).getCount(), names[i]);
+        }
+    }
+
+    @Test void nuggetsNeverSubstituteWrongMetalOrMakePartWithEightPieces() {
+        var cobalt = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
+        var manyullyn = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "manyullyn", "");
+        var station = new net.minecraft.world.SimpleContainer(3);
+        station.setItem(0, new ItemStack(TinkerMaterials.cobalt.nugget(), 8));
+        station.setItem(1, new ItemStack(
+            com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+        assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+            com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+            "pick_head", cobalt, "tconstruct:pick_head", 1));
+        assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+            com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+            "pick_head", manyullyn, "tconstruct:pick_head", 1));
+        assertEquals(8, station.getItem(0).getCount());
+        assertTrue(station.getItem(2).isEmpty());
+        // An input with a full output must never lose any items, even with 36 nuggets.
+        station.setItem(0, new ItemStack(TinkerMaterials.cobalt.nugget(), 36));
+        station.setItem(2, com.radi.radisconstruct.material.PartBuilderOutput.createOutput("pick_head", cobalt));
+        assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+            com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+            "pick_head", cobalt, "tconstruct:pick_head", 1));
+        assertEquals(36, station.getItem(0).getCount());
+    }
+
+
 }

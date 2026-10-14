@@ -7,7 +7,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Server-thread transaction for original ingot input -> material tool part.
  * Uses the real Hephaestus tconstruct:material ingredient tags, unlike the
- * earlier custom-Material-NBT-only foundation. The reusable Pattern remains
+ * earlier custom-Material-NBT-only foundation. Ingot and nugget denominations
+ * are converted to whole units without rounding their physical costs.
+ * The reusable Pattern remains
  * in its slot, as in the original Part Builder.
  *
  * This is a station integration API, NOT a block/menu implementation.
@@ -52,12 +54,16 @@ public final class PartBuilderIngotStation {
             || patternSlot == outputSlot) return false;
 
         ItemStack input = inventory.getItem(inputSlot);
-        if (!initial.matches(input) || !PartBuilderIngotIngredients.matches(input, material)
+        PartBuilderMaterialInputs.Match denomination = PartBuilderMaterialInputs.resolve(input);
+        if (!initial.matches(input) || denomination == null
+            || !denomination.material().equals(material)
             || !PartBuilderPatternMatcher.matches(
                 inventory.getItem(patternSlot), partId, selectedShape)) return false;
 
+        // Count complete upstream units only. Example: 20 nuggets are 2 units,
+        // so a 2-unit head consumes 18 and leaves the last two untouched.
         var preview = PartBuilderInventoryTransaction.previewExact(
-            partId, material, input.getCount(), requestedParts);
+            partId, material, denomination.availableUnits(input), requestedParts);
         if (!preview.accepted() || preview.consumedUnits() <= 0
             || !PartBuilderOutput.canProduce(partId, material,
                 ToolPartCatalog.load(), MaterialStatsCatalog.load())) return false;
@@ -70,8 +76,10 @@ public final class PartBuilderIngotStation {
         if (!PartBuilderStationSlots.canInsert(previousOutput, produced)) return false;
 
         // All checks pass before either live slot is written.
+        int itemsToConsume = denomination.itemsForUnits(preview.consumedUnits());
+        if (itemsToConsume <= 0 || itemsToConsume > input.getCount()) return false;
         ItemStack nextInput = input.copy();
-        nextInput.shrink(preview.consumedUnits());
+        nextInput.shrink(itemsToConsume);
         ItemStack nextOutput = previousOutput.isEmpty() ? produced : previousOutput.copy();
         if (!previousOutput.isEmpty()) nextOutput.grow(produced.getCount());
         inventory.setItem(inputSlot, nextInput);
