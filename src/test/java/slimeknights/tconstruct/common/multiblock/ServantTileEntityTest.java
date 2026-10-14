@@ -11,6 +11,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -34,7 +35,8 @@ class ServantTileEntityTest {
   }
   static class Master extends BlockEntity implements IMasterLogic {
     int notifications; IServantLogic sender; BlockPos changed; BlockState state;
-    Master(BlockPos pos) { super(BlockEntityTypes.FURNACE,pos,Blocks.FURNACE.defaultBlockState()); }
+    Master(BlockPos pos) { this(pos,BlockEntityTypes.FURNACE,Blocks.FURNACE.defaultBlockState()); }
+    Master(BlockPos pos, BlockEntityType<?> type, BlockState state) { super(type,pos,state); }
     public void notifyChange(IServantLogic servant,BlockPos pos,BlockState state) {
       notifications++; sender=servant; changed=pos; this.state=state;
     }
@@ -71,8 +73,9 @@ class ServantTileEntityTest {
   }
   @Test void samePositionRefreshesStoredControllerBlock() {
     var w=new World(); var m=w.master(0); var s=new Servant(w); s.setPotentialMaster(m);
-    m.setBlockState(Blocks.BLAST_FURNACE.defaultBlockState()); w.blocks.put(m.getBlockPos(),m.getBlockState());
-    s.setPotentialMaster(m); assertTrue(s.isValidMaster(m));
+    var replacement=new Master(m.getBlockPos(),BlockEntityTypes.BLAST_FURNACE,Blocks.BLAST_FURNACE.defaultBlockState());
+    w.blocks.put(replacement.getBlockPos(),replacement.getBlockState()); w.entities.put(replacement.getBlockPos(),replacement);
+    s.setPotentialMaster(replacement); assertTrue(s.isValidMaster(replacement));
     assertEquals("minecraft:blast_furnace",s.save().getStringOr("masterBlock",""));
   }
   @Test void nativePersistenceRetainsOriginalPositionAndBlockKeys() {
