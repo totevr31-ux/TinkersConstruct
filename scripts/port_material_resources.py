@@ -258,3 +258,5 @@ runpy.run_path(str(ROOT / 'scripts/index_upstream_tinker_station_blueprints.py')
 runpy.run_path(str(ROOT / 'scripts/report_part_builder_recipe_shapes.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/validate_tool_part_masks.py'), run_name='__main__')
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
+
+runpy.run_path(str(ROOT / 'scripts/port_tool_traits.py'), run_name='__main__')

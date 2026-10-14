@@ -41,7 +41,11 @@ with zipfile.ZipFile(jar) as z:
                         'slimeknights/tconstruct/shared/TinkerMaterials$MetalItems.class',
                         'slimeknights/tconstruct/world/TinkerWorld.class',
                         'slimeknights/tconstruct/tools/MeleeHarvestToolStatsBuilder.class',
-                        'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class'}
+                        'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Entry.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Builder.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ToolStack.class'}
     assert {n for n in names if n.startswith('slimeknights/') and n.endswith('.class')} == expected_classes
     manifest = json.loads(z.read('radisconstruct-port-manifest.json'))
     for name, source in manifest['copied_resources'].items():
@@ -113,6 +117,11 @@ with zipfile.ZipFile(jar) as z:
     assert 'slimeknights/tconstruct/tools/MeleeHarvestToolStatsBuilder.class' in names
     assert 'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/OriginalToolTraits.class' in names
+    for material in ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon', 'slimesteel', 'pig_iron'):
+        original = root / f'upstream/Hephaestus/src/generated/resources/data/tconstruct/tinkering/materials/traits/{material}.json'
+        assert z.read(f'assets/radisconstruct/original_tool_traits/{material}.json') == original.read_bytes()
+    assert len(json.loads(z.read('assets/radisconstruct/original_tool_traits/priorities.json'))) == 9
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeBaseStats.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation$Plan.class' in names

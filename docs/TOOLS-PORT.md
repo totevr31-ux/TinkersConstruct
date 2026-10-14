@@ -27,3 +27,27 @@ hooks before enabling a finished pickaxe output. Original pickaxe always has
 piercing, and supported materials add further traits. A base-only item would
 violate the parity requirement. Porting original harvest behavior and repair
 follows that foundation. No dependency on changes to the Smeltery branch here.
+
+## Trait and damage core increment
+
+Ported ModifierNBT's immutable entries, mutation, level merging, stable descending
+priority order and original short-level NBT format. OriginalToolTraits uses seven
+byte-for-byte original trait resources, their exact per-stat/group/default fallback,
+and nine priorities derived from original Java/JSON. Pickaxe rebuilding combines
+upgrades, intrinsic piercing, then each material's traits exactly once.
+
+ToolStack now ports the material/modifier accessors, trait-merging stage and damage
+core to CUSTOM_DATA. It retains Damage/tic_broken/tic_stats names; damage reaching
+maximum never consumes the stack. Lower damage clears the broken flag. Stats must
+already exist; this stage does not invent or install final statistics. Unknown
+modifier dependencies fail before writing, rather than dropping effects.
+
+Tests cover all-three-part contributions, grouping fallback and empty overrides,
+priority stability, duplicate merging, repeated rebuilds, short-level serialization,
+break/unbreak state, persisted materials/modifiers/damage, and rejection without
+mutation. These are core/codec tests, not gameplay or recipe-repair tests.
+
+Still required: actual modifier hook execution (including lightweight stats,
+enhanced slots, piercing damage, overslime, and conditional traits), final
+rebuildStats, station output, harvest/combat/repair integration and rendering.
+No Smeltery dependency or changed files are introduced by this increment.
