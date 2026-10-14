@@ -39,6 +39,7 @@ public class PortedContentTest {
         // item registries for codec and datapack-tag validation.
         assertNotNull(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
         assertNotNull(com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK_ITEM);
+        assertEquals(14, com.radi.radisconstruct.material.ToolPartItems.all().size());
         assertNotNull(TinkerWorld.rawCobalt);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
@@ -51,6 +52,9 @@ public class PortedContentTest {
                 tags.put(TagKey.create(Registries.ITEM, id("c:" + name)), values);
             }
         }
+        // The original reusable Pattern tag is needed by Part Builder crafting.
+        tags.put(TagKey.create(Registries.ITEM, id("tconstruct:patterns/default")),
+            List.of(BuiltInRegistries.ITEM.get(id("tconstruct:pattern")).orElseThrow()));
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
@@ -133,4 +137,30 @@ public class PortedContentTest {
             assertNotNull(PlacedFeature.DIRECT_CODEC.parse(ops, placed).getOrThrow());
         }
     }
+    @Test void realPartBuilderTransactionConsumesIngotButPreservesPattern() {
+        var metal = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
+        var input = new SimpleContainer(3);
+        input.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 2));
+        input.setItem(1, new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+        var before = com.radi.radisconstruct.material.PartBuilderIngotStation.capture(input.getItem(0));
+        assertTrue(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(input, 0, 1, 2,
+            before, "pick_head", metal, "tconstruct:pick_head", 1));
+        assertTrue(input.getItem(0).isEmpty());
+        assertEquals(1, input.getItem(1).getCount(), "Original Pattern is reusable");
+        assertEquals(id("tconstruct:pick_head"), BuiltInRegistries.ITEM.getKey(input.getItem(2).getItem()));
+        assertEquals(metal, com.radi.radisconstruct.material.MaterialStackData.read(input.getItem(2)));
+        input.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 2));
+        assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(input, 0, 1, 2,
+            com.radi.radisconstruct.material.PartBuilderIngotStation.capture(input.getItem(0)),
+            "pick_head", metal, "tconstruct:pick_head", 1),
+            "Full output must not consume extra material");
+        assertEquals(2, input.getItem(0).getCount());
+        input.setItem(2, ItemStack.EMPTY);
+        assertFalse(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(input, 0, 1, 2,
+            com.radi.radisconstruct.material.PartBuilderIngotStation.capture(input.getItem(0)),
+            "pick_head", metal, "tconstruct:hammer_head", 1),
+            "Wrong selected shape must be rejected");
+        assertEquals(2, input.getItem(0).getCount());
+    }
+
 }
