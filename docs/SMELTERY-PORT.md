@@ -1,4 +1,4 @@
-# Smeltery port — stage 1A: original multiblock core
+# Smeltery port — stages 1A/1B: multiblock core and ordered tank
 
 Branch: `radisconstruct-smeltery`. Base: `0815a295a07d8d75bda0da6ac364d0d8144a5160`.
 
@@ -42,7 +42,7 @@ additional Smeltery classes while retaining the existing strict class-set compar
 
 Do not merge this branch into radisconstruct-stage1 until reviewed and all CI checks pass.
 
-## Verified build
+## Stage 1A verified build
 
 CI: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38512384798
 
@@ -77,3 +77,12 @@ fluid transfer, molten metal, fuel, heating, alloying or casting is available ye
 Nine storage tests cover shared capacity/order, outer/nested rollback, delayed callbacks,
 resource-bound slots, empty-slot binding rollback, capacity shrink, invalid input and
 long-amount NBT round trips. Existing multiblock and material tests run unchanged.
+
+## Stage 1B verified build
+
+CI: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38535658564
+
+Tested commit: `1e44277400458887a9353ccf47b12b2b9aa4a836`.
+21 tests passed: 9 tank, 7 multiblock and 5 existing material tests; none failed or skipped.
+JAR verification and production Fabric bootstrap passed. Bootstrap stops before world
+startup; no in-game controller, heating cycle or rendering has been tested.
