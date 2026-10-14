@@ -205,7 +205,7 @@ write('data/tconstruct/loot_table/blocks/smeltery_controller.json', {
     'type': 'minecraft:block',
     'pools': [{
         'rolls': 1.0, 'bonus_rolls': 0.0,
-        'condition': {'condition': 'minecraft:survives_explosion'},
+        'condition': {'type': 'minecraft:survives_explosion'},
         'entries': [{'type': 'minecraft:item', 'name': 'tconstruct:smeltery_controller'}]
     }]
 })
