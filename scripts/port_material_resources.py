@@ -156,6 +156,17 @@ for feature_type in ('configured_feature', 'placed_feature'):
             write(resource.replace('/configured_feature/', '/feature/'), feature)
         else:
             copy(f'generated/resources/{resource}', resource)
+# Original names for the 14 now-registered tool part item IDs.
+# Keep translations byte-for-byte equivalent to Hephaestus, without inventing
+# material-dependent rendered names before the client material renderer is ported.
+for part in (
+    'pick_head', 'hammer_head', 'small_axe_head', 'broad_axe_head',
+    'small_blade', 'broad_blade', 'round_plate', 'large_plate',
+    'bow_limb', 'bow_grip', 'bowstring', 'tool_binding',
+    'tool_handle', 'tough_handle',
+):
+    key = f'item.tconstruct.{part}'
+    translations[key] = lang_source[key]
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
