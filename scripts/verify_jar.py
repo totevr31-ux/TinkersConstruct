@@ -107,6 +107,11 @@ with zipfile.ZipFile(jar) as z:
         assert original['needed'] == 9 and original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_nuggets'
         assert 'leftover' not in original
+    assert 'assets/radisconstruct/original_tool_definitions/pickaxe.json' in names
+    assert 'slimeknights/tconstruct/tools/MeleeHarvestToolStatsBuilder.class' in names
+    assert 'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/PickaxeBaseStats.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation$Plan.class' in names
     # Stage-two inventory routing is a compiled server component, not just GUI text.

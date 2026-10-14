@@ -26,7 +26,8 @@ public final class PartBuilderMenu extends AbstractContainerMenu {
     public static final List<String> PART_IDS = PartBuilderRecipeCosts.load().all().keySet().stream()
         .filter(part -> {
             String type = ToolPartCatalog.load().all().get(part);
-            return "HeadMaterialStats".equals(type) || "HandleMaterialStats".equals(type);
+            return "HeadMaterialStats".equals(type) || "HandleMaterialStats".equals(type)
+            || "ExtraMaterialStats".equals(type);
         }).toList();
     private final Container station;
 

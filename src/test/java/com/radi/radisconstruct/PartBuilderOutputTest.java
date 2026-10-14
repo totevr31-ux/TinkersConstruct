@@ -14,6 +14,7 @@ public class PartBuilderOutputTest {
         var cobalt = new MaterialVariantId("tconstruct", "cobalt", "");
         var manyullyn = new MaterialVariantId("tconstruct", "manyullyn", "");
         assertTrue(PartBuilderOutput.canProduce("pick_head", cobalt, parts, stats));
+        assertTrue(PartBuilderOutput.canProduce("tool_binding", cobalt, parts, stats));
         assertTrue(PartBuilderOutput.canProduce("tool_handle", manyullyn, parts, stats));
         assertFalse(PartBuilderOutput.canProduce("bowstring", cobalt, parts, stats));
         assertFalse(PartBuilderOutput.canProduce("bow_limb", cobalt, parts, stats));
@@ -23,7 +24,7 @@ public class PartBuilderOutputTest {
         assertFalse(PartBuilderOutput.canProduce("pick_head",
             new MaterialVariantId("minecraft", "iron", ""), parts, stats));
         assertFalse(PartBuilderOutput.canProduce("pick_head", null, parts, stats));
-        // Creative inventory must not suggest unported limb/bowstring/extra stat systems.
+        // Creative inventory must not suggest unported limb/bowstring stat systems.
         int supported = 0;
         for (String part : parts.all().keySet()) {
             for (String metal : stats.all().keySet()) {

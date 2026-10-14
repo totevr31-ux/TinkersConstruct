@@ -386,4 +386,32 @@ public class PortedContentTest {
             .preview("nonexistent_tool", java.util.List.of()));
     }
 
+    @Test void pickaxePartsCraftAtOriginalCostThenPreviewAndSerializeMaterials() {
+        var material = com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:cobalt");
+        var station = new net.minecraft.world.SimpleContainer(3);
+        station.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        station.setItem(1, new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+        var parts = new ArrayList<ItemStack>();
+        for (String part : List.of("pick_head", "tool_handle", "tool_binding")) {
+            assertTrue(com.radi.radisconstruct.partbuilder.PartBuilderMenu.PART_IDS.contains(part));
+            assertTrue(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+                com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+                part, material, "tconstruct:" + part, 1));
+            parts.add(station.removeItem(2, 1));
+        }
+        assertTrue(station.getItem(0).isEmpty(), "Original costs: 2 + 1 + 1 ingots");
+        assertEquals(1, station.getItem(1).getCount(), "Pattern is reusable");
+        var plan = com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation.preview("pickaxe", parts);
+        assertNotNull(plan);
+        assertEquals(839, com.radi.radisconstruct.tinkerstation.PickaxeBaseStats.from(plan).durability());
+        assertTrue(plan.stillApplicable(parts), "Preview does not consume parts");
+        // A carrier tests the persistence adapter, not an implemented playable pickaxe.
+        var carrier = new ItemStack(Items.STICK);
+        var materials = new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(plan.materialsInOrder());
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(carrier, materials);
+        var encoded = ItemStack.CODEC.encodeStart(ops, carrier).getOrThrow();
+        var restored = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+        assertEquals(materials, com.radi.radisconstruct.tinkerstation.ToolMaterialData.read(restored));
+    }
+
 }

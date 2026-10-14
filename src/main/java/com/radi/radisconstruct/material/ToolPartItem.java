@@ -23,8 +23,9 @@ public class ToolPartItem extends MaterialItem {
 
     public boolean supportsMaterial(ItemStack stack, MaterialStatsCatalog stats) {
         MaterialVariantId variant = getMaterial(stack);
-        if (variant == null || !"tconstruct".equals(variant.namespace())) return false;
-        if (!("HeadMaterialStats".equals(statType) || "HandleMaterialStats".equals(statType))) return false;
+        if (variant == null || variant.hasVariant() || !"tconstruct".equals(variant.namespace())) return false;
+        if (!("HeadMaterialStats".equals(statType) || "HandleMaterialStats".equals(statType)
+            || "ExtraMaterialStats".equals(statType))) return false;
         return stats.all().containsKey(variant.path());
     }
 }
