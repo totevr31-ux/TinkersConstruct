@@ -13,6 +13,13 @@ public final class PartBuilderMaterialBudget {
      * Calculates the transaction without touching inventory. Callers must
      * atomically check and commit against server-side current slot contents.
      */
+    /** Maximum whole parts affordable at the canonical cost, without inventory mutation. */
+    public static int maximumCraftable(int availableUnits, int costPerPart) {
+        if (availableUnits < 0) throw new IllegalArgumentException("availableUnits must be nonnegative");
+        if (costPerPart <= 0) throw new IllegalArgumentException("costPerPart must be positive");
+        return availableUnits / costPerPart;
+    }
+
     public static Result simulate(int availableUnits, int costPerPart, int requestedParts) {
         if (availableUnits < 0) throw new IllegalArgumentException("availableUnits must be nonnegative");
         if (costPerPart <= 0) throw new IllegalArgumentException("costPerPart must be positive");
