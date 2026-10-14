@@ -212,4 +212,27 @@ public class PortedContentTest {
     }
 
 
+    @Test void partBuilderHopperInsertionMatchesGuiAndNeverTargetsOutput() {
+        var table = new com.radi.radisconstruct.partbuilder.PartBuilderBlockEntity(
+            BlockPos.ZERO,
+            com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK.defaultBlockState());
+        var metal = new ItemStack(TinkerMaterials.cobalt.ingot(), 2);
+        var pattern = new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+        var invalid = new ItemStack(Items.DIRT);
+        assertTrue(table.canPlaceItem(0, metal));
+        assertFalse(table.canPlaceItem(0, pattern));
+        assertFalse(table.canPlaceItem(0, invalid));
+        assertTrue(table.canPlaceItem(1, pattern));
+        assertFalse(table.canPlaceItem(1, metal));
+        assertFalse(table.canPlaceItem(2, metal));
+        assertFalse(table.canPlaceItem(2, pattern));
+        assertFalse(table.canPlaceItem(-1, metal));
+        assertFalse(table.canPlaceItem(3, metal));
+        table.setItem(0, metal.copy());
+        table.setItem(1, pattern.copy());
+        assertEquals(3, table.getContainerSize());
+        assertEquals(2, table.removeItem(0, 2).getCount());
+        assertEquals(1, table.getItem(1).getCount());
+    }
+
 }
