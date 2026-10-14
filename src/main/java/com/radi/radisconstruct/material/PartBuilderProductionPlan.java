@@ -12,16 +12,7 @@ public final class PartBuilderProductionPlan {
     public record Plan(boolean craftable, String partId, MaterialVariantId material,
                        int remainingUnits, int outputCount) {}
 
-    /**
-     * An all-or-nothing preview for a selected recipe. Unlike plan(), which
-     * deliberately reduces the requested batch to an affordable quantity,
-     * planExact() refuses a partial result.
-     */
-    /**
-     * Plans with the authentic Hephaestus recipe cost for the selected part.
-     * Pattern ingredient matching and inventory mutation belong to the station.
-     * Rejects parts with no original recipe.
-     */
+    /** Plans an affordable batch using the authentic original recipe cost. */
     public static Plan planFromOriginalRecipe(String partId, MaterialVariantId material,
                                               int availableUnits, int requestedParts,
                                               ToolPartCatalog parts, MaterialStatsCatalog stats) {
@@ -29,6 +20,16 @@ public final class PartBuilderProductionPlan {
         if (recipe == null) return new Plan(false, partId, material, availableUnits, 0);
         return plan(partId, material, availableUnits, recipe.materialUnits(),
                     requestedParts, parts, stats);
+    }
+
+    /** Strict all-or-nothing production plan using original Hephaestus recipe cost. */
+    public static Plan planExactFromOriginalRecipe(String partId, MaterialVariantId material,
+                                                   int availableUnits, int requestedParts,
+                                                   ToolPartCatalog parts, MaterialStatsCatalog stats) {
+        var recipe = PartBuilderRecipeCosts.load().find(partId);
+        if (recipe == null) return new Plan(false, partId, material, availableUnits, 0);
+        return planExact(partId, material, availableUnits, recipe.materialUnits(),
+                         requestedParts, parts, stats);
     }
 
     public static Plan planExact(String partId, MaterialVariantId material, int availableUnits,
