@@ -171,4 +171,45 @@ public class PortedContentTest {
         assertEquals(2, input.getItem(0).getCount());
     }
 
+    @Test void shiftClickRoutingHonorsOriginalPatternAndIngotTags() {
+        var routes = com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.class;
+        assertEquals(3, com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.STATION_SLOTS);
+        assertEquals(30, com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.HOTBAR_START);
+        assertEquals(39, com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.END);
+
+        ItemStack pattern = new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+        ItemStack metal = new ItemStack(TinkerMaterials.cobalt.ingot(), 4);
+        ItemStack irrelevant = new ItemStack(Items.DIRT);
+        var patternRoute = com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(3, pattern);
+        assertEquals(1, patternRoute.start());
+        assertEquals(2, patternRoute.end());
+        assertEquals(0, com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(30, metal).start());
+        assertFalse(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.isSupportedMaterial(irrelevant));
+
+        var normal = com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(3, irrelevant);
+        assertEquals(30, normal.start());
+        assertEquals(39, normal.end());
+        var fromHotbar = com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(38, irrelevant);
+        assertEquals(3, fromHotbar.start());
+        assertEquals(30, fromHotbar.end());
+
+        // All three station slots (including output) only target player inventory.
+        for (int i = 0; i < 3; i++) {
+            var station = com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(i, metal);
+            assertEquals(3, station.start());
+            assertEquals(39, station.end());
+            assertTrue(station.reverse());
+        }
+
+        assertNull(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(-1, metal));
+        assertNull(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(39, metal));
+        assertNull(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.primary(3, ItemStack.EMPTY));
+        assertNull(com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.playerFallback(2));
+        assertEquals(3, com.radi.radisconstruct.partbuilder.PartBuilderSlotRouting.playerFallback(30).start());
+        // Routing inspection must not consume either input item.
+        assertEquals(4, metal.getCount());
+        assertEquals(1, pattern.getCount());
+    }
+
+
 }
