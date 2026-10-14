@@ -48,7 +48,7 @@ public final class PartBuilderPatternMatcher {
             }
             if (ingredient.has("tag") && ingredient.get("tag").isJsonPrimitive()) {
                 Identifier tag = Identifier.parse(ingredient.get("tag").getAsString());
-                return stack.is(TagKey.create(Registries.ITEM, tag));
+                // Plain JVM tests do not load datapack tags; treat unbound tags\n                // as non-matches rather than crashing the whole transaction.\n                try {\n                    return stack.is(TagKey.create(Registries.ITEM, tag));\n                } catch (IllegalStateException unboundTags) {\n                    return false;\n                }
             }
         } catch (IllegalArgumentException exception) {
             return false;
