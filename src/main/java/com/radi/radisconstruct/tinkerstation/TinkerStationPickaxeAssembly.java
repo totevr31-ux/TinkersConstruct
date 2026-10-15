@@ -1,5 +1,6 @@
 package com.radi.radisconstruct.tinkerstation;
 
+import com.radi.radisconstruct.material.MaterialStackData;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -24,7 +25,8 @@ public final class TinkerStationPickaxeAssembly {
         for (int i = 0; i < original.parts().size(); i++) {
             var expected = original.parts().get(i);
             var part = plan.parts().get(i);
-            if (!expected.partId().equals(part.partId()) || expected.weight() != part.weight())
+            if (!expected.partId().equals(part.partId()) || expected.weight() != part.weight()
+                || !part.material().equals(MaterialStackData.read(part.identity())))
                 throw new IllegalArgumentException("Part layout differs from upstream pickaxe");
         }
         // A public Plan record can be constructed by other callers. Require
