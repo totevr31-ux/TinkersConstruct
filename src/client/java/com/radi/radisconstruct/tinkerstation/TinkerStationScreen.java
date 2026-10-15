@@ -22,11 +22,16 @@ public final class TinkerStationScreen extends AbstractContainerScreen<TinkerSta
 
     @Override protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("Assemble Pickaxe"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("Assemble"), button -> {
             if (minecraft != null && minecraft.gameMode != null)
                 minecraft.gameMode.handleInventoryButtonClick(
                     menu.containerId, TinkerStationMenu.BUILD_PICKAXE_BUTTON);
-        }).bounds(leftPos + 31, topPos + 58, 114, 20).build());
+        }).bounds(leftPos + 12, topPos + 58, 74, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Repair"), button -> {
+            if (minecraft != null && minecraft.gameMode != null)
+                minecraft.gameMode.handleInventoryButtonClick(
+                    menu.containerId, TinkerStationMenu.REPAIR_PICKAXE_BUTTON);
+        }).bounds(leftPos + 90, topPos + 58, 74, 20).build());
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
