@@ -6,6 +6,10 @@
 package slimeknights.tconstruct.smeltery.block.entity.module;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.core.HolderLookup;
@@ -19,6 +23,46 @@ public final class MeltingModuleInventory {
     private static final String TAG_ITEMS = "items";
     private static final String TAG_SLOT = "slot";
     private static final int MAX_SLOTS = 14 * 14 * 64;
+
+    /** Native codec, preserving the original inventory independently of world-load order. */
+    public record Entry(int slot, MeltingModule.Snapshot module) {
+        public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.fieldOf("slot").forGetter(Entry::slot),
+            MeltingModule.Snapshot.CODEC.fieldOf("module").forGetter(Entry::module)
+        ).apply(instance, Entry::new));
+    }
+    public record Snapshot(int size, List<Entry> items) {
+        public static final Codec<Snapshot> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.fieldOf("size").forGetter(Snapshot::size),
+            Entry.CODEC.listOf().fieldOf("items").forGetter(Snapshot::items)
+        ).apply(instance, Snapshot::new));
+    }
+
+    public Snapshot snapshot() {
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < modules.length; i++) {
+            if (modules[i] != null && !modules[i].getStack().isEmpty())
+                entries.add(new Entry(i, modules[i].snapshot()));
+        }
+        return new Snapshot(modules.length, List.copyOf(entries));
+    }
+
+    /** Atomic restore: verify all indices before mutating live inventory. */
+    public void restore(Snapshot saved) {
+        Objects.requireNonNull(saved);
+        if (saved.size() < 0 || saved.size() > MAX_SLOTS)
+            throw new IllegalArgumentException("Invalid melting inventory capacity");
+        MeltingModule[] next = new MeltingModule[saved.size()];
+        for (Entry entry : saved.items()) {
+            int i = entry.slot();
+            if (i < 0 || i >= saved.size() || next[i] != null)
+                throw new IllegalArgumentException("Invalid/duplicate melting slot " + i);
+            MeltingModule module = new MeltingModule(context);
+            module.restore(entry.module());
+            next[i] = module;
+        }
+        modules = next;
+    }
 
     private final MeltingModule.Context context;
     private MeltingModule[] modules;
