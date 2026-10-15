@@ -40,6 +40,9 @@ public class PortedContentTest {
         assertNotNull(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
         assertNotNull(com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK_ITEM);
         assertEquals(14, com.radi.radisconstruct.material.ToolPartItems.all().size());
+        com.radi.radisconstruct.tinkerstation.TinkerToolItems.initialize();
+        assertEquals(id("tconstruct:pickaxe"), BuiltInRegistries.ITEM.getKey(
+            com.radi.radisconstruct.tinkerstation.TinkerToolItems.PICKAXE));
         assertNotNull(TinkerWorld.rawCobalt);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
