@@ -120,6 +120,21 @@ public class TinkerStationAssemblyTransactionTest {
         assertNull(TinkerStationAssemblyTransaction.preview(slots, PART_SLOTS, 3));
     }
 
+    @Test void forgedPlansCannotInjectNonPartItemsIntoAuthenticToolOutput() {
+        SimpleContainer slots = station();
+        var valid = TinkerStationAssemblyValidation.preview("pickaxe",
+            PART_SLOTS.stream().map(slots::getItem).toList());
+        assertNotNull(valid);
+        var forged = new TinkerStationAssemblyValidation.Plan(valid.toolId(),
+            valid.outputCount(), List.of(
+                new TinkerStationAssemblyValidation.PartSnapshot("pick_head",
+                    valid.parts().get(0).material(), 1, new ItemStack(Items.DIRT)),
+                valid.parts().get(1), valid.parts().get(2)));
+        assertThrows(IllegalArgumentException.class,
+            () -> TinkerStationPickaxeAssembly.create(forged));
+        assertNotNull(TinkerStationPickaxeAssembly.create(valid));
+    }
+
     @Test void buildResultUsesAllSupportedMaterialsWithoutMutatingThePlan() {
         var materials = com.radi.radisconstruct.material.MaterialStatsCatalog.load().all().keySet();
         for (String head : materials) for (String handle : materials) for (String binding : materials) {
