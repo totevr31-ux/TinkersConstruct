@@ -52,8 +52,8 @@ public final class TinkerPickaxeTooltipLines {
             && tool.getMaterials().size() == 3;
     }
 
-    private static Component durability(ToolStack tool) {
-        if (tool.isBroken()) return Component.translatable("tooltip.tconstruct.tool.broken")
+    private static Component durability(ToolStack tool, boolean textIfBroken) {
+        if (textIfBroken && tool.isBroken()) return Component.translatable("tooltip.tconstruct.tool.broken")
             .withStyle(ChatFormatting.RED);
         return Component.translatable("radisconstruct.tooltip.pickaxe.durability",
             tool.getCurrentDurability(), tool.getMaxDurability())
@@ -61,7 +61,7 @@ public final class TinkerPickaxeTooltipLines {
     }
 
     private static void addDefault(ToolStack tool, Consumer<Component> out) {
-        if (!tool.isUnbreakable()) out.accept(durability(tool));
+        if (!tool.isUnbreakable()) out.accept(durability(tool, true));
         for (var modifier : tool.getModifiers().modifiers()) {
             if (!modifier.id().startsWith("tconstruct:")) continue;
             Component name = Component.translatable(
