@@ -111,3 +111,17 @@ The caller must supply its registered pickaxe identity from server code. Tests
 use the existing explicit STICK data carrier, not a playable substitute tool.
 This remains a station integration API; no item, menu or gameplay test is added.
 No Smeltery change or dependency.
+
+## Pickaxe base harvest queries
+
+Ported TagHarvestLogic and ToolHarvestLogic effectiveness/base-speed queries.
+The effective tag comes from the preserved pickaxe definition. Mining speed
+does not require sufficient tier; drop effectiveness does. Broken tools use
+0.3 speed and are ineffective. Vanilla tiers map to the current incorrect-for-tool
+block tags; unsupported custom tiers reject explicitly. ToolStack exposes a
+defensive stats copy. Tests use real BlockStates with isolated bound tag fixtures.
+
+These are queries for future item callbacks, not completed gameplay mining:
+conditional break-speed traits, drops, AOE, world events and the actual item
+remain unconnected. The previous repair inventory transaction passed CI run
+38665039650. No Smeltery files changed.

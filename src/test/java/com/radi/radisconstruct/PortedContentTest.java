@@ -62,6 +62,16 @@ public class PortedContentTest {
         items.bindAllTagsToEmpty();
         items.bindTags(tags);
         items.freeze(); // Finalize holder tag membership, as normal world loading does.
+        // Isolated harvest fixture: real BlockStates/holder tags, not a loaded world.
+        var blocks = (MappedRegistry<net.minecraft.world.level.block.Block>) BuiltInRegistries.BLOCK;
+        Map<TagKey<net.minecraft.world.level.block.Block>, List<Holder<net.minecraft.world.level.block.Block>>> blockTags = new HashMap<>();
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:mineable/pickaxe")),
+            List.of(blocks.get(id("minecraft:stone")).orElseThrow(), blocks.get(id("minecraft:obsidian")).orElseThrow()));
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_iron_tool")),
+            List.of(blocks.get(id("minecraft:obsidian")).orElseThrow()));
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_diamond_tool")), List.of());
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_netherite_tool")), List.of());
+        blocks.bindAllTagsToEmpty(); blocks.bindTags(blockTags); blocks.freeze();
         ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
@@ -558,5 +568,38 @@ public class PortedContentTest {
         var other = new net.minecraft.world.SimpleContainer(tool.copy(), inventory.getItem(1).copy(), ItemStack.EMPTY);
         assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(other, pending));
         assertEquals(1, other.getItem(1).getCount());
+    }
+
+    @Test void pickaxeSpeedUsesOriginalTagAndTierOnlyControlsEffectiveness() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var obsidian = net.minecraft.world.level.block.Blocks.OBSIDIAN.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone), 0.00001f);
+        assertEquals(1f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, dirt));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, obsidian));
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, dirt));
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, tag -> {
+            var stats = tool.getStats(); stats.putString("tconstruct:harvest_tier", "minecraft:iron"); tag.put("tic_stats", stats);
+        });
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, obsidian));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, obsidian), 0.00001f,
+            "Insufficient tier must not erase original mining speed bonus");
+    }
+
+    @Test void brokenPickaxeSpeedAndEffectivenessFollowOriginalRules() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        tool.setDamage(tool.getMaxDurability());
+        assertEquals(0.3f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone));
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        slimeknights.tconstruct.library.tools.helper.ToolDamageUtil.repair(tool, 1);
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        assertEquals(1f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(new ItemStack(Items.STICK), stone));
+        var copy = tool.getStats(); copy.putFloat("tconstruct:mining_speed", 999);
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone), 0.00001f);
     }
 }

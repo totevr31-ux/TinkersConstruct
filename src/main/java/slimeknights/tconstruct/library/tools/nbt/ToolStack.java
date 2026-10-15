@@ -52,6 +52,9 @@ public final class ToolStack {
             throw new IllegalStateException("Tool stats must be rebuilt before using durability");
         return (int)value;
     }
+    public CompoundTag getStats() {
+        return data().getCompound(TAG_STATS).orElseGet(CompoundTag::new).copy();
+    }
     public int getMaxDurability() { return durability(data()); }
     public boolean isUnbreakable() {
         return stack.has(DataComponents.UNBREAKABLE) || data().getBoolean("Unbreakable").orElse(false);
