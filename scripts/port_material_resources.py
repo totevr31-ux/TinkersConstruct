@@ -241,6 +241,51 @@ write('data/tconstruct/loot_table/blocks/part_builder.json', {
                'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
 })
 
+# First interactive original Tinker Station: use the authenticated server-side
+# head/handle/binding assembly. The original Mantle-specific table renderer is
+# not ported, so keep its authentic table geometry and original texture while
+# deleting only the custom-loader/retexturing metadata.
+upstream_station_model = json.loads(
+    (UPSTREAM / f'main/resources/{table}tinker_station.json').read_text())
+for unsupported in ('loader', 'retextured', 'items'):
+    upstream_station_model.pop(unsupported, None)
+write(f'{table}tinker_station.json', upstream_station_model)
+station_texture = f'{asset}/textures/block/table/tinker_station_top.png'
+copy(f'main/resources/{station_texture}', station_texture)
+copy(f'main/resources/{asset}/blockstates/tinker_station.json',
+     f'{asset}/blockstates/tinker_station.json')
+copy(f'main/resources/{asset}/models/item/tinker_station.json',
+     f'{asset}/models/item/tinker_station.json')
+write(f'{asset}/items/tinker_station.json',
+      {'model': {'type': 'minecraft:model',
+                 'model': 'tconstruct:item/tinker_station'}})
+translations['block.tconstruct.tinker_station'] = lang_source['block.tconstruct.tinker_station']
+translations['item.tconstruct.pickaxe'] = lang_source['item.tconstruct.pickaxe']
+write(f'{asset}/lang/en_us.json', translations)
+
+# Original 3x3 shaped Tinker Station recipe retains EXACT pattern/ingredients,
+# but cannot use unported Mantle's crafting_shaped_retextured codec. The
+# migrated vanilla serializer only drops that dynamic color matching feature.
+upstream_station_recipe = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/recipes/tables/tinker_station.json').read_text())
+assert upstream_station_recipe['pattern'] == ['ppp', 'w w', 'w w']
+assert upstream_station_recipe['result']['item'] == 'tconstruct:tinker_station'
+ported_station_recipe = {
+    'type': 'minecraft:crafting_shaped',
+    'category': upstream_station_recipe['category'],
+    'key': {key: ingredient(value) for key,value in upstream_station_recipe['key'].items()},
+    'pattern': upstream_station_recipe['pattern'],
+    'result': {'id': upstream_station_recipe['result']['item']},
+    'show_notification': upstream_station_recipe['show_notification'],
+}
+write('data/tconstruct/recipe/tables/tinker_station.json', ported_station_recipe)
+write('data/tconstruct/loot_table/blocks/tinker_station.json', {
+    'type': 'minecraft:block',
+    'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item',
+                                      'name': 'tconstruct:tinker_station'}],
+               'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
+})
+
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy
