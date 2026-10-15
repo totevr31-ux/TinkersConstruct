@@ -177,3 +177,31 @@ JAR must contain the new classes. This remains an API foundation, **not**
 a gameplay-tested station or a complete tool. Smeltery branch files stay
 untouched. Next: original ToolItem mining and combat callbacks, complete
 modifier hooks, then expose the assembly through the Tinker Station GUI.
+
+
+## Per-stack vanilla mining bridge for Minecraft 26.3
+
+The registered pickaxe now uses its own `TinkerPickaxeItem` subclass. During the
+original materials/traits/stats rebuild, `TinkerPickaxeMiningComponents` writes
+Minecraft 26.3's real `DataComponents.TOOL` to the assembled stack: its original
+mining speed, original source-definition effective block tag, and the correct
+tier-based denial tag. Drop tier restriction is checked independently of speed
+(the original TagHarvestLogic explicitly boosts speed even when drops are
+disallowed by the tier). On breaking, the component becomes 0.3 speed with
+no effective blocks; numeric repair restores the exact built mining data.
+
+Minecraft 26.3 uses the TOOL component for vanilla mining queries. We do not
+add a fixed vanilla ToolMaterial: original material combinations have distinct
+speeds and tiers. We do not enable vanilla damage-per-block (set to 0) because
+the original durability damage, Overslime and other modifier hooks must be
+integrated without deleting the tool stack on break.
+
+This increment is **not full gameplay parity**: ToolItem mined-block callbacks,
+server authoritative damage/repair hooks, conditional speed (Momentum and
+other modifiers), world AOE, drops/events, client visuals, and Tinker Station
+GUI still need implementing. The original item is not exposed in creative tabs
+and there is no registered station recipe yet.
+
+New tests validate 343 real stack-level component combinations, exact stored
+tier/mineable tags, broken and repaired synchronization, invalid/uninitialized
+tool rejection, and actual block tag behavior with the world registry fixture.
