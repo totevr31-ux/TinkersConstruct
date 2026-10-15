@@ -163,6 +163,30 @@ with zipfile.ZipFile(jar) as z:
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeBaseStats.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation$Plan.class' in names
+    # First real Tinker Station: registry, menu, world block, saved inventory,
+    # guarded original assembly, client GUI and original table art/crafting.
+    for name in (
+        'com/radi/radisconstruct/tinkerstation/TinkerStationBlock.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationBlockEntity.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationContent.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationSlotRules.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationScreen.class',
+        'assets/tconstruct/models/block/table/tinker_station.json',
+        'assets/tconstruct/blockstates/tinker_station.json',
+        'assets/tconstruct/models/item/tinker_station.json',
+        'assets/tconstruct/items/tinker_station.json',
+        'assets/tconstruct/textures/block/table/tinker_station_top.png',
+        'data/tconstruct/recipe/tables/tinker_station.json',
+        'data/tconstruct/loot_table/blocks/tinker_station.json'
+    ):
+        assert name in names, f'Incomplete authentic Tinker Station: {name}'
+    station_recipe = json.loads(z.read('data/tconstruct/recipe/tables/tinker_station.json'))
+    assert station_recipe['type'] == 'minecraft:crafting_shaped'
+    assert station_recipe['pattern'] == ['ppp', 'w w', 'w w']
+    assert station_recipe['key'] == {'p': 'tconstruct:pattern',
+                                      'w': '#tconstruct:planklike'}
+    assert station_recipe['result']['id'] == 'tconstruct:tinker_station'
     # Stage-two inventory routing is a compiled server component, not just GUI text.
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting.class' in names
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting$Range.class' in names
