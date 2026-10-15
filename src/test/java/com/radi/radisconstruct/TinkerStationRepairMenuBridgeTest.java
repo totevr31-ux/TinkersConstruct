@@ -167,6 +167,27 @@ public class TinkerStationRepairMenuBridgeTest {
         assertEquals(2, station.getItem(1).getCount());
     }
 
+
+    @Test void incompleteOrCorruptedRegisteredPickaxeCannotCrashOrCraft() {
+        var station = station();
+        station.setItem(0, new ItemStack(TinkerToolItems.PICKAXE));
+        station.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot()));
+        assertNull(preview(station), "Uninitialized registered tools are not valid repair recipes");
+        assertEquals(1, station.getItem(0).getCount());
+        assertEquals(1, station.getItem(1).getCount());
+        assertTrue(station.getItem(3).isEmpty());
+
+        var valid = tool("cobalt", "cobalt", "cobalt");
+        ToolStack.from(valid).setDamage(200);
+        station.setItem(0, valid);
+        var pending = preview(station);
+        assertNotNull(pending);
+        station.setItem(0, new ItemStack(TinkerToolItems.PICKAXE));
+        assertFalse(TinkerStationRepairTransaction.tryCommit(station, pending));
+        assertEquals(1, station.getItem(1).getCount());
+        assertTrue(station.getItem(3).isEmpty());
+    }
+
     @Test void assemblyAndRepairModesNeverConfuseMaterialsForParts() {
         var station = station();
         ItemStack damaged = tool("cobalt", "cobalt", "cobalt");
