@@ -485,3 +485,24 @@ modifier stat lines, styled numeric durability fractions, original
 full-featured level formatting, and all other supported tools still
 require follow-up work. This is an incremental UI port, not a full parity
 claim.
+
+
+## Original pickaxe break animation now broadcasts on durability exhaustion
+
+The existing server-authoritative mining and player-hit damage events now
+call a shared `TinkerPickaxeDamageEffects.damageMainHandAnimated` adapter.
+This ports upstream `ToolDamageUtil.damageAnimated(..., InteractionHand.MAIN_HAND)`:
+when a *live tool* loses its final durability, the actual server-side holder
+broadcasts the main-hand break animation, but the original TConstruct tool
+remains in the ItemStack in its broken (repairable) state. Hits absorbed by
+Overslime do **not** broadcast a false break; subsequent actions while broken
+cannot spam the break event. Repairing can re-arm the next true transition.
+
+The helper preserves the original boolean outcome of `ToolDamageUtil.damage`,
+and the two existing event paths (block breaks and direct player attacks)
+call it with their authoritative player instance. Tests cover near-broken
+tools, full shield absorption, one-time transitions, persistence and
+break->repair->break. Headless CI checks the transition logic and compiled
+bytecode but cannot prove the actual hand animation appears in a running
+client. The rest of Hephaestus combat/AOE/dynamic modifier hooks remain
+outstanding.
