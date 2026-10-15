@@ -49,7 +49,7 @@ public final class TinkerPickaxeBreakEvents {
         if (tool.isBroken()) return false;
         // Damage hooks consume Overslime first; the original broken tool must
         // persist as an item and update its mining component as needed.
-        ToolDamageUtil.damage(tool, cost, miner, stack);
+        TinkerPickaxeDamageEffects.damageMainHandAnimated(tool, cost, miner, stack);
         return true;
     }
 
