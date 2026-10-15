@@ -1,14 +1,14 @@
 {
-  "stage": "1J",
-  "scope": "Native 26.3 controller now owns original one-slot-per-interior-block melting inventory, saves/loads registry-aware sparse slot state and runs original four-phase on-demand fuel/heating cycle. Original recipe lookup and alloy hooks intentionally disabled until their real systems are ported.",
+  "stage": "1K",
+  "scope": "Minecraft 26.3 native original molten cobalt and molten iron source/flowing fluid registry, blocks, Fabric client sprite bindings, upstream textures/tags; 1:1 renderer/flow attributes, bucket mechanics and real melting recipe registry remain outstanding.",
   "branch": "radisconstruct-smeltery",
   "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
-  "tested_commit": "0731fe26b469eb6d0b01901e44730a7068c67024",
-  "ci_run": 38664287214,
-  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38664287214",
+  "tested_commit": "a250ae47aacd109c6c9a224527993a93e23ee70c",
+  "ci_run": 38665699234,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38665699234",
   "build": "success",
   "tests": {
-    "total": 63,
+    "total": 64,
     "smeltery_multiblock": 7,
     "smeltery_tank": 9,
     "servant_ownership": 6,
@@ -23,7 +23,8 @@
     "melting_slot_engine": 5,
     "melting_inventory": 3,
     "heating_four_phase": 4,
-    "melting_native_codec": 2
+    "melting_native_codec": 2,
+    "molten_iron_cobalt_fluid_registry": 2
   },
   "jar_verification": "passed",
   "fabric_bootstrap": "passed; stopped before world startup",
@@ -48,9 +49,9 @@
     "common/multiblock/ServantTileEntity.java": "52633e8e221c955c0c985e11d8e50b5c17baab91dabf0d1c45a6375defe78c4d",
     "smeltery/block/entity/module/FuelModule.java": "d9a0e786c85567031f71ee373140b3d16268e232c8c894e338ad7ddd29150a1e"
   },
-  "next": "Register canonical original molten cobalt/iron fluids and original recipe codecs, wire live recipe-manager lookup, then test real molten cobalt gameplay and restore GUI, pipes, alloying and casting.",
+  "next": "Port original tag-based molten fluid melting recipe serializers to 26.3, original cobalt ore/byproducts and fuel-on-demand, expose real GUI input and bucket handling, then run in-game melting tests.",
   "legacy_tank_save_migration": false,
-  "merged_commit": "d0f9fb28834d2feef0077dfe07e2b6ab61664ef8",
+  "merged_commit": "bedaf5c4cb3f86a696705efa6859d8f11f8b23e3",
   "registered_blocks": [
     "tconstruct:seared_bricks",
     "tconstruct:smeltery_controller",
@@ -80,9 +81,14 @@
   "original_melting_inventory_ported": true,
   "melting_controller_bound": false,
   "original_melting_recipes_registered": false,
-  "molten_fluid_registration": false,
+  "molten_fluid_registration": true,
   "melting_inventory_controller_bound": true,
   "four_phase_heating_controller_bound": true,
   "native_melting_inventory_snapshot_codec": true,
-  "active_state_recheck_flicker_fixed": true
+  "active_state_recheck_flicker_fixed": true,
+  "native_molten_iron_registered": true,
+  "native_molten_cobalt_registered": true,
+  "original_molten_textures_ported": true,
+  "client_fluid_renderer_registered": true,
+  "native_molten_variants_tested": true
 }
