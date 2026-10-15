@@ -39,7 +39,22 @@ with zipfile.ZipFile(jar) as z:
     assert not any(n.startswith('upstream/') for n in names), 'Reference tree leaked into runtime'
     expected_classes = {'slimeknights/tconstruct/shared/TinkerMaterials.class',
                         'slimeknights/tconstruct/shared/TinkerMaterials$MetalItems.class',
-                        'slimeknights/tconstruct/world/TinkerWorld.class'}
+                        'slimeknights/tconstruct/world/TinkerWorld.class',
+                        'slimeknights/tconstruct/tools/MeleeHarvestToolStatsBuilder.class',
+                        'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Entry.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Builder.class',
+                        'slimeknights/tconstruct/library/tools/nbt/ToolStack.class',
+                        'slimeknights/tconstruct/library/tools/helper/ToolDamageUtil.class',
+                        'slimeknights/tconstruct/tools/modifiers/traits/harvest/MomentumModifier.class',
+                        'slimeknights/tconstruct/tools/modifiers/traits/harvest/MomentumModifier$EffectUpdate.class',
+                        'slimeknights/tconstruct/library/modifiers/modules/ConditionalMiningSpeedModule.class',
+                        'slimeknights/tconstruct/library/tools/helper/ToolHarvestLogic.class',
+                        'slimeknights/tconstruct/library/tools/definition/harvest/TagHarvestLogic.class',
+                        'slimeknights/tconstruct/tables/recipe/TinkerStationRepairRecipe.class',
+                        'slimeknights/tconstruct/tables/recipe/TinkerStationRepairRecipe$Preview.class',
+                        'slimeknights/tconstruct/library/modifiers/impl/DurabilityShieldModifier.class'}
     assert {n for n in names if n.startswith('slimeknights/') and n.endswith('.class')} == expected_classes
     manifest = json.loads(z.read('radisconstruct-port-manifest.json'))
     for name, source in manifest['copied_resources'].items():
@@ -107,8 +122,151 @@ with zipfile.ZipFile(jar) as z:
         assert original['needed'] == 9 and original['value'] == 1
         assert original['ingredient']['tag'] == 'c:' + metal + '_nuggets'
         assert 'leftover' not in original
+    assert 'assets/radisconstruct/original_tool_definitions/pickaxe.json' in names
+    assert 'slimeknights/tconstruct/tools/MeleeHarvestToolStatsBuilder.class' in names
+    assert 'slimeknights/tconstruct/library/tools/nbt/MaterialNBT.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/OriginalToolTraits.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/PickaxeStatRebuild.class' in names
+    # Exact per-material 26.3 item model dispatch: 7 head x 7 handle x 7 binding.
+    # All variants are pre-rendered from preserved original source palettes/masks;
+    # never ship a client selector that refers to missing textures.
+    material_models = json.loads(z.read('assets/radisconstruct/pickaxe_visual_variants.json'))
+    assert material_models['count'] == 343
+    metals7 = material_models['materials']
+    assert len(metals7) == len(set(metals7)) == 7
+    model = json.loads(z.read('assets/tconstruct/items/pickaxe.json'))['model']
+    assert model['type'] == 'minecraft:select'
+    assert model['property'] == 'minecraft:custom_model_data' and model['index'] == 0
+    cases = model['cases']
+    assert len(cases) == 343
+    variants = [x['when'] for x in cases]
+    assert len(set(variants)) == 343
+    assert variants == material_models['variants']
+    from itertools import product
+    assert set(variants) == {'__'.join(combo) for combo in product(metals7, repeat=3)}
+    for case in cases:
+        key = case['when']
+        model_path = f'assets/tconstruct/models/item/tool/pickaxe/variants/{key}.json'
+        texture_path = f'assets/tconstruct/textures/item/tool/pickaxe/variants/{key}.png'
+        assert case['model'] == {'type': 'minecraft:model',
+                                 'model': f'tconstruct:item/tool/pickaxe/variants/{key}'}
+        assert model_path in names and texture_path in names
+        baked = json.loads(z.read(model_path))
+        assert baked['textures']['layer0'] == f'tconstruct:item/tool/pickaxe/variants/{key}'
+        assert z.read(texture_path).startswith(bytes((137,80,78,71,13,10,26,10))), texture_path
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeModels.class' in names
+    # The nine original explicit pickaxe item tags, plus the parent tag graph,
+    # must survive resource processing in the installable JAR.
+    original_tags = [
+        'minecraft:pickaxes', 'minecraft:cluster_max_harvestables',
+        'tconstruct:modifiable/multipart', 'tconstruct:modifiable/durability',
+        'tconstruct:modifiable/harvest/primary', 'tconstruct:modifiable/harvest/stone',
+        'tconstruct:modifiable/melee', 'tconstruct:modifiable/one_handed',
+        'tconstruct:modifiable/aoe', 'tconstruct:modifiable/harvest',
+        'tconstruct:modifiable/melee_or_harvest',
+        'tconstruct:modifiable/interactable/right',
+        'tconstruct:modifiable/held', 'tconstruct:modifiable'
+    ]
+    for tag in original_tags:
+        namespace, path = tag.split(':', 1)
+        asset = f'data/{namespace}/tags/item/{path}.json'
+        assert asset in names, f'Missing original pickaxe tag {asset}'
+        assert json.loads(z.read(asset))['replace'] is False
+    # Original material head-prefix name renders through translated keys from
+    # the unchanged upstream Hephaestus language entries.
+    upstream_lang = json.loads((root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/lang/en_us.json').read_text())
+    packed_lang = json.loads(z.read('assets/tconstruct/lang/en_us.json'))
+    for key in ['item.tconstruct.pickaxe', 'item.tconstruct.tool.format'] + [
+        'material.tconstruct.' + name for name in manifest['metals']
+    ]:
+        assert packed_lang[key] == upstream_lang[key], f'Incorrect original translated tool name: {key}'
+    # The source names and Shift/Ctrl pickaxe tooltip keys must survive the
+    # Gradle resource-generation stage, not merely exist in Java code.
+    original_tooltip_keys = [
+        'tooltip.tconstruct.hold_shift', 'tooltip.tconstruct.hold_ctrl',
+        'tooltip.tconstruct.uninitialized', 'tooltip.tconstruct.missing_data',
+        'tooltip.tconstruct.tool.broken', 'item.tconstruct.pick_head',
+        'item.tconstruct.tool_handle', 'item.tconstruct.tool_binding',
+        'modifier.tconstruct.overslime', 'modifier.tconstruct.overcast',
+        'modifier.tconstruct.lightweight', 'modifier.tconstruct.enhanced',
+        'modifier.tconstruct.piercing', 'modifier.tconstruct.crumbling',
+        'modifier.tconstruct.tasty', 'modifier.tconstruct.momentum',
+        'modifier.tconstruct.insatiable'
+    ] + ['stat.tconstruct.harvest_tier.minecraft.' + tier
+         for tier in ['wood', 'stone', 'iron', 'gold', 'diamond', 'netherite']]
+    for key in original_tooltip_keys:
+        assert packed_lang[key] == upstream_lang[key], f'Original tooltip string missing: {key}'
+    for key in ['durability', 'harvest_tier', 'mining_speed', 'attack_damage',
+                'attack_speed', 'upgrades', 'abilities']:
+        assert 'radisconstruct.tooltip.pickaxe.' + key in packed_lang
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeClientTooltips.class' in names
+    # The real 26.3 player-mining hook and source Crumbling calculation must
+    # ship and be explicitly enabled in Fabric metadata, not just pass JUnit.
+    assert meta.get('mixins') == ['radisconstruct.mixins.json']
+    mixins = json.loads(z.read('radisconstruct.mixins.json'))
+    assert mixins['required'] is True
+    assert mixins['package'] == 'com.radi.radisconstruct.mixin'
+    assert mixins['mixins'] == ['PlayerPickaxeMiningSpeedMixin']
+    assert mixins['injectors']['defaultRequire'] == 1
+    assert 'com/radi/radisconstruct/mixin/PlayerPickaxeMiningSpeedMixin.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeBreakSpeedHook.class' in names
+    # Original tool identity and guarded station assembly must ship in the JAR.
+    for cls in (
+        'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
+        'TinkerPickaxeCombatComponents',
+        'TinkerPickaxeDurabilityBar',
+        'TinkerPickaxeDamageEffects',
+        'TinkerPickaxeDisplayName',
+        'TinkerPickaxeTooltipLines', 'TinkerPickaxeTooltipLines$View',
+        'TinkerPickaxeBreakEvents',
+        'TinkerPickaxeAttackEvents',
+        'TinkerStationPickaxeAssembly',
+        'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
+    ):
+        assert f'com/radi/radisconstruct/tinkerstation/{cls}.class' in names
+    # Both station GUI operations must be real compiled server/client paths.
+    # This catches a menu with a cosmetic Repair button but no server recipe.
+    assert b'TinkerStationRepairTransaction' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class')
+    assert b'REPAIR_PICKAXE_BUTTON' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class')
+    assert b'Repair' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationScreen.class')
+    for material in ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon', 'slimesteel', 'pig_iron'):
+        original = root / f'upstream/Hephaestus/src/generated/resources/data/tconstruct/tinkering/materials/traits/{material}.json'
+        assert z.read(f'assets/radisconstruct/original_tool_traits/{material}.json') == original.read_bytes()
+    assert len(json.loads(z.read('assets/radisconstruct/original_tool_traits/priorities.json'))) == 9
+    assert 'com/radi/radisconstruct/tinkerstation/PickaxeBaseStats.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/TinkerStationAssemblyValidation$Plan.class' in names
+    # First real Tinker Station: registry, menu, world block, saved inventory,
+    # guarded original assembly, client GUI and original table art/crafting.
+    for name in (
+        'com/radi/radisconstruct/tinkerstation/TinkerStationBlock.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationBlockEntity.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationContent.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationSlotRules.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerStationScreen.class',
+        'assets/tconstruct/models/block/table/tinker_station.json',
+        'assets/tconstruct/blockstates/tinker_station.json',
+        'assets/tconstruct/models/item/tinker_station.json',
+        'assets/tconstruct/items/tinker_station.json',
+        'assets/tconstruct/textures/block/table/tinker_station_top.png',
+        'assets/tconstruct/models/item/pickaxe.json',
+        'assets/tconstruct/items/pickaxe.json',
+        'assets/tconstruct/textures/item/tool/pickaxe/fallback.png',
+        'data/tconstruct/recipe/tables/tinker_station.json',
+        'data/tconstruct/loot_table/blocks/tinker_station.json'
+    ):
+        assert name in names, f'Incomplete authentic Tinker Station: {name}'
+    station_recipe = json.loads(z.read('data/tconstruct/recipe/tables/tinker_station.json'))
+    assert station_recipe['type'] == 'minecraft:crafting_shaped'
+    assert station_recipe['pattern'] == ['ppp', 'w w', 'w w']
+    assert station_recipe['key'] == {'p': 'tconstruct:pattern',
+                                      'w': '#tconstruct:planklike'}
+    assert station_recipe['result']['id'] == 'tconstruct:tinker_station'
     # Stage-two inventory routing is a compiled server component, not just GUI text.
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting.class' in names
     assert 'com/radi/radisconstruct/partbuilder/PartBuilderSlotRouting$Range.class' in names

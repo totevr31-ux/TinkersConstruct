@@ -241,6 +241,89 @@ write('data/tconstruct/loot_table/blocks/part_builder.json', {
                'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
 })
 
+# First interactive original Tinker Station: use the authenticated server-side
+# head/handle/binding assembly. The original Mantle-specific table renderer is
+# not ported, so keep its authentic table geometry and original texture while
+# deleting only the custom-loader/retexturing metadata.
+upstream_station_model = json.loads(
+    (UPSTREAM / f'main/resources/{table}tinker_station.json').read_text())
+for unsupported in ('loader', 'retextured', 'items'):
+    upstream_station_model.pop(unsupported, None)
+write(f'{table}tinker_station.json', upstream_station_model)
+station_texture = f'{asset}/textures/block/table/tinker_station_top.png'
+copy(f'main/resources/{station_texture}', station_texture)
+copy(f'main/resources/{asset}/blockstates/tinker_station.json',
+     f'{asset}/blockstates/tinker_station.json')
+copy(f'main/resources/{asset}/models/item/tinker_station.json',
+     f'{asset}/models/item/tinker_station.json')
+write(f'{asset}/items/tinker_station.json',
+      {'model': {'type': 'minecraft:model',
+                 'model': 'tconstruct:item/tinker_station'}})
+translations['block.tconstruct.tinker_station'] = lang_source['block.tconstruct.tinker_station']
+translations['item.tconstruct.pickaxe'] = lang_source['item.tconstruct.pickaxe']
+# Upstream TooltipUtil.getDisplayName only pulls the repairable head material
+# for this pickaxe; preserve *its actual* string keys, not English literals.
+translations['item.tconstruct.tool.format'] = lang_source['item.tconstruct.tool.format']
+for original_material in metals:
+    key = f'material.tconstruct.{original_material}'
+    translations[key] = lang_source[key]
+
+# Pickaxe tooltips retain original user-facing text where upstream has exact
+# translations, with explicitly namespaced extra lines for the incremental
+# 26.3 stat UI. No user-facing strings are forged in the Java tooltip logic.
+for text_key in (
+    'tooltip.tconstruct.uninitialized', 'tooltip.tconstruct.missing_data',
+    'tooltip.tconstruct.tool.broken', 'tooltip.tconstruct.hold_shift',
+    'tooltip.tconstruct.hold_ctrl',
+    'item.tconstruct.pick_head', 'item.tconstruct.tool_handle',
+    'item.tconstruct.tool_binding',
+    'stat.tconstruct.harvest_tier.minecraft.wood',
+    'stat.tconstruct.harvest_tier.minecraft.stone',
+    'stat.tconstruct.harvest_tier.minecraft.iron',
+    'stat.tconstruct.harvest_tier.minecraft.diamond',
+    'stat.tconstruct.harvest_tier.minecraft.netherite',
+    'stat.tconstruct.harvest_tier.minecraft.gold',
+    'modifier.tconstruct.overslime', 'modifier.tconstruct.overcast',
+    'modifier.tconstruct.lightweight', 'modifier.tconstruct.enhanced',
+    'modifier.tconstruct.piercing', 'modifier.tconstruct.crumbling',
+    'modifier.tconstruct.tasty', 'modifier.tconstruct.momentum',
+    'modifier.tconstruct.insatiable',
+):
+    translations[text_key] = lang_source[text_key]
+translations.update({
+    'radisconstruct.tooltip.pickaxe.durability': 'Durability: %s / %s',
+    'radisconstruct.tooltip.pickaxe.harvest_tier': 'Mining Tier: %s',
+    'radisconstruct.tooltip.pickaxe.mining_speed': 'Mining Speed: %s',
+    'radisconstruct.tooltip.pickaxe.attack_damage': 'Attack Damage: %s',
+    'radisconstruct.tooltip.pickaxe.attack_speed': 'Attack Speed: %s',
+    'radisconstruct.tooltip.pickaxe.upgrades': 'Upgrades: %s',
+    'radisconstruct.tooltip.pickaxe.abilities': 'Abilities: %s',
+})
+write(f'{asset}/lang/en_us.json', translations)
+
+# Original 3x3 shaped Tinker Station recipe retains EXACT pattern/ingredients,
+# but cannot use unported Mantle's crafting_shaped_retextured codec. The
+# migrated vanilla serializer only drops that dynamic color matching feature.
+upstream_station_recipe = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/recipes/tables/tinker_station.json').read_text())
+assert upstream_station_recipe['pattern'] == ['ppp', 'w w', 'w w']
+assert upstream_station_recipe['result']['item'] == 'tconstruct:tinker_station'
+ported_station_recipe = {
+    'type': 'minecraft:crafting_shaped',
+    'category': upstream_station_recipe['category'],
+    'key': {key: ingredient(value) for key,value in upstream_station_recipe['key'].items()},
+    'pattern': upstream_station_recipe['pattern'],
+    'result': {'id': upstream_station_recipe['result']['item']},
+    'show_notification': upstream_station_recipe['show_notification'],
+}
+write('data/tconstruct/recipe/tables/tinker_station.json', ported_station_recipe)
+write('data/tconstruct/loot_table/blocks/tinker_station.json', {
+    'type': 'minecraft:block',
+    'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item',
+                                      'name': 'tconstruct:tinker_station'}],
+               'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
+})
+
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy
@@ -251,6 +334,8 @@ runpy.run_path(str(ROOT / 'scripts/port_material_sprite_rules.py'), run_name='__
 runpy.run_path(str(ROOT / 'scripts/port_tool_part_masks.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/port_tool_part_fallback_models.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/generate_material_part_textures.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/generate_pickaxe_fallback_texture.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/generate_pickaxe_material_models.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_recipes.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_ingots.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_nuggets.py'), run_name='__main__')
@@ -258,3 +343,5 @@ runpy.run_path(str(ROOT / 'scripts/index_upstream_tinker_station_blueprints.py')
 runpy.run_path(str(ROOT / 'scripts/report_part_builder_recipe_shapes.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/validate_tool_part_masks.py'), run_name='__main__')
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
+
+runpy.run_path(str(ROOT / 'scripts/port_tool_traits.py'), run_name='__main__')

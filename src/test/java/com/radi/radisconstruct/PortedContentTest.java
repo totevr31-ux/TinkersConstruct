@@ -31,7 +31,9 @@ public class PortedContentTest {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
     }
     static Identifier id(String value) { return Identifier.parse(value); }
-    @BeforeAll static void bootstrap() throws Exception {
+    @BeforeAll static synchronized void bootstrap() throws Exception {
+        // Shared registry/tag fixture for component and world-data tests.
+        if (ops != null) return;
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
@@ -39,7 +41,14 @@ public class PortedContentTest {
         // item registries for codec and datapack-tag validation.
         assertNotNull(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
         assertNotNull(com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK_ITEM);
+        assertNotNull(com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM);
+        assertNotNull(com.radi.radisconstruct.tinkerstation.TinkerStationContent.MENU_TYPE);
+        assertEquals(id("tconstruct:tinker_station"), BuiltInRegistries.ITEM.getKey(
+            com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
         assertEquals(14, com.radi.radisconstruct.material.ToolPartItems.all().size());
+        com.radi.radisconstruct.tinkerstation.TinkerToolItems.initialize();
+        assertEquals(id("tconstruct:pickaxe"), BuiltInRegistries.ITEM.getKey(
+            com.radi.radisconstruct.tinkerstation.TinkerToolItems.PICKAXE));
         assertNotNull(TinkerWorld.rawCobalt);
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
@@ -55,6 +64,10 @@ public class PortedContentTest {
         // The original reusable Pattern tag is needed by Part Builder crafting.
         tags.put(TagKey.create(Registries.ITEM, id("tconstruct:patterns/default")),
             List.of(BuiltInRegistries.ITEM.get(id("tconstruct:pattern")).orElseThrow()));
+        // Mirror the original planklike inclusion for a real shaped-station recipe test.
+        tags.put(TagKey.create(Registries.ITEM, id("tconstruct:planklike")),
+            List.of(BuiltInRegistries.ITEM.get(id("minecraft:oak_planks")).orElseThrow(),
+                    BuiltInRegistries.ITEM.get(id("minecraft:spruce_planks")).orElseThrow()));
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
@@ -62,8 +75,46 @@ public class PortedContentTest {
         items.bindAllTagsToEmpty();
         items.bindTags(tags);
         items.freeze(); // Finalize holder tag membership, as normal world loading does.
+        // Isolated harvest fixture: real BlockStates/holder tags, not a loaded world.
+        var blocks = (MappedRegistry<net.minecraft.world.level.block.Block>) BuiltInRegistries.BLOCK;
+        Map<TagKey<net.minecraft.world.level.block.Block>, List<Holder<net.minecraft.world.level.block.Block>>> blockTags = new HashMap<>();
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:mineable/pickaxe")),
+            List.of(blocks.get(id("minecraft:stone")).orElseThrow(), blocks.get(id("minecraft:obsidian")).orElseThrow()));
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_iron_tool")),
+            List.of(blocks.get(id("minecraft:obsidian")).orElseThrow()));
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_diamond_tool")), List.of());
+        blockTags.put(TagKey.create(Registries.BLOCK, id("minecraft:incorrect_for_netherite_tool")), List.of());
+        blocks.bindAllTagsToEmpty(); blocks.bindTags(blockTags); blocks.freeze();
         ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
+    @Test void assembledPickaxeToolComponentUsesRealBoundMiningAndTierTags() {
+        var stack = new ItemStack(com.radi.radisconstruct.tinkerstation.TinkerToolItems.PICKAXE);
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(stack,
+            new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(
+                PickaxeBaseStatsTest.materials("cobalt", "pig_iron", "manyullyn")));
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.rebuildPickaxeStats();
+        var component = stack.get(net.minecraft.core.component.DataComponents.TOOL);
+        assertNotNull(component);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var obsidian = net.minecraft.world.level.block.Blocks.OBSIDIAN.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone),
+            component.getMiningSpeed(stone));
+        assertEquals(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, obsidian),
+            component.getMiningSpeed(obsidian));
+        assertEquals(1f, component.getMiningSpeed(dirt));
+        assertTrue(component.isCorrectForDrops(stone));
+        assertTrue(component.isCorrectForDrops(obsidian));
+        assertFalse(component.isCorrectForDrops(dirt));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        tool.setDamage(tool.getMaxDurability());
+        component = stack.get(net.minecraft.core.component.DataComponents.TOOL);
+        assertEquals(0.3f, component.getMiningSpeed(stone));
+        assertFalse(component.isCorrectForDrops(stone));
+        assertFalse(component.isCorrectForDrops(obsidian));
+    }
+
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
         Path dir = ROOT.resolve("data/tconstruct/recipe/common/materials");
         int checked = 0;
@@ -123,11 +174,13 @@ public class PortedContentTest {
                     assertTrue(roundTrip.contains("tconstruct:raw_cobalt"));
                 } else if (path.getFileName().toString().equals("part_builder.json")) {
                     assertTrue(roundTrip.contains("tconstruct:part_builder"));
+                } else if (path.getFileName().toString().equals("tinker_station.json")) {
+                    assertTrue(roundTrip.contains("tconstruct:tinker_station"));
                 } else assertTrue(roundTrip.contains("minecraft:survives_explosion"));
                 checked++;
             }
         }
-        assertEquals(10, checked);
+        assertEquals(11, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {
@@ -139,6 +192,34 @@ public class PortedContentTest {
             assertNotNull(PlacedFeature.DIRECT_CODEC.parse(ops, placed).getOrThrow());
         }
     }
+    @Test void originalTinkerStationRecipeDecodesAndPreservesOriginalPattern() throws Exception {
+        var source = json(ROOT.resolve("data/tconstruct/recipe/tables/tinker_station.json"));
+        var recipe = assertInstanceOf(CraftingRecipe.class, Recipe.DIRECT_CODEC.parse(ops, source).getOrThrow());
+        assertEquals("minecraft:crafting_shaped", source.get("type").getAsString());
+        assertEquals(List.of("ppp", "w w", "w w"), source.getAsJsonArray("pattern")
+            .asList().stream().map(JsonElement::getAsString).toList());
+        assertEquals("tconstruct:tinker_station", source.getAsJsonObject("result").get("id").getAsString());
+        assertEquals("tconstruct:pattern", source.getAsJsonObject("key").get("p").getAsString());
+        assertEquals("#tconstruct:planklike", source.getAsJsonObject("key").get("w").getAsString());
+        assertEquals(id("tconstruct:tinker_station"),
+            BuiltInRegistries.ITEM.getKey(
+                com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
+        assertTrue(recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe);
+        var pattern = new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+        var wood = new ItemStack(Items.OAK_PLANKS);
+        var grid = CraftingInput.of(3, 3, List.of(pattern.copy(), pattern.copy(), pattern.copy(),
+            wood.copy(), ItemStack.EMPTY, wood.copy(),
+            wood.copy(), ItemStack.EMPTY, wood.copy()));
+        assertTrue(recipe.matches(grid, null), "Authentic 3x3 station pattern should match its restored planklike tag");
+        var assembled = recipe.assemble(grid);
+        assertTrue(assembled.is(com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
+        assertEquals(1, assembled.getCount());
+        assertFalse(recipe.matches(CraftingInput.of(1,1,List.of(new ItemStack(Items.DIRT))), null));
+        var sourceOriginal = json(Path.of(
+            "upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/tables/tinker_station.json"));
+        assertEquals(source.getAsJsonArray("pattern"), sourceOriginal.getAsJsonArray("pattern"));
+    }
+
     @Test void realPartBuilderTransactionConsumesIngotButPreservesPattern() {
         var metal = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
         var input = new net.minecraft.world.SimpleContainer(3);
@@ -386,4 +467,224 @@ public class PortedContentTest {
             .preview("nonexistent_tool", java.util.List.of()));
     }
 
+    @Test void pickaxePartsCraftAtOriginalCostThenPreviewAndSerializeMaterials() {
+        var material = com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:cobalt");
+        var station = new net.minecraft.world.SimpleContainer(3);
+        station.setItem(0, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        station.setItem(1, new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN));
+        var parts = new ArrayList<ItemStack>();
+        for (String part : List.of("pick_head", "tool_handle", "tool_binding")) {
+            assertTrue(com.radi.radisconstruct.partbuilder.PartBuilderMenu.PART_IDS.contains(part));
+            assertTrue(com.radi.radisconstruct.material.PartBuilderIngotStation.tryCraft(station, 0, 1, 2,
+                com.radi.radisconstruct.material.PartBuilderIngotStation.capture(station.getItem(0)),
+                part, material, "tconstruct:" + part, 1));
+            parts.add(station.removeItem(2, 1));
+        }
+        assertTrue(station.getItem(0).isEmpty(), "Original costs: 2 + 1 + 1 ingots");
+        assertEquals(1, station.getItem(1).getCount(), "Pattern is reusable");
+        var plan = com.radi.radisconstruct.tinkerstation.TinkerStationAssemblyValidation.preview("pickaxe", parts);
+        assertNotNull(plan);
+        assertEquals(839, com.radi.radisconstruct.tinkerstation.PickaxeBaseStats.from(plan).durability());
+        assertTrue(plan.stillApplicable(parts), "Preview does not consume parts");
+        // A carrier tests the persistence adapter, not an implemented playable pickaxe.
+        var carrier = new ItemStack(Items.STICK);
+        var materials = new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(plan.materialsInOrder());
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(carrier, materials);
+        var encoded = ItemStack.CODEC.encodeStart(ops, carrier).getOrThrow();
+        var restored = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+        assertEquals(materials, com.radi.radisconstruct.tinkerstation.ToolMaterialData.read(restored));
+    }
+
+
+    @Test void originalPickaxeRepairUsesHeadAndPreservesPreviewInputs() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(500);
+        var ingots = new ItemStack(TinkerMaterials.cobalt.ingot(), 4);
+        var result = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingots)).orElseThrow();
+        assertEquals(List.of(2), result.consumed());
+        assertEquals(0, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(result.result()).getDamage());
+        assertEquals(500, tool.getDamage()); assertEquals(4, ingots.getCount());
+        result.result().setCount(0);
+        assertEquals(1, result.result().getCount(), "Preview output is defensive");
+        var encoded = ItemStack.CODEC.encodeStart(ops, result.result()).getOrThrow();
+        var restored = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+        assertEquals(tool.getMaterials(), slimeknights.tconstruct.library.tools.nbt.ToolStack.from(restored).getMaterials());
+    }
+
+    @Test void repairNuggetsUseFractionalValueAndPerSlotTruncation() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(500);
+        var nugget = new ItemStack(TinkerMaterials.cobalt.nugget());
+        var split = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(nugget, nugget.copy())).orElseThrow();
+        var together = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(new ItemStack(TinkerMaterials.cobalt.nugget(), 2))).orElseThrow();
+        int head = com.radi.radisconstruct.material.MaterialStatsCatalog.load().require("cobalt").head().durability();
+        assertEquals(List.of(1, 1), split.consumed());
+        assertEquals(500 - 2 * (int)(head / 3f / 9),
+            slimeknights.tconstruct.library.tools.nbt.ToolStack.from(split.result()).getDamage());
+        assertEquals(500 - (int)(2 * (head / 3f / 9)),
+            slimeknights.tconstruct.library.tools.nbt.ToolStack.from(together.result()).getDamage());
+        tool.setDamage(1);
+        assertEquals(List.of(1, 0), slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(nugget, nugget.copy())).orElseThrow().consumed());
+    }
+
+    @Test void repairRejectsHandleMaterialMixedInputsAndSpoofedMaterial() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(stack,
+            new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(
+                PickaxeBaseStatsTest.materials("cobalt", "rose_gold", "rose_gold")));
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.rebuildPickaxeStats(); tool.setDamage(100);
+        var gold = com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:rose_gold");
+        assertEquals(-1, slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.getRepairIndex(tool, gold));
+        ItemStack wrong = new ItemStack(BuiltInRegistries.ITEM.getValue(id("tconstruct:rose_gold_ingot")));
+        ItemStack cobalt = new ItemStack(TinkerMaterials.cobalt.ingot());
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(cobalt, wrong)).isEmpty(), "Even surplus wrong material rejects");
+        var fake = new ItemStack(Items.STICK);
+        com.radi.radisconstruct.material.MaterialStackData.write(fake,
+            com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:cobalt"));
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of(fake)).isEmpty());
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of()).isEmpty());
+        tool.setDamage(0);
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of(cobalt)).isEmpty());
+    }
+
+    @Test void repairBrokenPickaxeRetainsShieldAndRejectsUnknownHooks() {
+        var stack = ToolDamageUtilTest.carrier("slimesteel");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(tool.getMaxDurability());
+        tool.setPersistentInt("tconstruct:overslime", 7);
+        var ingot = new ItemStack(BuiltInRegistries.ITEM.getValue(id("tconstruct:slimesteel_ingot")));
+        var preview = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingot)).orElseThrow();
+        var repaired = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(preview.result());
+        assertFalse(repaired.isBroken()); assertTrue(tool.isBroken());
+        assertEquals(7, repaired.getPersistentData().getInt("tconstruct:overslime").orElseThrow());
+        assertEquals(tool.getModifiers(), repaired.getModifiers());
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            stack, tag -> tag.put("tic_modifiers", tool.getModifiers().withModifier("other:repair", 1).serializeToNBT()));
+        var before = stack.copy();
+        assertThrows(IllegalArgumentException.class, () -> slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingot)));
+        assertTrue(ItemStack.matches(before, stack)); assertEquals(1, ingot.getCount());
+    }
+
+    @Test void repairTransactionConsumesExactlyOnceAndMovesToolToOutput() {
+        var inventory = new net.minecraft.world.SimpleContainer(4);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(500);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction
+            .preview(inventory, Items.STICK, 0, List.of(1, 2), 3);
+        assertNotNull(pending);
+        pending.result().setCount(0);
+        assertTrue(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertTrue(inventory.getItem(0).isEmpty()); assertTrue(inventory.getItem(2).isEmpty());
+        assertEquals(2, inventory.getItem(1).getCount());
+        assertEquals(1, inventory.getItem(3).getCount());
+        assertEquals(0, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(inventory.getItem(3)).getDamage());
+        inventory.setItem(3, ItemStack.EMPTY);
+        inventory.setItem(0, tool.copy());
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending),
+            "A committed token cannot be replayed even after restoring identical inputs");
+        assertEquals(4, inventory.getItem(1).getCount());
+    }
+
+    @Test void repairTransactionRejectsStaleSlotsAndOccupiedOutputWithoutConsumption() {
+        var inventory = new net.minecraft.world.SimpleContainer(4);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(100);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.nugget(), 8));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction
+            .preview(inventory, Items.STICK, 0, List.of(1, 2), 3);
+        assertNotNull(pending);
+        inventory.getItem(1).shrink(1);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(7, inventory.getItem(1).getCount());
+        inventory.getItem(1).grow(1);
+        inventory.setItem(2, new ItemStack(Items.DIRT));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        inventory.setItem(2, ItemStack.EMPTY);
+        inventory.setItem(3, new ItemStack(Items.DIAMOND));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(Items.DIAMOND, inventory.getItem(3).getItem());
+        inventory.setItem(3, ItemStack.EMPTY);
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(99);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(8, inventory.getItem(1).getCount());
+        assertEquals(99, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).getDamage());
+    }
+
+    @Test void repairTransactionRejectsAliasedSlotsWrongToolAndOtherInventory() {
+        var inventory = new net.minecraft.world.SimpleContainer(3);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(100);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot()));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1, 1), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(0), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1), 1));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(3), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.DIAMOND_PICKAXE, 0, List.of(1), 2));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1), 2);
+        var other = new net.minecraft.world.SimpleContainer(tool.copy(), inventory.getItem(1).copy(), ItemStack.EMPTY);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(other, pending));
+        assertEquals(1, other.getItem(1).getCount());
+    }
+
+    @Test void pickaxeSpeedUsesOriginalTagAndTierOnlyControlsEffectiveness() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var obsidian = net.minecraft.world.level.block.Blocks.OBSIDIAN.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone), 0.00001f);
+        assertEquals(1f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, dirt));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, obsidian));
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, dirt));
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, stack, tag -> {
+            var stats = tool.getStats(); stats.putString("tconstruct:harvest_tier", "minecraft:iron"); tag.put("tic_stats", stats);
+        });
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, obsidian));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, obsidian), 0.00001f,
+            "Insufficient tier must not erase original mining speed bonus");
+    }
+
+    @Test void brokenPickaxeSpeedAndEffectivenessFollowOriginalRules() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        tool.setDamage(tool.getMaxDurability());
+        assertEquals(0.3f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone));
+        assertFalse(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        slimeknights.tconstruct.library.tools.helper.ToolDamageUtil.repair(tool, 1);
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        assertEquals(1f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(new ItemStack(Items.STICK), stone));
+        var copy = tool.getStats(); copy.putFloat("tconstruct:mining_speed", 999);
+        assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone), 0.00001f);
+    }
+
+    @Test void originalMiningTraitsRunAgainstBlockStatesAndMergedLevels() {
+        var hepatizon = ToolDamageUtilTest.carrier("hepatizon");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(hepatizon);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(14f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(tool, stone, 8, 1, 31));
+        assertEquals(8f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(tool, dirt, 8, 1, 31));
+        var amethyst = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(ToolDamageUtilTest.carrier("amethyst_bronze"));
+        assertEquals(12f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, dirt, 8, 1, -1));
+        assertEquals(8f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, stone, 8, 1, -1));
+        amethyst.setDamage(amethyst.getMaxDurability());
+        assertEquals(.3f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, dirt, .3f, 1, -1));
+    }
 }
