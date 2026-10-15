@@ -130,7 +130,8 @@ with zipfile.ZipFile(jar) as z:
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeStatRebuild.class' in names
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
-        'TinkerToolItems', 'TinkerStationPickaxeAssembly',
+        'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
+        'TinkerStationPickaxeAssembly',
         'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
     ):
         assert f'com/radi/radisconstruct/tinkerstation/{cls}.class' in names
