@@ -272,3 +272,25 @@ damage, attack damage/cooldown callbacks and other dynamic modifiers remain
 dependencies. No full combat parity or in-world test is claimed. Tests check
 343 supported material combinations, exact per-stack stats, correct mainhand
 slot, break/repair, invalid stacks and repeated rebuilds.
+
+
+## Original pickaxe primary player melee hit durability (server events)
+
+Minecraft 26.3 now gets the source-defined pickaxe melee wear: upstream
+`ToolAttackUtil` subtracts 1 durability when hitting a living target and
+doubles it when the tool lacks `MELEE_PRIMARY`; the original pickaxe is
+`MELEE` but **not** `MELEE_PRIMARY`, so a successful noncreative
+player attack on a living mob costs **2 durability**. The server event
+integration listens to nonlethal `ServerLivingEntityEvents.AFTER_DAMAGE`
+and lethal `AFTER_DEATH` separately (the former skips fatal hits), rejects
+blocked/zero-damage hits and checks for a direct vanilla
+`minecraft:player_attack` source. It does not charge arrows, indirect
+status effects, secondary Piercing damage or empty-handed strikes.
+
+`ToolDamageUtil.damage` preserves the original order of Overslime shield
+absorption, then persistent pickaxe durability. Broken tools keep their stack
+and lose native melee attributes; the server callback skips further wear.
+This is a safe partial integration, not the original custom attack pipeline:
+weapon crits, Piercing bypass-armor secondary damage, conditional melee
+modifiers, non-player attackers, AOE/sweep behavior and hit-related effects
+remain unported. Real-world combat tests are still required.
