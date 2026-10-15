@@ -51,7 +51,7 @@ public final class NativeMoltenFluids {
         LiquidBlock block = Registry.register(BuiltInRegistries.BLOCK, blockId,
             new LiquidBlock(source, BlockBehaviour.Properties.of()
                 .setId(blockId).mapColor(MapColor.FIRE)
-                .noCollission().strength(100.0f).noLootTable().replaceable().liquid()));
+                .noCollision().strength(100.0f).noLootTable().replaceable().liquid()));
         return new Pair(source, flowing, block);
     }
 
