@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#tconstruct:modifiable/harvest/primary",
+    "#tconstruct:modifiable/harvest/stone"
+  ]
+}
