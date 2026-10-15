@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class TinkerStationMenu extends AbstractContainerMenu {
     public static final int BUILD_PICKAXE_BUTTON = 100;
+    public static final int REPAIR_PICKAXE_BUTTON = 101;
     private final Container station;
 
     public TinkerStationMenu(int id, Inventory inventory) {
@@ -49,14 +50,26 @@ public final class TinkerStationMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {
-        if (button != BUILD_PICKAXE_BUTTON || !stillValid(player)) return false;
+        if ((button != BUILD_PICKAXE_BUTTON && button != REPAIR_PICKAXE_BUTTON)
+            || !stillValid(player)) return false;
         if (player.level().isClientSide()) return true;
-        var pending = TinkerStationAssemblyTransaction.preview(station,
-            TinkerStationSlotRules.INPUTS, TinkerStationSlotRules.OUTPUT);
-        if (pending == null) return false;
-        boolean assembled = TinkerStationAssemblyTransaction.tryCommit(station, pending);
-        if (assembled) broadcastChanges();
-        return assembled;
+        // No client-supplied parts, material identity or preview items.
+        // Both operations are authoritative snapshot-revalidated transactions.
+        boolean committed;
+        if (button == BUILD_PICKAXE_BUTTON) {
+            var pending = TinkerStationAssemblyTransaction.preview(station,
+                TinkerStationSlotRules.INPUTS, TinkerStationSlotRules.OUTPUT);
+            committed = pending != null
+                && TinkerStationAssemblyTransaction.tryCommit(station, pending);
+        } else {
+            var pending = TinkerStationRepairTransaction.preview(station, TinkerToolItems.PICKAXE,
+                TinkerStationSlotRules.HEAD, TinkerStationSlotRules.REPAIR_INPUTS,
+                TinkerStationSlotRules.OUTPUT);
+            committed = pending != null
+                && TinkerStationRepairTransaction.tryCommit(station, pending);
+        }
+        if (committed) broadcastChanges();
+        return committed;
     }
 
     @Override public ItemStack quickMoveStack(Player player, int index) {
@@ -71,12 +84,17 @@ public final class TinkerStationMenu extends AbstractContainerMenu {
                 TinkerStationSlotRules.PLAYER_END, true);
         } else {
             int target = TinkerStationSlotRules.inputFor(live);
-            if (target >= 0) {
-                moved = moveItemStackTo(live, target, target + 1, false);
-            } else if (index < TinkerStationSlotRules.MAIN_END) {
+            moved = target >= 0 && moveItemStackTo(live, target, target + 1, false);
+            // Both inputs accept repair metal but the assembly handle slot
+            // might already contain a tool handle. Try the binding slot before
+            // falling back to normal inventory/hotbar movement.
+            if (!moved && com.radi.radisconstruct.material.PartBuilderMaterialInputs.isSupported(live))
+                moved = moveItemStackTo(live, TinkerStationSlotRules.BINDING,
+                    TinkerStationSlotRules.BINDING + 1, false);
+            if (!moved && index < TinkerStationSlotRules.MAIN_END) {
                 moved = moveItemStackTo(live, TinkerStationSlotRules.MAIN_END,
                     TinkerStationSlotRules.PLAYER_END, false);
-            } else {
+            } else if (!moved) {
                 moved = moveItemStackTo(live, TinkerStationSlotRules.PLAYER_START,
                     TinkerStationSlotRules.MAIN_END, false);
             }
