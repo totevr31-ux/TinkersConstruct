@@ -249,3 +249,26 @@ Automated source-parity tests assert the original explicit list and the
 current parent graph. Strict packaged-JAR validation requires all fourteen
 tag files. Actual world-side reload/combined-modpack tag behavior remains
 to be tested after the gameplay station and full modifier engine are ported.
+
+
+## Original pickaxe base melee attribute bridge (mainhand)
+
+Ported the base attribute stage of upstream
+`ModifiableItemUtil.getMeleeAttributeModifiers` into Minecraft 26.3
+`DataComponents.ATTRIBUTE_MODIFIERS` on each assembled pickaxe:
+
+- `ATTACK_DAMAGE = tic_stats[tconstruct:attack_damage]` as `ADD_VALUE`
+  in `MAINHAND`, including the existing stat-build stage's intrinsic
+  Piercing reduction and material/Lightweight calculations.
+- `ATTACK_SPEED = tic_stats[tconstruct:attack_speed] - 4` as `ADD_VALUE`
+  in `MAINHAND`, keeping the original player base-speed offset.
+- Broken tools have **no** melee attributes; repair and stat rebuild
+  recalculate both attributes and mining speed without modifier accumulation.
+- Invalid / uninitialized stacks fail before melee data is written.
+
+The adapter is an actual Minecraft 26.3 item component, not a tooltip-only
+mock; original conditional melee attacks, Piercing secondary armor-bypass
+damage, attack damage/cooldown callbacks and other dynamic modifiers remain
+dependencies. No full combat parity or in-world test is claimed. Tests check
+343 supported material combinations, exact per-stack stats, correct mainhand
+slot, break/repair, invalid stacks and repeated rebuilds.
