@@ -56,6 +56,19 @@ with zipfile.ZipFile(jar) as z:
                         'slimeknights/tconstruct/tables/recipe/TinkerStationRepairRecipe$Preview.class',
                         'slimeknights/tconstruct/library/modifiers/impl/DurabilityShieldModifier.class'}
     assert {n for n in names if n.startswith('slimeknights/') and n.endswith('.class')} == expected_classes
+    pickaxe_models = json.loads(z.read('assets/radisconstruct/pickaxe_models_manifest.json'))
+    assert len(pickaxe_models['copied']) == 32
+    assert len(pickaxe_models['variants']) == 686
+    for path, source in pickaxe_models['copied'].items():
+        assert hashlib.sha256(z.read(path)).hexdigest() == source['sha256']
+        assert z.read(path) == (root / source['source']).read_bytes(), path
+    for name, variant in pickaxe_models['variants'].items():
+        item = json.loads(z.read(f'assets/tconstruct/items/{name}.json'))
+        assert item['model'] == {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}
+        model = json.loads(z.read(f'assets/tconstruct/models/item/{name}.json'))
+        assert model['textures'] == {f'layer{i}': value for i, value in enumerate(variant['textures'])}
+        for texture in variant['textures']:
+            assert 'assets/tconstruct/textures/' + texture.split(':', 1)[1] + '.png' in names
     manifest = json.loads(z.read('radisconstruct-port-manifest.json'))
     for name, source in manifest['copied_resources'].items():
         assert hashlib.sha256(z.read(name)).hexdigest() == source['sha256'], name

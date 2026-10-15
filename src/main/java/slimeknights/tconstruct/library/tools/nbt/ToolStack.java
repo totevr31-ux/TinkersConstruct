@@ -46,6 +46,7 @@ public final class ToolStack {
         if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeCombatComponents.refresh(stack);
+            com.radi.radisconstruct.tinkerstation.TinkerPickaxeModelComponents.refresh(stack);
         }
     }
 
@@ -108,6 +109,7 @@ public final class ToolStack {
         if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeCombatComponents.refresh(stack);
+            com.radi.radisconstruct.tinkerstation.TinkerPickaxeModelComponents.refresh(stack);
         }
     }
 }

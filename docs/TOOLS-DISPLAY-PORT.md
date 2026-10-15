@@ -29,3 +29,22 @@ This retains custom durability and does not add vanilla MAX_DAMAGE. Unbuilt
 registry stacks hide the bar without inventing tool statistics. Three additional
 tests exercise genuine registered pickaxes, damage/break/repair and full ItemStack
 codec round trips. Client screenshot/gameplay verification remains outstanding.
+
+## Original pickaxe material models
+
+Copies 32 original PNGs byte-for-byte (28 material layers and four base masks),
+including the hand-authored pig-iron binding. No recoloring or replacement art.
+The original model defines handle(index 1), head(index 0), binding(index 2) order
+and the broken-head replacement. The generator adapts those layers into 686
+modern item models covering 343 material combinations in normal/broken states.
+ITEM_MODEL changes on stat rebuild, break and repair and survives the ItemStack
+codec. An unbuilt stack uses the original uncolored masks.
+
+Original inherited hand/ground/head/fixed display transforms were retrieved from
+https://github.com/MinecraftForge/MinecraftForge/blob/1.20.x/src/main/resources/assets/forge/models/item/default-tool.json
+and its default.json parent. They are expressed in the modern generated model.
+JAR verification checks every copied PNG against upstream and every model link.
+
+Not full dynamic rendering parity: modifier overlays, charging/blocking poses,
+unsupported material variants and resource-pack runtime remapping remain. No
+client bake/render or screenshot/gameplay test has been performed.
