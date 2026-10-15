@@ -1,14 +1,14 @@
 {
-  "stage": "1I",
-  "scope": "Native original Hephaestus MeltingModule and variable-size MeltingModuleInventory ported and tested: time*10, temperature/100 heating, -5 cooling, all-or-nothing output, NO_SPACE retry, slot persistence, overflow, >255-slot index support. Not integrated with game controller/real molten fluids yet.",
+  "stage": "1J",
+  "scope": "Native 26.3 controller now owns original one-slot-per-interior-block melting inventory, saves/loads registry-aware sparse slot state and runs original four-phase on-demand fuel/heating cycle. Original recipe lookup and alloy hooks intentionally disabled until their real systems are ported.",
   "branch": "radisconstruct-smeltery",
   "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
-  "tested_commit": "44720caa7694854d1762d308fb81ca3bf373adc4",
-  "ci_run": 38661459184,
-  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38661459184",
+  "tested_commit": "0731fe26b469eb6d0b01901e44730a7068c67024",
+  "ci_run": 38664287214,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38664287214",
   "build": "success",
   "tests": {
-    "total": 57,
+    "total": 63,
     "smeltery_multiblock": 7,
     "smeltery_tank": 9,
     "servant_ownership": 6,
@@ -21,7 +21,9 @@
     "skipped": 0,
     "fuel_tank_and_lava_lookup": 3,
     "melting_slot_engine": 5,
-    "melting_inventory": 3
+    "melting_inventory": 3,
+    "heating_four_phase": 4,
+    "melting_native_codec": 2
   },
   "jar_verification": "passed",
   "fabric_bootstrap": "passed; stopped before world startup",
@@ -46,9 +48,9 @@
     "common/multiblock/ServantTileEntity.java": "52633e8e221c955c0c985e11d8e50b5c17baab91dabf0d1c45a6375defe78c4d",
     "smeltery/block/entity/module/FuelModule.java": "d9a0e786c85567031f71ee373140b3d16268e232c8c894e338ad7ddd29150a1e"
   },
-  "next": "Port exact original molten fluid registrations and melting recipe serializers, bind native MeltingModuleInventory and live FuelModule to Smeltery Controller; implement GUI/network and verify real item-to-fluid gameplay, then casting.",
+  "next": "Register canonical original molten cobalt/iron fluids and original recipe codecs, wire live recipe-manager lookup, then test real molten cobalt gameplay and restore GUI, pipes, alloying and casting.",
   "legacy_tank_save_migration": false,
-  "merged_commit": "851bdb6ccd8f8932400ecb6fdf454205b30987f4",
+  "merged_commit": "d0f9fb28834d2feef0077dfe07e2b6ab61664ef8",
   "registered_blocks": [
     "tconstruct:seared_bricks",
     "tconstruct:smeltery_controller",
@@ -78,5 +80,9 @@
   "original_melting_inventory_ported": true,
   "melting_controller_bound": false,
   "original_melting_recipes_registered": false,
-  "molten_fluid_registration": false
+  "molten_fluid_registration": false,
+  "melting_inventory_controller_bound": true,
+  "four_phase_heating_controller_bound": true,
+  "native_melting_inventory_snapshot_codec": true,
+  "active_state_recheck_flicker_fixed": true
 }
