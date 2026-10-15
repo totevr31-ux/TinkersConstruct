@@ -261,6 +261,11 @@ write(f'{asset}/items/tinker_station.json',
                  'model': 'tconstruct:item/tinker_station'}})
 translations['block.tconstruct.tinker_station'] = lang_source['block.tconstruct.tinker_station']
 translations['item.tconstruct.pickaxe'] = lang_source['item.tconstruct.pickaxe']
+# Source-authentic mining Momentum status: original Hephaestus effect color,
+# identifier, HUD sprite, and localized label. No surrogate effect icon.
+momentum_icon = f'{asset}/textures/mob_effect/momentum.png'
+copy(f'main/resources/{momentum_icon}', momentum_icon)
+translations['effect.tconstruct.momentum'] = lang_source['effect.tconstruct.momentum']
 # Upstream TooltipUtil.getDisplayName only pulls the repairable head material
 # for this pickaxe; preserve *its actual* string keys, not English literals.
 translations['item.tconstruct.tool.format'] = lang_source['item.tconstruct.tool.format']
