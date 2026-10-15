@@ -29,6 +29,16 @@ public class PickaxeAttackEventsTest {
         var source = java.nio.file.Path.of(
             "upstream/Hephaestus/src/main/java/slimeknights/tconstruct/library/tools/helper/ToolAttackUtil.java");
         assertTrue(java.nio.file.Files.exists(source));
+        var original = assertDoesNotThrow(() -> java.nio.file.Files.readString(source));
+        assertTrue(original.contains("int durabilityLost = targetLiving != null ? 1 : 0"));
+        assertTrue(original.contains("!tool.hasTag(TinkerTags.Items.MELEE_PRIMARY)"));
+        assertTrue(original.contains("durabilityLost *= 2"));
+        var provider = assertDoesNotThrow(() -> java.nio.file.Files.readString(java.nio.file.Path.of(
+            "upstream/Hephaestus/src/main/java/slimeknights/tconstruct/common/data/tags/ItemTagProvider.java")));
+        var sourceTags = provider.lines().filter(line -> line.contains("addToolTags(TinkerTools.pickaxe,")).findFirst().orElseThrow();
+        assertTrue(sourceTags.contains("MELEE,"));
+        assertFalse(sourceTags.contains("MELEE_PRIMARY"));
+
     }
 
     @Test void originalMeleeWearAndOverslimeConsumeOnlyOnSuccessfulHit() {
