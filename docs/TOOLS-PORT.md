@@ -453,3 +453,35 @@ custom-name persistence through damage/repair/rebuild, malformed stacks
 and packaging of every translated key. This ports original *name selection*;
 full shift/control tooltips, material tinting and the original renderer are
 still work-in-progress.
+
+
+## Real Minecraft 26.3 tooltips: default, Shift, Control
+
+Wired Fabric's **client-only** `ItemTooltipCallback.EVENT` to the real,
+registered original `tconstruct:pickaxe`. Actual modifier-key state is
+read from Minecraft's client instance, while all formatting derives from
+the server/shared `TinkerPickaxeTooltipLines` adapter, which is separately
+regression-tested without loading a graphical client.
+
+- Default view: original tool durability (or the original Broken text),
+  original translated modifier names with visible levels and the original
+  Shift/Ctrl key prompts.
+- Hold **Shift**: rebuilt actual durability, tier, mining speed, attack
+  damage, attack speed and available upgrades/abilities from the tool stack.
+  The seven incremental stat label translations have an explicit
+  `radisconstruct.tooltip.pickaxe` prefix; they are not represented as
+  byte-for-byte upstream tooltip formats.
+- Hold **Ctrl**: the *ordered* head/handle/binding material combinations,
+  using the source's translated material names and part names. In
+  advanced-tooltip mode it also displays authentic material registry IDs.
+- Uninitialized/corrupted original pickaxes produce a safe missing-data
+  placeholder rather than parsing random data and crashing the UI. Other
+  vanilla/tool items are unaffected.
+
+All 343 ported material permutations are tested for Shift and Ctrl output,
+alongside break/repair display, advanced IDs, invalid stacks and original
+localization resource parity. The full original tooltip model, conditional
+modifier stat lines, styled numeric durability fractions, original
+full-featured level formatting, and all other supported tools still
+require follow-up work. This is an incremental UI port, not a full parity
+claim.
