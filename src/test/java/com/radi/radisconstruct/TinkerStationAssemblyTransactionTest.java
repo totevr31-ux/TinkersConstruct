@@ -79,7 +79,10 @@ public class TinkerStationAssemblyTransactionTest {
         assertNotNull(pending);
         slots.setItem(1, part("tool_handle", "rose_gold"));
         assertFalse(TinkerStationAssemblyTransaction.tryCommit(slots, pending));
-        assertFalse(slots.getItem(3).isEmpty());
+        assertTrue(slots.getItem(3).isEmpty());
+        assertEquals(1, slots.getItem(0).getCount());
+        assertEquals(1, slots.getItem(1).getCount());
+        assertEquals(1, slots.getItem(2).getCount());
     }
 
     @Test void staleComponentAndOccupiedOutputNeverConsumeParts() {
