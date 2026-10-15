@@ -296,6 +296,7 @@ runpy.run_path(str(ROOT / 'scripts/port_material_sprite_rules.py'), run_name='__
 runpy.run_path(str(ROOT / 'scripts/port_tool_part_masks.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/port_tool_part_fallback_models.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/generate_material_part_textures.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/generate_pickaxe_fallback_texture.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_recipes.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_ingots.py'), run_name='__main__')
 runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_nuggets.py'), run_name='__main__')
