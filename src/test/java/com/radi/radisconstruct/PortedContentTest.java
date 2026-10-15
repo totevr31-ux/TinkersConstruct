@@ -64,6 +64,10 @@ public class PortedContentTest {
         // The original reusable Pattern tag is needed by Part Builder crafting.
         tags.put(TagKey.create(Registries.ITEM, id("tconstruct:patterns/default")),
             List.of(BuiltInRegistries.ITEM.get(id("tconstruct:pattern")).orElseThrow()));
+        // Mirror the original planklike inclusion for a real shaped-station recipe test.
+        tags.put(TagKey.create(Registries.ITEM, id("tconstruct:planklike")),
+            List.of(BuiltInRegistries.ITEM.get(id("minecraft:oak_planks")).orElseThrow(),
+                    BuiltInRegistries.ITEM.get(id("minecraft:spruce_planks")).orElseThrow()));
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
@@ -201,6 +205,16 @@ public class PortedContentTest {
             BuiltInRegistries.ITEM.getKey(
                 com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
         assertTrue(recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe);
+        var pattern = new ItemStack(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
+        var wood = new ItemStack(Items.OAK_PLANKS);
+        var grid = CraftingInput.of(3, 3, List.of(pattern.copy(), pattern.copy(), pattern.copy(),
+            wood.copy(), ItemStack.EMPTY, wood.copy(),
+            wood.copy(), ItemStack.EMPTY, wood.copy()));
+        assertTrue(recipe.matches(grid, null), "Authentic 3x3 station pattern should match its restored planklike tag");
+        var assembled = recipe.assemble(grid);
+        assertTrue(assembled.is(com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
+        assertEquals(1, assembled.getCount());
+        assertFalse(recipe.matches(CraftingInput.of(1,1,List.of(new ItemStack(Items.DIRT))), null));
         var sourceOriginal = json(Path.of(
             "upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/tables/tinker_station.json"));
         assertEquals(source.getAsJsonArray("pattern"), sourceOriginal.getAsJsonArray("pattern"));
