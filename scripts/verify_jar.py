@@ -128,6 +128,34 @@ with zipfile.ZipFile(jar) as z:
     assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/OriginalToolTraits.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeStatRebuild.class' in names
+    # Exact per-material 26.3 item model dispatch: 7 head x 7 handle x 7 binding.
+    # All variants are pre-rendered from preserved original source palettes/masks;
+    # never ship a client selector that refers to missing textures.
+    material_models = json.loads(z.read('assets/radisconstruct/pickaxe_visual_variants.json'))
+    assert material_models['count'] == 343
+    metals7 = material_models['materials']
+    assert len(metals7) == len(set(metals7)) == 7
+    model = json.loads(z.read('assets/tconstruct/items/pickaxe.json'))['model']
+    assert model['type'] == 'minecraft:select'
+    assert model['property'] == 'minecraft:custom_model_data' and model['index'] == 0
+    cases = model['cases']
+    assert len(cases) == 343
+    variants = [x['when'] for x in cases]
+    assert len(set(variants)) == 343
+    assert variants == material_models['variants']
+    from itertools import product
+    assert set(variants) == {'__'.join(combo) for combo in product(metals7, repeat=3)}
+    for case in cases:
+        key = case['when']
+        model_path = f'assets/tconstruct/models/item/tool/pickaxe/variants/{key}.json'
+        texture_path = f'assets/tconstruct/textures/item/tool/pickaxe/variants/{key}.png'
+        assert case['model'] == {'type': 'minecraft:model',
+                                 'model': f'tconstruct:item/tool/pickaxe/variants/{key}'}
+        assert model_path in names and texture_path in names
+        baked = json.loads(z.read(model_path))
+        assert baked['textures']['layer0'] == f'tconstruct:item/tool/pickaxe/variants/{key}'
+        assert z.read(texture_path).startswith(b'\\x89PNG\\r\\n\\x1a\\n'), texture_path
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeModels.class' in names
     # The nine original explicit pickaxe item tags, plus the parent tag graph,
     # must survive resource processing in the installable JAR.
     original_tags = [
