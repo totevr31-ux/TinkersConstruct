@@ -92,7 +92,9 @@ public final class TinkerPickaxeTooltipLines {
 
     private static void addStats(ToolStack tool, Consumer<Component> out) {
         var stats = tool.getStats();
-        if (!tool.isUnbreakable()) out.accept(durability(tool));
+        // Upstream TooltipBuilder.addDurability(..., textIfBroken=false) gives
+        // 0 / max on SHIFT, while DEFAULT explicitly says Broken.
+        if (!tool.isUnbreakable()) out.accept(durability(tool, false));
         String tier = stats.getString("tconstruct:harvest_tier").orElse("minecraft:wood");
         if (!tier.startsWith("minecraft:") || !tier.substring("minecraft:".length())
             .matches("[a-z_]+")) throw new IllegalStateException("Unsupported pickaxe harvest tier");
