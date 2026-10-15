@@ -66,7 +66,17 @@ public final class TinkerPickaxeTooltipLines {
             if (!modifier.id().startsWith("tconstruct:")) continue;
             Component name = Component.translatable(
                 "modifier.tconstruct." + modifier.id().substring("tconstruct:".length()));
-            if (modifier.level() > 1) {
+            if ("tconstruct:overslime".equals(modifier.id())) {
+                // Upstream DurabilityShieldModifier#getDisplayName:
+                // '<modifier name>: <current shield> / <capacity>'.
+                // Unlike a static label this updates after real mining and
+                // melee events, and after any Overslime-specific repair.
+                int shield = Math.max(0, tool.getPersistentData()
+                    .getInt("tconstruct:overslime").orElse(0));
+                int capacity = Math.max(0, tool.getVolatileData()
+                    .getInt("tconstruct:overslime_cap").orElse(0));
+                out.accept(name.copy().append(": " + shield + " / " + capacity));
+            } else if (modifier.level() > 1) {
                 // The full original Modifier#getDisplayName level formatter is
                 // not ported; show a transparent numeric level for now.
                 out.accept(Component.empty().append(name).append(" " + modifier.level()));
