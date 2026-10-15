@@ -174,7 +174,9 @@ with zipfile.ZipFile(jar) as z:
     original_effect_png = root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/textures/mob_effect/momentum.png'
     packed_icon = 'assets/tconstruct/textures/mob_effect/momentum.png'
     assert z.read(packed_icon) == original_effect_png.read_bytes(), 'Momentum must retain original HUD icon'
-    assert packed_lang['effect.tconstruct.momentum'] == upstream_lang['effect.tconstruct.momentum']
+    actual_effect_name = json.loads(z.read('assets/tconstruct/lang/en_us.json'))['effect.tconstruct.momentum']
+    upstream_effect_name = json.loads((root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/lang/en_us.json').read_text())['effect.tconstruct.momentum']
+    assert actual_effect_name == upstream_effect_name
     # The nine original explicit pickaxe item tags, plus the parent tag graph,
     # must survive resource processing in the installable JAR.
     original_tags = [
