@@ -132,6 +132,14 @@ public class TinkerStationAssemblyTransactionTest {
                 valid.parts().get(1), valid.parts().get(2)));
         assertThrows(IllegalArgumentException.class,
             () -> TinkerStationPickaxeAssembly.create(forged));
+        var misreported = new TinkerStationAssemblyValidation.Plan(valid.toolId(),
+            valid.outputCount(), List.of(
+                new TinkerStationAssemblyValidation.PartSnapshot("pick_head",
+                    MaterialVariantId.parse("tconstruct:rose_gold"), 1, slots.getItem(0)),
+                valid.parts().get(1), valid.parts().get(2)));
+        assertThrows(IllegalArgumentException.class,
+            () -> TinkerStationPickaxeAssembly.create(misreported),
+            "Actual Material component must match the snapshot, not just the part ID");
         assertNotNull(TinkerStationPickaxeAssembly.create(valid));
     }
 
