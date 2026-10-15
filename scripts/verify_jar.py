@@ -156,6 +156,14 @@ with zipfile.ZipFile(jar) as z:
         'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
     ):
         assert f'com/radi/radisconstruct/tinkerstation/{cls}.class' in names
+    # Both station GUI operations must be real compiled server/client paths.
+    # This catches a menu with a cosmetic Repair button but no server recipe.
+    assert b'TinkerStationRepairTransaction' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class')
+    assert b'REPAIR_PICKAXE_BUTTON' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationMenu.class')
+    assert b'Repair' in z.read(
+        'com/radi/radisconstruct/tinkerstation/TinkerStationScreen.class')
     for material in ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon', 'slimesteel', 'pig_iron'):
         original = root / f'upstream/Hephaestus/src/generated/resources/data/tconstruct/tinkering/materials/traits/{material}.json'
         assert z.read(f'assets/radisconstruct/original_tool_traits/{material}.json') == original.read_bytes()
