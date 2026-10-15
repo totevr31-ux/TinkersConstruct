@@ -1,14 +1,14 @@
 {
-  "stage": "1H",
-  "scope": "Registered original four-bucket Seared Fuel Tank, native sided fluid transactions and persistence; original fuel-module services bound to controller and non-consuming upstream lava fuel preview. No melting/heat tick or client UI yet.",
+  "stage": "1I",
+  "scope": "Native original Hephaestus MeltingModule and variable-size MeltingModuleInventory ported and tested: time*10, temperature/100 heating, -5 cooling, all-or-nothing output, NO_SPACE retry, slot persistence, overflow, >255-slot index support. Not integrated with game controller/real molten fluids yet.",
   "branch": "radisconstruct-smeltery",
   "base_commit": "0815a295a07d8d75bda0da6ac364d0d8144a5160",
-  "tested_commit": "8937f1abbce3d607836a3a3c8582f802a8d5e41d",
-  "ci_run": 38622685949,
-  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38622685949",
+  "tested_commit": "44720caa7694854d1762d308fb81ca3bf373adc4",
+  "ci_run": 38661459184,
+  "ci_url": "https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38661459184",
   "build": "success",
   "tests": {
-    "total": 49,
+    "total": 57,
     "smeltery_multiblock": 7,
     "smeltery_tank": 9,
     "servant_ownership": 6,
@@ -19,7 +19,9 @@
     "existing_materials": 5,
     "failures": 0,
     "skipped": 0,
-    "fuel_tank_and_lava_lookup": 3
+    "fuel_tank_and_lava_lookup": 3,
+    "melting_slot_engine": 5,
+    "melting_inventory": 3
   },
   "jar_verification": "passed",
   "fabric_bootstrap": "passed; stopped before world startup",
@@ -44,9 +46,9 @@
     "common/multiblock/ServantTileEntity.java": "52633e8e221c955c0c985e11d8e50b5c17baab91dabf0d1c45a6375defe78c4d",
     "smeltery/block/entity/module/FuelModule.java": "d9a0e786c85567031f71ee373140b3d16268e232c8c894e338ad7ddd29150a1e"
   },
-  "next": "Port native melting slots and registered molten metal recipes; consume original fuel only when real melting/alloying demand exists; restore fluid bucket interaction and dynamic tank fluid rendering; test in a launched Minecraft world.",
+  "next": "Port exact original molten fluid registrations and melting recipe serializers, bind native MeltingModuleInventory and live FuelModule to Smeltery Controller; implement GUI/network and verify real item-to-fluid gameplay, then casting.",
   "legacy_tank_save_migration": false,
-  "merged_commit": "6ab2b44504d8abadcaf0dcf78b386ed5c4ad3117",
+  "merged_commit": "851bdb6ccd8f8932400ecb6fdf454205b30987f4",
   "registered_blocks": [
     "tconstruct:seared_bricks",
     "tconstruct:smeltery_controller",
@@ -71,5 +73,10 @@
     "amount": 50,
     "duration": 100,
     "temperature": 1000
-  }
+  },
+  "original_melting_module_ported": true,
+  "original_melting_inventory_ported": true,
+  "melting_controller_bound": false,
+  "original_melting_recipes_registered": false,
+  "molten_fluid_registration": false
 }
