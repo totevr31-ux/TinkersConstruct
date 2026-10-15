@@ -27,6 +27,12 @@ public final class TinkerStationPickaxeAssembly {
             if (!expected.partId().equals(part.partId()) || expected.weight() != part.weight())
                 throw new IllegalArgumentException("Part layout differs from upstream pickaxe");
         }
+        // A public Plan record can be constructed by other callers. Require
+        // that its captured ItemStacks are real registered parts whose stored
+        // materials match every claimed snapshot, not merely matching names.
+        if (!plan.stillApplicable(plan.parts().stream()
+                .map(TinkerStationAssemblyValidation.PartSnapshot::identity).toList()))
+            throw new IllegalArgumentException("Assembly plan contains invalid part stacks");
         // Original createTool writes the materials then rebuilds the stats,
         // including intrinsic and material modifier traits and persistent slots.
         ItemStack result = new ItemStack(TinkerToolItems.PICKAXE);
