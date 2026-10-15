@@ -21,7 +21,7 @@ public final class TinkerToolItems {
         Registries.ITEM, Identifier.fromNamespaceAndPath("tconstruct", "pickaxe"));
 
     public static final Item PICKAXE = Registry.register(BuiltInRegistries.ITEM,
-        PICKAXE_KEY, new Item(new Item.Properties().setId(PICKAXE_KEY).stacksTo(1)));
+        PICKAXE_KEY, new TinkerPickaxeItem(new Item.Properties().setId(PICKAXE_KEY).stacksTo(1)));
 
     public static void initialize() {
         // Class loading registers the authentic tconstruct:pickaxe item ID.
