@@ -201,6 +201,16 @@ with zipfile.ZipFile(jar) as z:
                 'attack_speed', 'upgrades', 'abilities']:
         assert 'radisconstruct.tooltip.pickaxe.' + key in packed_lang
     assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeClientTooltips.class' in names
+    # The real 26.3 player-mining hook and source Crumbling calculation must
+    # ship and be explicitly enabled in Fabric metadata, not just pass JUnit.
+    assert meta.get('mixins') == ['radisconstruct.mixins.json']
+    mixins = json.loads(z.read('radisconstruct.mixins.json'))
+    assert mixins['required'] is True
+    assert mixins['package'] == 'com.radi.radisconstruct.mixin'
+    assert mixins['mixins'] == ['PlayerPickaxeMiningSpeedMixin']
+    assert mixins['injectors']['defaultRequire'] == 1
+    assert 'com/radi/radisconstruct/mixin/PlayerPickaxeMiningSpeedMixin.class' in names
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeBreakSpeedHook.class' in names
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
