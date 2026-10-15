@@ -150,6 +150,7 @@ with zipfile.ZipFile(jar) as z:
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
         'TinkerPickaxeCombatComponents',
         'TinkerPickaxeBreakEvents',
+        'TinkerPickaxeAttackEvents',
         'TinkerStationPickaxeAssembly',
         'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
     ):
