@@ -427,3 +427,29 @@ transformations, or all other tool types. Generated 343 sprites/models,
 resource selector, in-JAR presence and per-stack model choices are all
 covered by automated tests. Actual Minecraft client/model-bake/in-world
 screenshots still need verifying outside the headless GitHub smoke job.
+
+
+## Original material-prefix pickaxe display name (TooltipUtil port)
+
+The original `TooltipUtil.getDisplayName` selects material names only from
+parts with `IRepairableMaterialStats`. In the original three-part pickaxe,
+the **pick head** is repairable; handle and binding do not change the prefix.
+The registered `TinkerPickaxeItem.getName(ItemStack)` now returns the
+original translatable `item.tconstruct.tool.format` with
+`material.tconstruct.<head_material>` + `item.tconstruct.pickaxe`.
+For example, a cobalt-head pickaxe has the displayed material prefix
+regardless of whether its handle and binding are made from manyullyn,
+pig iron or other supported metals.
+
+Original `tic_name` customized names stored in tool custom data override
+the generated prefix, as they do in the source. Uninitialized or corrupted
+pickaxe items revert to the basic translatable name without crashing
+inventory tooltip generation. The upstream English strings and name format
+are ported **exactly** from the preserved original localization resource,
+not retranslated or hard-coded as English Java literals.
+
+Tests check source-name parity, all 343 supported material combinations,
+custom-name persistence through damage/repair/rebuild, malformed stacks
+and packaging of every translated key. This ports original *name selection*;
+full shift/control tooltips, material tinting and the original renderer are
+still work-in-progress.
