@@ -127,6 +127,25 @@ public class PickaxeTooltipLinesTest {
         assertEquals(343,count);
     }
 
+    @Test void brokenDefaultSaysBrokenButShiftShowsZeroDurabilityLikeOriginal() {
+        var stack = pickaxe("cobalt", "rose_gold", "pig_iron");
+        var tool = ToolStack.from(stack);
+        int max = tool.getMaxDurability();
+        tool.setDamage(max);
+        assertTrue(view(stack, View.DEFAULT, false).get(0).toString().contains(
+            "tooltip.tconstruct.tool.broken"));
+        var detailed = view(stack, View.STATS, false);
+        assertTrue(detailed.get(0).toString().contains(
+            "radisconstruct.tooltip.pickaxe.durability"));
+        assertTrue(detailed.get(0).toString().contains(Integer.toString(max)));
+        assertFalse(detailed.get(0).toString().contains("tool.broken"),
+            "Original TooltipBuilder.addDurability in detailed view uses numeric 0 / max");
+        ToolDamageUtil.repair(tool, 1);
+        assertFalse(tool.isBroken());
+        assertTrue(view(stack, View.STATS, false).get(0).toString().contains(
+            "radisconstruct.tooltip.pickaxe.durability"));
+    }
+
     @Test void originalOverslimeTooltipTracksShieldAndCapacityAfterRealDamage() {
         var stack = pickaxe("slimesteel", "slimesteel", "slimesteel");
         var tool = ToolStack.from(stack);
