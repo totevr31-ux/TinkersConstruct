@@ -156,6 +156,27 @@ with zipfile.ZipFile(jar) as z:
         assert baked['textures']['layer0'] == f'tconstruct:item/tool/pickaxe/variants/{key}'
         assert z.read(texture_path).startswith(bytes((137,80,78,71,13,10,26,10))), texture_path
     assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeModels.class' in names
+    # Original Hepatizon Momentum effect uses one vanilla status effect holder
+    # and a minimal Mixin for client/server break-speed parity (Fabric has no
+    # upstream PortingLib BreakSpeed event).
+    for path in (
+        'com/radi/radisconstruct/tinkerstation/TinkerMomentumEffect.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerMomentumEffect$Marker.class',
+        'com/radi/radisconstruct/tinkerstation/TinkerMomentumMining.class',
+        'com/radi/radisconstruct/mixin/PlayerDestroySpeedMixin.class',
+        'radisconstruct.mixins.json',
+    ):
+        assert path in names, f'Missing original Momentum runtime file: {path}'
+    assert 'radisconstruct.mixins.json' in meta['mixins']
+    mixin = json.loads(z.read('radisconstruct.mixins.json'))
+    assert mixin['package'] == 'com.radi.radisconstruct.mixin'
+    assert mixin['mixins'] == ['PlayerDestroySpeedMixin']
+    original_effect_png = root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/textures/mob_effect/momentum.png'
+    packed_icon = 'assets/tconstruct/textures/mob_effect/momentum.png'
+    assert z.read(packed_icon) == original_effect_png.read_bytes(), 'Momentum must retain original HUD icon'
+    actual_effect_name = json.loads(z.read('assets/tconstruct/lang/en_us.json'))['effect.tconstruct.momentum']
+    upstream_effect_name = json.loads((root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/lang/en_us.json').read_text())['effect.tconstruct.momentum']
+    assert actual_effect_name == upstream_effect_name
     # The nine original explicit pickaxe item tags, plus the parent tag graph,
     # must survive resource processing in the installable JAR.
     original_tags = [

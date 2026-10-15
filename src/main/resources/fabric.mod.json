@@ -13,6 +13,7 @@
   ],
   "license": "MIT",
   "environment": "*",
+  "mixins": ["radisconstruct.mixins.json"],
   "entrypoints": {
     "main": [
       "com.radi.radisconstruct.RadisConstruct"

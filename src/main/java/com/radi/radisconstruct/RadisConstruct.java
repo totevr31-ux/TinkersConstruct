@@ -9,6 +9,7 @@ import com.radi.radisconstruct.partbuilder.PartBuilderContent;
 import com.radi.radisconstruct.tinkerstation.TinkerToolItems;
 import com.radi.radisconstruct.tinkerstation.TinkerStationContent;
 import com.radi.radisconstruct.tinkerstation.TinkerPickaxeBreakEvents;
+import com.radi.radisconstruct.tinkerstation.TinkerMomentumEffect;
 import com.radi.radisconstruct.tinkerstation.TinkerPickaxeAttackEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public final class RadisConstruct implements ModInitializer {
         TinkerMaterials.initialize();
         ToolPartItems.initialize();
         TinkerToolItems.initialize();
+        TinkerMomentumEffect.initialize();
         TinkerPickaxeBreakEvents.initialize();
         TinkerPickaxeAttackEvents.initialize();
         PartBuilderPatternItems.initialize();

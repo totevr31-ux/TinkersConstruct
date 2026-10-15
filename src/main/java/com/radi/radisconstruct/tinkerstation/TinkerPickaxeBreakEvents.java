@@ -59,6 +59,10 @@ public final class TinkerPickaxeBreakEvents {
             // server. The original uses the pickaxe in the main hand.
             ItemStack stack = player.getMainHandItem();
             if (!(stack.getItem() instanceof TinkerPickaxeItem) || player.isCreative()) return;
+            // Original BLOCK_BREAK hooks run before ToolDamageUtil damages the
+            // tool. A hit that breaks the tool still earns this last stack.
+            if (!slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack).isBroken())
+                TinkerMomentumMining.afterSuccessfulPrimaryBreak(player, stack, state);
             onSuccessfulPrimaryBreak(stack, state.getDestroySpeed(level, pos), false, player);
         });
     }
