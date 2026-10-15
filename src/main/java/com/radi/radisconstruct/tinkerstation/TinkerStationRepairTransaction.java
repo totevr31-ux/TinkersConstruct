@@ -55,10 +55,17 @@ public final class TinkerStationRepairTransaction {
         ItemStack tool = inventory.getItem(toolSlot);
         if (tool.isEmpty() || tool.getItem() != registeredPickaxe || tool.getCount() != 1
             || !inventory.getItem(outputSlot).isEmpty()) return null;
-        var result = TinkerStationRepairRecipe.previewPickaxe(tool,
-            inputSlots.stream().map(inventory::getItem).toList());
-        return result.map(value -> new PendingRepair(inventory, registeredPickaxe, toolSlot,
-            outputSlot, inputSlots, value.result())).orElse(null);
+        // A real registry item can still carry malformed CUSTOM_DATA (commands,
+        // corrupted saves, another mod). Never let a GUI button crash the server
+        // or consume station inputs when original tool data is invalid.
+        try {
+            var result = TinkerStationRepairRecipe.previewPickaxe(tool,
+                inputSlots.stream().map(inventory::getItem).toList());
+            return result.map(value -> new PendingRepair(inventory, registeredPickaxe, toolSlot,
+                outputSlot, inputSlots, value.result())).orElse(null);
+        } catch (IllegalArgumentException | IllegalStateException invalidTool) {
+            return null;
+        }
     }
 
     /** Revalidates every input and current recipe before writing any live slot. */
@@ -72,8 +79,13 @@ public final class TinkerStationRepairTransaction {
         }
         ItemStack liveTool = inventory.getItem(pending.toolSlot);
         if (liveTool.getItem() != pending.pickaxe) return false;
-        var fresh = TinkerStationRepairRecipe.previewPickaxe(liveTool,
-            pending.inputSlots.stream().map(inventory::getItem).toList());
+        java.util.Optional<TinkerStationRepairRecipe.Preview> fresh;
+        try {
+            fresh = TinkerStationRepairRecipe.previewPickaxe(liveTool,
+                pending.inputSlots.stream().map(inventory::getItem).toList());
+        } catch (IllegalArgumentException | IllegalStateException invalidTool) {
+            return false;
+        }
         if (fresh.isEmpty() || !ItemStack.matches(fresh.get().result(), pending.result)) return false;
         var nextInputs = new ArrayList<ItemStack>();
         for (int i = 0; i < pending.inputSlots.size(); i++) {
