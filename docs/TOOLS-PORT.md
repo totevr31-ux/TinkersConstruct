@@ -231,3 +231,21 @@ server-callback core, creative/instant exclusions, Overslime consumption,
 broken-state transitions, repaired tool reuse, non-pickaxe exclusion and
 unbreakable data. The CI smoke test only reaches Fabric initialization/EULA
 gate; it cannot assert real-world break events without a running test world.
+
+
+## Original item tags for the pickaxe
+
+Verified the original upstream `ItemTagProvider.addTools()` entry for
+`TinkerTools.pickaxe`. Restored all nine direct tag memberships (including
+`minecraft:pickaxes`, durability, primary/stone harvest, melee, multipart,
+one-handed, AOE and cluster harvestables) without adding unsupported tool
+classes. Added minimal nested-parent tags that resolve the original
+`modifiable/harvest`, `modifiable/melee_or_harvest`, `modifiable/held`
+and `modifiable` inheritance for this single pickaxe. Resource entries set
+`replace:false`, so they merge with other datapacks. This is not the whole
+original tag graph for tools that have not yet been ported.
+
+Automated source-parity tests assert the original explicit list and the
+current parent graph. Strict packaged-JAR validation requires all fourteen
+tag files. Actual world-side reload/combined-modpack tag behavior remains
+to be tested after the gameplay station and full modifier engine are ported.
