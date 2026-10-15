@@ -356,3 +356,45 @@ and occupied-output transactions using the actual block entity, generated
 recipe codec and source layout, 343 combinations from prior tests. Strict
 packaged-JAR assertions verify station GUI/art/block/recipe and pickaxe model.
 **In-world GUI/world-load gameplay tests have not yet been performed.**
+
+
+## Playable Tinker Station pickaxe repair button (first repair GUI stage)
+
+Extended the already registered 4-slot `tconstruct:tinker_station` without
+inventing a new machine. The two authenticated server action buttons are:
+
+- **Assemble (100)** — original head / handle / binding in slots 0–2,
+  full defensive assembly transaction into output slot 3.
+- **Repair (101)** — an existing registered `tconstruct:pickaxe` in slot 0,
+  original head-material ingots or nuggets in slots 1–2, a validated
+  original-material repair output in slot 3. The original repair calculation
+  remains in `TinkerStationRepairRecipe` and uses only source-derived
+  values/recipes, rather than a generic anvil repair cost.
+
+Slot and hopper predicates admit a pickaxe in slot 0 and tag-validated ingots
+or nuggets in either ingredient slot, while still accepting the original
+assembly parts in their exact slots. Output slot 3 never admits arbitrary
+player/hopper items. Shift-click attempts material slot 1 then slot 2 before
+moving items between regular inventory and hotbar.
+
+The repair button never trusts a client-supplied item/material: it uses
+`TinkerStationRepairTransaction.preview` and `tryCommit` on the station's
+actual server `Container`, validating exact tool/ingredient snapshots,
+registered item ID, current head material, legitimate repair consumption and
+output vacancy. Each transaction can commit only once. It copies the repaired
+stack (retaining tool materials, traits and derived combat/mining data), removes
+the old damaged tool and exact number of ingots/nuggets, and writes the output.
+Malformed/uninitialized registered pickaxes now fail closed rather than
+throwing from the server GUI button.
+
+Regression tests exercise the **real registered BlockEntity inventory**
+for mixed metal tool construction, ingot repair, ingot+nugget broken-tool
+repair, occupied output, mismatched head metal, stale ingredient/tool
+snapshot, replay prevention, cross-container use, slot/hopper guards and
+uninitialized tool input. JAR verification checks that both GUI buttons and
+the authentic server repair bridge are compiled and packaged.
+
+Still not full original Hephaestus station parity: repair kits, alternative
+repair materials, advanced tool stations, modifier application, part
+swapping, dynamically colored original tools and actual world-client click
+tests remain pending.
