@@ -31,7 +31,9 @@ public class PortedContentTest {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
     }
     static Identifier id(String value) { return Identifier.parse(value); }
-    @BeforeAll static void bootstrap() throws Exception {
+    @BeforeAll static synchronized void bootstrap() throws Exception {
+        // Shared registry/tag fixture for component and world-data tests.
+        if (ops != null) return;
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
