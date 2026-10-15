@@ -44,19 +44,29 @@ public final class NativeMoltenFluids {
         return Registry.register(BuiltInRegistries.FLUID, key, fluid);
     }
 
-    private static Pair register(Metal metal) {
+    /**
+     * Register all source/flowing entries before constructing LiquidBlock.
+     * LiquidBlock can query source.getSource() during construction, which must
+     * never see a missing pair in the lookup.
+     */
+    private static Pair registerFluidPair(Metal metal) {
         FlowingFluid source = registerFluid(metal.id(), new NativeMoltenFluid.Source(metal));
         FlowingFluid flowing = registerFluid("flowing_" + metal.id(), new NativeMoltenFluid.Flowing(metal));
+        return new Pair(source, flowing, null);
+    }
+
+    private static Pair attachBlock(Metal metal, Pair pair) {
         ResourceKey<Block> blockId = ResourceKey.create(Registries.BLOCK, id(metal.id()));
         LiquidBlock block = Registry.register(BuiltInRegistries.BLOCK, blockId,
-            new LiquidBlock(source, BlockBehaviour.Properties.of()
+            new LiquidBlock(pair.source(), BlockBehaviour.Properties.of()
                 .setId(blockId).mapColor(MapColor.FIRE)
                 .noCollision().strength(100.0f).noLootTable().replaceable().liquid()));
-        return new Pair(source, flowing, block);
+        return new Pair(pair.source(), pair.flowing(), block);
     }
 
     static {
-        for (Metal metal : Metal.values()) BY_METAL.put(metal, register(metal));
+        for (Metal metal : Metal.values()) BY_METAL.put(metal, registerFluidPair(metal));
+        for (Metal metal : Metal.values()) BY_METAL.put(metal, attachBlock(metal, BY_METAL.get(metal)));
     }
 
     public static FlowingFluid source(Metal metal) { return BY_METAL.get(metal).source(); }
