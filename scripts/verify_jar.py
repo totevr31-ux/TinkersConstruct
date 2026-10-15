@@ -181,12 +181,33 @@ with zipfile.ZipFile(jar) as z:
         'material.tconstruct.' + name for name in manifest['metals']
     ]:
         assert packed_lang[key] == upstream_lang[key], f'Incorrect original translated tool name: {key}'
+    # The source names and Shift/Ctrl pickaxe tooltip keys must survive the
+    # Gradle resource-generation stage, not merely exist in Java code.
+    original_tooltip_keys = [
+        'tooltip.tconstruct.hold_shift', 'tooltip.tconstruct.hold_ctrl',
+        'tooltip.tconstruct.uninitialized', 'tooltip.tconstruct.missing_data',
+        'tooltip.tconstruct.tool.broken', 'item.tconstruct.pick_head',
+        'item.tconstruct.tool_handle', 'item.tconstruct.tool_binding',
+        'modifier.tconstruct.overslime', 'modifier.tconstruct.overcast',
+        'modifier.tconstruct.lightweight', 'modifier.tconstruct.enhanced',
+        'modifier.tconstruct.piercing', 'modifier.tconstruct.crumbling',
+        'modifier.tconstruct.tasty', 'modifier.tconstruct.momentum',
+        'modifier.tconstruct.insatiable'
+    ] + ['stat.tconstruct.harvest_tier.minecraft.' + tier
+         for tier in ['wood', 'stone', 'iron', 'gold', 'diamond', 'netherite']]
+    for key in original_tooltip_keys:
+        assert packed_lang[key] == upstream_lang[key], f'Original tooltip string missing: {key}'
+    for key in ['durability', 'harvest_tier', 'mining_speed', 'attack_damage',
+                'attack_speed', 'upgrades', 'abilities']:
+        assert 'radisconstruct.tooltip.pickaxe.' + key in packed_lang
+    assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeClientTooltips.class' in names
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
         'TinkerPickaxeCombatComponents',
         'TinkerPickaxeDurabilityBar',
         'TinkerPickaxeDisplayName',
+        'TinkerPickaxeTooltipLines', 'TinkerPickaxeTooltipLines$View',
         'TinkerPickaxeBreakEvents',
         'TinkerPickaxeAttackEvents',
         'TinkerStationPickaxeAssembly',
