@@ -317,3 +317,42 @@ Regression tests cover vanilla `ItemStack` bar calls, normal wear, shield
 drain, cyan display, full shield overrides, broken/repaired transitions and
 all 343 supported head/handle/binding combinations. Other unported modifier
 bar hooks (upgrades and exotic durability displays) are not yet implemented.
+
+
+## Playable original Tinker Station first iteration (pickaxe only)
+
+Implemented real `tconstruct:tinker_station` block, item, persistent
+block-entity inventory, menu type and client screen (Minecraft 26.3).
+Right-clicking the original table now opens a server-backed station with
+four slots: 0 pick head, 1 tool handle, 2 binding, 3 output. The server craft
+button passes **only** a fixed action ID, never a client-provided material,
+recipe or item. It runs the already-tested original part-layout validation and
+`TinkerStationAssemblyTransaction` atomic check/commit: the three real
+source-material part ItemStacks are each consumed exactly once and a genuine
+`tconstruct:pickaxe` with original material/modifier/stats components is
+written to the output. Stale, mismatched, fake or reordered parts and occupied
+outputs are rejected without input consumption.
+
+The station inventory is block-entity-persistent; its four contents drop when
+the table is destroyed through the standard `BaseEntityBlock` teardown
+behavior. Input slots reject nonmatching shapes, output rejects insertion and
+shift-click routes station output into player inventory. The first GUI uses
+the vanilla dispenser background temporarily; the complete original custom
+Tinker Station layout/recipe picker, tool tooltips/preview, repairs and
+modifier installation are explicitly **not** complete. Do not advertise other
+original tools; only the three-part pickaxe path is registered.
+
+Original station top/side/bottom textures and table geometry, directional
+blockstate, block item model and exact 3x3 pattern+planklike recipe migrate
+from the untouched Hephaestus upstream. Removed the unsupported Mantle
+dynamic wood-retexturing table model loader and custom recipe codec only;
+using a vanilla-shaped 26.3 recipe instead. Added original source-mask static
+cobalt-colored pickaxe fallback icon to avoid missing-texture output while
+the true per-material dynamic tool-model renderer is still unported. Its
+appearance **does not yet change with the tool materials**.
+
+Regression tests cover registration, exact station slot guards, wrong-order
+and occupied-output transactions using the actual block entity, generated
+recipe codec and source layout, 343 combinations from prior tests. Strict
+packaged-JAR assertions verify station GUI/art/block/recipe and pickaxe model.
+**In-world GUI/world-load gameplay tests have not yet been performed.**
