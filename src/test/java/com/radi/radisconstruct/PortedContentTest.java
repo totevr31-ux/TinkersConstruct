@@ -41,6 +41,10 @@ public class PortedContentTest {
         // item registries for codec and datapack-tag validation.
         assertNotNull(com.radi.radisconstruct.material.PartBuilderPatternItems.PATTERN);
         assertNotNull(com.radi.radisconstruct.partbuilder.PartBuilderContent.BLOCK_ITEM);
+        assertNotNull(com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM);
+        assertNotNull(com.radi.radisconstruct.tinkerstation.TinkerStationContent.MENU_TYPE);
+        assertEquals(id("tconstruct:tinker_station"), BuiltInRegistries.ITEM.getKey(
+            com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
         assertEquals(14, com.radi.radisconstruct.material.ToolPartItems.all().size());
         com.radi.radisconstruct.tinkerstation.TinkerToolItems.initialize();
         assertEquals(id("tconstruct:pickaxe"), BuiltInRegistries.ITEM.getKey(
@@ -170,7 +174,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(10, checked);
+        assertEquals(11, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {
@@ -182,6 +186,24 @@ public class PortedContentTest {
             assertNotNull(PlacedFeature.DIRECT_CODEC.parse(ops, placed).getOrThrow());
         }
     }
+    @Test void originalTinkerStationRecipeDecodesAndPreservesOriginalPattern() throws Exception {
+        var source = json(ROOT.resolve("data/tconstruct/recipe/tables/tinker_station.json"));
+        var recipe = assertInstanceOf(CraftingRecipe.class, Recipe.DIRECT_CODEC.parse(ops, source).getOrThrow());
+        assertEquals("minecraft:crafting_shaped", source.get("type").getAsString());
+        assertEquals(List.of("ppp", "w w", "w w"), source.getAsJsonArray("pattern")
+            .asList().stream().map(JsonElement::getAsString).toList());
+        assertEquals("tconstruct:tinker_station", source.getAsJsonObject("result").get("id").getAsString());
+        assertEquals("tconstruct:pattern", source.getAsJsonObject("key").get("p").getAsString());
+        assertEquals("#tconstruct:planklike", source.getAsJsonObject("key").get("w").getAsString());
+        assertEquals(id("tconstruct:tinker_station"),
+            BuiltInRegistries.ITEM.getKey(
+                com.radi.radisconstruct.tinkerstation.TinkerStationContent.BLOCK_ITEM));
+        assertTrue(recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe);
+        var sourceOriginal = json(Path.of(
+            "upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/tables/tinker_station.json"));
+        assertEquals(source.getAsJsonArray("pattern"), sourceOriginal.getAsJsonArray("pattern"));
+    }
+
     @Test void realPartBuilderTransactionConsumesIngotButPreservesPattern() {
         var metal = new com.radi.radisconstruct.material.MaterialVariantId("tconstruct", "cobalt", "");
         var input = new net.minecraft.world.SimpleContainer(3);
