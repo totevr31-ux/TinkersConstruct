@@ -149,6 +149,7 @@ with zipfile.ZipFile(jar) as z:
     for cls in (
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
         'TinkerPickaxeCombatComponents',
+        'TinkerPickaxeDurabilityBar',
         'TinkerPickaxeBreakEvents',
         'TinkerPickaxeAttackEvents',
         'TinkerStationPickaxeAssembly',
