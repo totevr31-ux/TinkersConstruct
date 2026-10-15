@@ -31,7 +31,9 @@ public class PortedContentTest {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
     }
     static Identifier id(String value) { return Identifier.parse(value); }
-    @BeforeAll static void bootstrap() throws Exception {
+    @BeforeAll static synchronized void bootstrap() throws Exception {
+        // Shared registry/tag fixture for component and world-data tests.
+        if (ops != null) return;
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
@@ -77,6 +79,34 @@ public class PortedContentTest {
         blocks.bindAllTagsToEmpty(); blocks.bindTags(blockTags); blocks.freeze();
         ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
+    @Test void assembledPickaxeToolComponentUsesRealBoundMiningAndTierTags() {
+        var stack = new ItemStack(com.radi.radisconstruct.tinkerstation.TinkerToolItems.PICKAXE);
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(stack,
+            new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(
+                PickaxeBaseStatsTest.materials("cobalt", "pig_iron", "manyullyn")));
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.rebuildPickaxeStats();
+        var component = stack.get(net.minecraft.core.component.DataComponents.TOOL);
+        assertNotNull(component);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var obsidian = net.minecraft.world.level.block.Blocks.OBSIDIAN.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone),
+            component.getMiningSpeed(stone));
+        assertEquals(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, obsidian),
+            component.getMiningSpeed(obsidian));
+        assertEquals(1f, component.getMiningSpeed(dirt));
+        assertTrue(component.isCorrectForDrops(stone));
+        assertTrue(component.isCorrectForDrops(obsidian));
+        assertFalse(component.isCorrectForDrops(dirt));
+        assertTrue(slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.isEffective(tool, stone));
+        tool.setDamage(tool.getMaxDurability());
+        component = stack.get(net.minecraft.core.component.DataComponents.TOOL);
+        assertEquals(0.3f, component.getMiningSpeed(stone));
+        assertFalse(component.isCorrectForDrops(stone));
+        assertFalse(component.isCorrectForDrops(obsidian));
+    }
+
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
         Path dir = ROOT.resolve("data/tconstruct/recipe/common/materials");
         int checked = 0;

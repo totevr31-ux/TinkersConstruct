@@ -7,6 +7,7 @@ import com.radi.radisconstruct.material.ToolPartItems;
 import com.radi.radisconstruct.material.PartBuilderPatternItems;
 import com.radi.radisconstruct.partbuilder.PartBuilderContent;
 import com.radi.radisconstruct.tinkerstation.TinkerToolItems;
+import com.radi.radisconstruct.tinkerstation.TinkerPickaxeBreakEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import slimeknights.tconstruct.shared.TinkerMaterials;
@@ -21,6 +22,7 @@ public final class RadisConstruct implements ModInitializer {
         TinkerMaterials.initialize();
         ToolPartItems.initialize();
         TinkerToolItems.initialize();
+        TinkerPickaxeBreakEvents.initialize();
         PartBuilderPatternItems.initialize();
         PartBuilderContent.initialize();
         slimeknights.tconstruct.world.TinkerWorld.initialize();

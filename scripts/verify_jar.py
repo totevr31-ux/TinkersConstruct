@@ -128,9 +128,28 @@ with zipfile.ZipFile(jar) as z:
     assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/OriginalToolTraits.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeStatRebuild.class' in names
+    # The nine original explicit pickaxe item tags, plus the parent tag graph,
+    # must survive resource processing in the installable JAR.
+    original_tags = [
+        'minecraft:pickaxes', 'minecraft:cluster_max_harvestables',
+        'tconstruct:modifiable/multipart', 'tconstruct:modifiable/durability',
+        'tconstruct:modifiable/harvest/primary', 'tconstruct:modifiable/harvest/stone',
+        'tconstruct:modifiable/melee', 'tconstruct:modifiable/one_handed',
+        'tconstruct:modifiable/aoe', 'tconstruct:modifiable/harvest',
+        'tconstruct:modifiable/melee_or_harvest',
+        'tconstruct:modifiable/interactable/right',
+        'tconstruct:modifiable/held', 'tconstruct:modifiable'
+    ]
+    for tag in original_tags:
+        namespace, path = tag.split(':', 1)
+        asset = f'data/{namespace}/tags/item/{path}.json'
+        assert asset in names, f'Missing original pickaxe tag {asset}'
+        assert json.loads(z.read(asset))['replace'] is False
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
-        'TinkerToolItems', 'TinkerStationPickaxeAssembly',
+        'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
+        'TinkerPickaxeBreakEvents',
+        'TinkerStationPickaxeAssembly',
         'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
     ):
         assert f'com/radi/radisconstruct/tinkerstation/{cls}.class' in names

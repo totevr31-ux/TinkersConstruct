@@ -19,3 +19,13 @@ constitute a gameplay, screenshot or world-reload test. No Smeltery changes.
 
 Separate branch avoids concurrent edits to the active assembly branch. Merge
 this PR into that branch after CI; do not overwrite its evolving item/menu work.
+
+## Item callback integration
+
+Integrated the assembly branch through f5760809ee956ca7f3de8a25b91f47303f4686d8.
+TinkerPickaxeItem now supplies isBarVisible/getBarWidth/getBarColor directly from
+the original display calculations and the original modifiable/durability tag.
+This retains custom durability and does not add vanilla MAX_DAMAGE. Unbuilt
+registry stacks hide the bar without inventing tool statistics. Three additional
+tests exercise genuine registered pickaxes, damage/break/repair and full ItemStack
+codec round trips. Client screenshot/gameplay verification remains outstanding.

@@ -177,3 +177,75 @@ JAR must contain the new classes. This remains an API foundation, **not**
 a gameplay-tested station or a complete tool. Smeltery branch files stay
 untouched. Next: original ToolItem mining and combat callbacks, complete
 modifier hooks, then expose the assembly through the Tinker Station GUI.
+
+
+## Per-stack vanilla mining bridge for Minecraft 26.3
+
+The registered pickaxe now uses its own `TinkerPickaxeItem` subclass. During the
+original materials/traits/stats rebuild, `TinkerPickaxeMiningComponents` writes
+Minecraft 26.3's real `DataComponents.TOOL` to the assembled stack: its original
+mining speed, original source-definition effective block tag, and the correct
+tier-based denial tag. Drop tier restriction is checked independently of speed
+(the original TagHarvestLogic explicitly boosts speed even when drops are
+disallowed by the tier). On breaking, the component becomes 0.3 speed with
+no effective blocks; numeric repair restores the exact built mining data.
+
+Minecraft 26.3 uses the TOOL component for vanilla mining queries. We do not
+add a fixed vanilla ToolMaterial: original material combinations have distinct
+speeds and tiers. We do not enable vanilla damage-per-block (set to 0) because
+the original durability damage, Overslime and other modifier hooks must be
+integrated without deleting the tool stack on break.
+
+This increment is **not full gameplay parity**: ToolItem mined-block callbacks,
+server authoritative damage/repair hooks, conditional speed (Momentum and
+other modifiers), world AOE, drops/events, client visuals, and Tinker Station
+GUI still need implementing. The original item is not exposed in creative tabs
+and there is no registered station recipe yet.
+
+New tests validate 343 real stack-level component combinations, exact stored
+tier/mineable tags, broken and repaired synchronization, invalid/uninitialized
+tool rejection, and actual block tag behavior with the world registry fixture.
+
+
+## Successful block-break durability callback (Fabric server stage)
+
+Server-side `PlayerBlockBreakEvents.AFTER` now invokes the original primary
+pickaxe damage path only after a *successful* break. It uses the original
+`ToolHarvestLogic#getDamage` rule for a pickaxe tagged `HARVEST_PRIMARY`:
+blocks with exactly zero hardness do not consume durability; ordinary blocks
+consume one. Creative players, other items and already broken tools are skipped.
+The original shield-aware `ToolDamageUtil.damage` consumes Overslime first,
+marks exhausted tools broken instead of deleting them and triggers the existing
+per-stack mining component refresh. Vanilla `TOOL.damagePerBlock` remains 0 to
+avoid double wear and vanilla item deletion.
+
+This intentionally covers primary single-block mining only. The original
+onBreakSpeed modifier hooks, server block-break modifier event chain,
+per-modifier conditionals, secondary AOE, special shearing and complete tool
+rendering are not included. These must be ported before claiming Hephaestus
+gameplay parity. The event is server-side and does not fabricate durability
+from a fixed vanilla material.
+
+Added deterministic regression tests for the hardness rule, actual
+server-callback core, creative/instant exclusions, Overslime consumption,
+broken-state transitions, repaired tool reuse, non-pickaxe exclusion and
+unbreakable data. The CI smoke test only reaches Fabric initialization/EULA
+gate; it cannot assert real-world break events without a running test world.
+
+
+## Original item tags for the pickaxe
+
+Verified the original upstream `ItemTagProvider.addTools()` entry for
+`TinkerTools.pickaxe`. Restored all nine direct tag memberships (including
+`minecraft:pickaxes`, durability, primary/stone harvest, melee, multipart,
+one-handed, AOE and cluster harvestables) without adding unsupported tool
+classes. Added minimal nested-parent tags that resolve the original
+`modifiable/harvest`, `modifiable/melee_or_harvest`, `modifiable/held`
+and `modifiable` inheritance for this single pickaxe. Resource entries set
+`replace:false`, so they merge with other datapacks. This is not the whole
+original tag graph for tools that have not yet been ported.
+
+Automated source-parity tests assert the original explicit list and the
+current parent graph. Strict packaged-JAR validation requires all fourteen
+tag files. Actual world-side reload/combined-modpack tag behavior remains
+to be tested after the gameplay station and full modifier engine are ported.

@@ -12,6 +12,15 @@ public final class TagHarvestLogic {
     private final TagKey<Block> tag;
     public TagHarvestLogic(TagKey<Block> tag) { this.tag = java.util.Objects.requireNonNull(tag); }
 
+    /** The source pickaxe definition uses minecraft:mineable/pickaxe. */
+    public static TagKey<Block> pickaxeEffectiveTag() {
+        var json = com.radi.radisconstruct.tinkerstation.PickaxeBaseStats.originalDefinition()
+            .getAsJsonObject("harvest").getAsJsonObject("logic");
+        if (!"tconstruct:effective_tag".equals(json.get("type").getAsString()))
+            throw new IllegalStateException("Unported original harvest logic");
+        return TagKey.create(Registries.BLOCK, Identifier.parse(json.get("effective").getAsString()));
+    }
+
     public boolean isEffective(ToolStack tool, BlockState state) {
         return state.is(tag) && !state.is(incorrectBlocks(tool));
     }
@@ -21,7 +30,8 @@ public final class TagHarvestLogic {
         return state.is(tag) ? tool.getStats().getFloat("tconstruct:mining_speed").orElseThrow() : 1f;
     }
 
-    private static TagKey<Block> incorrectBlocks(ToolStack tool) {
+    /** Original harvest tier converted to the Minecraft 26.3 incorrect-for-tool tag. */
+    public static TagKey<Block> incorrectBlocks(ToolStack tool) {
         String tier = tool.getStats().getString("tconstruct:harvest_tier").orElseThrow();
         String name = switch (tier) {
             case "minecraft:wood" -> "wooden";
