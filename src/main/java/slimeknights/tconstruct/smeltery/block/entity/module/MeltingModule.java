@@ -6,6 +6,8 @@
 package slimeknights.tconstruct.smeltery.block.entity.module;
 
 import java.util.Objects;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -51,6 +53,41 @@ public final class MeltingModule {
     private int requiredTemp;
 
     public MeltingModule(Context context) { this.context = Objects.requireNonNull(context); }
+
+    /** Native 26.3 codec for persistence in ValueInput/ValueOutput. */
+    public record Snapshot(ItemStack stack, int time, int required, int temp) {
+        public static final Codec<Snapshot> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ItemStack.CODEC.fieldOf("stack").forGetter(Snapshot::stack),
+            Codec.INT.fieldOf("time").forGetter(Snapshot::time),
+            Codec.INT.fieldOf("required").forGetter(Snapshot::required),
+            Codec.INT.fieldOf("temp").forGetter(Snapshot::temp)
+        ).apply(instance, Snapshot::new));
+    }
+
+    public Snapshot snapshot() {
+        return new Snapshot(stack.copy(), currentTime, requiredTime, requiredTemp);
+    }
+
+    /** Do not accept stale progress when original recipes have changed. */
+    public void restore(Snapshot saved) {
+        Objects.requireNonNull(saved);
+        stack = saved.stack().isEmpty() ? ItemStack.EMPTY : saved.stack().copyWithCount(1);
+        if (stack.isEmpty()) {
+            resetProgress();
+            return;
+        }
+        Recipe recipe = findRecipe();
+        if (recipe == null) {
+            resetProgress();
+            return;
+        }
+        int newRequired = Math.multiplyExact(recipe.time(), 10);
+        int newTemp = recipe.temperature();
+        currentTime = saved.required() == newRequired && saved.temp() == newTemp
+            ? Math.max(NO_SPACE, Math.min(saved.time(), newRequired)) : 0;
+        requiredTime = newRequired;
+        requiredTemp = newTemp;
+    }
 
     public ItemStack getStack() { return stack.copy(); }
     public int getCurrentTime() { return currentTime; }
