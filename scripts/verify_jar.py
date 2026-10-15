@@ -173,11 +173,20 @@ with zipfile.ZipFile(jar) as z:
         asset = f'data/{namespace}/tags/item/{path}.json'
         assert asset in names, f'Missing original pickaxe tag {asset}'
         assert json.loads(z.read(asset))['replace'] is False
+    # Original material head-prefix name renders through translated keys from
+    # the unchanged upstream Hephaestus language entries.
+    upstream_lang = json.loads((root / 'upstream/Hephaestus/src/main/resources/assets/tconstruct/lang/en_us.json').read_text())
+    packed_lang = json.loads(z.read('assets/tconstruct/lang/en_us.json'))
+    for key in ['item.tconstruct.pickaxe', 'item.tconstruct.tool.format'] + [
+        'material.tconstruct.' + name for name in manifest['metals']
+    ]:
+        assert packed_lang[key] == upstream_lang[key], f'Incorrect original translated tool name: {key}'
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
         'TinkerPickaxeCombatComponents',
         'TinkerPickaxeDurabilityBar',
+        'TinkerPickaxeDisplayName',
         'TinkerPickaxeBreakEvents',
         'TinkerPickaxeAttackEvents',
         'TinkerStationPickaxeAssembly',
