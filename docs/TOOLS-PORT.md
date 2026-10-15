@@ -144,3 +144,36 @@ blocks and real BlockState predicates.
 Entity effect registration/application (including original NoMilkEffect behavior),
 expiration ticking, event wiring, ranged Momentum, actual item and gameplay tests
 remain outstanding. These tested calculations do not claim those integrations.
+
+
+## Original pickaxe assembly: registered identity and safe station transaction
+
+`tconstruct:pickaxe` now has an authentic registered item identity with a
+one-item stack limit, created before registry freeze. It is intentionally not
+listed in the creative inventory and cannot yet be crafted from an exposed
+station: the full gameplay modifier hooks, mining callbacks and original item
+rendering remain unported. Registration is **not** the claim that this is a
+playable parity-complete tool.
+
+The next piece mirrors upstream
+`library/recipe/tinkerstation/building/ToolBuildingRecipe.assemble`:
+validates the exact ordered head/handle/binding slots, builds original
+`tic_materials`, calls the supported pickaxe rebuild path for the original
+intrinsic and material modifiers, creates persistent slots, and returns one
+registered `tconstruct:pickaxe` stack. It never creates a vanilla pickaxe as
+a substitute.
+
+`TinkerStationAssemblyTransaction` previews against a specific server-side
+`Container`, snapshots the three original `ItemStack` inputs, rejects
+duplicate/aliased/out-of-range slots and a full output, and on commit
+revalidates the components, part order and freshly built output before
+consuming one part from each input. Previews are immutable from the caller,
+are bound to their original container, and cannot be committed twice.
+
+Tests exercise an assembled cobalt/pig-iron/manyullyn pickaxe, original data
+and modifiers, output isolation, full/no-stale/no-replay behavior, invalid
+layouts and all 343 combinations of seven available materials. The compiled
+JAR must contain the new classes. This remains an API foundation, **not**
+a gameplay-tested station or a complete tool. Smeltery branch files stay
+untouched. Next: original ToolItem mining and combat callbacks, complete
+modifier hooks, then expose the assembly through the Tinker Station GUI.
