@@ -170,6 +170,8 @@ public class PortedContentTest {
                     assertTrue(roundTrip.contains("tconstruct:raw_cobalt"));
                 } else if (path.getFileName().toString().equals("part_builder.json")) {
                     assertTrue(roundTrip.contains("tconstruct:part_builder"));
+                } else if (path.getFileName().toString().equals("tinker_station.json")) {
+                    assertTrue(roundTrip.contains("tconstruct:tinker_station"));
                 } else assertTrue(roundTrip.contains("minecraft:survives_explosion"));
                 checked++;
             }
