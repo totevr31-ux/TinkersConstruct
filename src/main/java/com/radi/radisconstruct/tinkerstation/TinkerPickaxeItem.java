@@ -2,6 +2,7 @@ package com.radi.radisconstruct.tinkerstation;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
 
 /**
  * Original tconstruct:pickaxe item class. Its mining data is computed from
@@ -14,6 +15,12 @@ import net.minecraft.world.item.ItemStack;
 public final class TinkerPickaxeItem extends Item {
     public TinkerPickaxeItem(Properties properties) {
         super(properties);
+    }
+
+    /** Head-material prefix, original source format and custom tic_name. */
+    @Override
+    public Component getName(ItemStack stack) {
+        return TinkerPickaxeDisplayName.name(stack);
     }
 
     /** Original CUSTOM_DATA damage drives the native item bar. */
