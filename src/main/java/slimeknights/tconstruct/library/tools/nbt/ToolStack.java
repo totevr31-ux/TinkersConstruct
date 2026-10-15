@@ -52,6 +52,23 @@ public final class ToolStack {
             throw new IllegalStateException("Tool stats must be rebuilt before using durability");
         return (int)value;
     }
+    public int getMaxDurability() { return durability(data()); }
+    public boolean isUnbreakable() {
+        return stack.has(DataComponents.UNBREAKABLE) || data().getBoolean("Unbreakable").orElse(false);
+    }
+    public CompoundTag getPersistentData() {
+        return data().getCompound("tic_persistent_data").orElseGet(CompoundTag::new).copy();
+    }
+    public CompoundTag getVolatileData() {
+        return data().getCompound("tic_volatile_data").orElseGet(CompoundTag::new).copy();
+    }
+    public void setPersistentInt(String key, int value) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            CompoundTag persistent = tag.getCompound("tic_persistent_data").orElseGet(CompoundTag::new).copy();
+            persistent.putInt(key, value);
+            tag.put("tic_persistent_data", persistent);
+        });
+    }
     public boolean isBroken() { return data().getBoolean(TAG_BROKEN).orElse(false); }
     public int getDamage() {
         CompoundTag tag = data();

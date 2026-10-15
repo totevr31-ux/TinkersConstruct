@@ -66,3 +66,17 @@ the resulting original tic_stats/tic_volatile_data and clamps existing damage.
 Installed upgrades and incremental piercing progress explicitly block this narrow
 rebuild until their recipe/hook dependencies are ported. They are never silently
 dropped. There is still no registered finished pickaxe or gameplay claim.
+
+## Damage and shield helper increment
+
+Ported original ToolDamageUtil direct damage, ordered damage hooks and numeric
+repair, plus DurabilityShieldModifier absorption/capacity validation. Overslime
+spends its persistent shield before durability; breaking retains the item, and
+repair clears broken state. Creative checks retain their original ordering after
+modifier hooks. Unsupported damage hooks fail before any shield mutation.
+
+Tests cover overflow-sized damage/repair, broken tools, unbreakable data, partial
+shield absorption, capacity clamping and persisted shield/damage codec round trips.
+These helpers are not yet connected to an item or mining/combat callbacks. Repair
+amount calculation and station recipes remain unported; this is not gameplay
+validation. No Smeltery files or dependencies changed.

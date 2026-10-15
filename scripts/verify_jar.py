@@ -45,7 +45,9 @@ with zipfile.ZipFile(jar) as z:
                         'slimeknights/tconstruct/library/tools/nbt/ModifierNBT.class',
                         'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Entry.class',
                         'slimeknights/tconstruct/library/tools/nbt/ModifierNBT$Builder.class',
-                        'slimeknights/tconstruct/library/tools/nbt/ToolStack.class'}
+                        'slimeknights/tconstruct/library/tools/nbt/ToolStack.class',
+                        'slimeknights/tconstruct/library/tools/helper/ToolDamageUtil.class',
+                        'slimeknights/tconstruct/library/modifiers/impl/DurabilityShieldModifier.class'}
     assert {n for n in names if n.startswith('slimeknights/') and n.endswith('.class')} == expected_classes
     manifest = json.loads(z.read('radisconstruct-port-manifest.json'))
     for name, source in manifest['copied_resources'].items():
