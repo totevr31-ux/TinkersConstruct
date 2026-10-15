@@ -131,6 +131,7 @@ with zipfile.ZipFile(jar) as z:
     # Original tool identity and guarded station assembly must ship in the JAR.
     for cls in (
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
+        'TinkerPickaxeBreakEvents',
         'TinkerStationPickaxeAssembly',
         'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
     ):
