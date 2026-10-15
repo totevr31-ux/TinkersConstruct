@@ -154,7 +154,7 @@ with zipfile.ZipFile(jar) as z:
         assert model_path in names and texture_path in names
         baked = json.loads(z.read(model_path))
         assert baked['textures']['layer0'] == f'tconstruct:item/tool/pickaxe/variants/{key}'
-        assert z.read(texture_path).startswith(b'\\x89PNG\\r\\n\\x1a\\n'), texture_path
+        assert z.read(texture_path).startswith(bytes((137,80,78,71,13,10,26,10))), texture_path
     assert 'com/radi/radisconstruct/tinkerstation/TinkerPickaxeModels.class' in names
     # The nine original explicit pickaxe item tags, plus the parent tag graph,
     # must survive resource processing in the installable JAR.
