@@ -177,6 +177,9 @@ with zipfile.ZipFile(jar) as z:
         'assets/tconstruct/models/item/tinker_station.json',
         'assets/tconstruct/items/tinker_station.json',
         'assets/tconstruct/textures/block/table/tinker_station_top.png',
+        'assets/tconstruct/models/item/pickaxe.json',
+        'assets/tconstruct/items/pickaxe.json',
+        'assets/tconstruct/textures/item/tool/pickaxe/fallback.png',
         'data/tconstruct/recipe/tables/tinker_station.json',
         'data/tconstruct/loot_table/blocks/tinker_station.json'
     ):
