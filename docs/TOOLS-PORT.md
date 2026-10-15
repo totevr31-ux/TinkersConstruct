@@ -506,3 +506,36 @@ break->repair->break. Headless CI checks the transition logic and compiled
 bytecode but cannot prove the actual hand animation appears in a running
 client. The rest of Hephaestus combat/AOE/dynamic modifier hooks remain
 outstanding.
+
+
+## Native 26.3 mining-speed injection: first dynamic Crumbling trait
+
+Ported the actual upstream `ConditionalMiningSpeedModule` / `Crumbling`
+break-speed stage into Minecraft's live player speed calculation. Since
+Fabric does not offer a first-party generic `BREAK_SPEED` event equivalent,
+`PlayerPickaxeMiningSpeedMixin` injects at the RETURN of Minecraft 26.3
+`Player.getDestroySpeed(BlockState)`. It runs on both client and server
+and only affects the genuine initialized `tconstruct:pickaxe`.
+
+The source's original Crumbling JSON has `require_effective:false`,
+an inverted `mantle:requires_tool` block-state predicate, and
+`bonus:0.5`. The upstream implementation **multiplies** the speed by
+`modifier_level * bonus * tool_multiplier * miningSpeedModifier`; it is
+not a guessed additive percentage. We preserve that unusual formula as-is
+and use the tool's current static multiplier (1 for our port's rebuilt
+pickaxe) while leaving vanilla's existing environment modifiers untouched.
+
+As tested, eligible non-tool-required blocks receive the multiplier
+(1 Crumbling = 0.5x, 2 = 1.0x, 3 = 1.5x). Tool-required stone does not.
+Missing/crashed original data and broken tools use vanilla speed unchanged,
+rather than throwing on the world rendering thread. `Momentum` still has
+no registered player effect to supply its amplifier and therefore this live
+adapter deliberately does **not** invent a cumulative momentum bonus.
+Modifiers outside the supported Crumbling stage remain unported.
+
+Tests assert the original upstream conditional module JSON, stone/dirt
+predicates, 1–3 original trait levels, broken/malformed/non-pickaxe
+exclusions and all 343 material combinations. The strict JAR verifier
+requires enabled Fabric mixin metadata and both compiled bridge classes.
+Headless CI validates compile, JAR and server init; it does not prove
+client-side actual mining speed or world break-speed timing yet.
