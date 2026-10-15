@@ -39,6 +39,12 @@ public final class ToolStack {
         return merged;
     }
 
+    /** Static rebuild for an unupgraded pickaxe; gameplay hooks remain separate. */
+    public void rebuildPickaxeStats() {
+        CompoundTag rebuilt = com.radi.radisconstruct.tinkerstation.PickaxeStatRebuild.rebuild(data());
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rebuilt));
+    }
+
     private int durability(CompoundTag tag) {
         float value = tag.getCompound(TAG_STATS).orElseGet(CompoundTag::new)
             .getFloat("tconstruct:durability").orElse(0f);

@@ -51,3 +51,18 @@ Still required: actual modifier hook execution (including lightweight stats,
 enhanced slots, piercing damage, overslime, and conditional traits), final
 rebuildStats, station output, harvest/combat/repair integration and rendering.
 No Smeltery dependency or changed files are introduced by this increment.
+
+## Static pickaxe stat rebuild
+
+PickaxeStatRebuild now runs the original volatile-data stage before the numeric
+stage for all 343 combinations of the seven supported materials. Lightweight
+reads original module JSON and changes mining/attack speed, Enhanced adds volatile
+upgrade slots, Piercing applies its static damage adjustment, and Overslime/Overcast
+compute capacity/friend status before applying static penalties. Conditional
+combat/mining effects are still not connected. Existing persistent slot balances
+are preserved; fresh slots use the original pickaxe definition. ToolStack writes
+the resulting original tic_stats/tic_volatile_data and clamps existing damage.
+
+Installed upgrades and incremental piercing progress explicitly block this narrow
+rebuild until their recipe/hook dependencies are ported. They are never silently
+dropped. There is still no registered finished pickaxe or gameplay claim.

@@ -51,6 +51,11 @@ public final class OriginalToolTraits {
         }
         return new ModifierNBT(result);
     }
+    public static JsonObject modifierDefinition(String name) {
+        if (!java.util.Set.of("lightweight", "enhanced", "crumbling").contains(name))
+            throw new IllegalArgumentException("Unknown original composable modifier: " + name);
+        return read("modifier_" + name);
+    }
     private static JsonObject read(String name) {
         try (var input = OriginalToolTraits.class.getClassLoader().getResourceAsStream(
                 "assets/radisconstruct/original_tool_traits/" + name + ".json")) {
