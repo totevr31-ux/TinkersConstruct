@@ -15,7 +15,7 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
  * never from a single global vanilla tool material.
  *
  * Durability bar callbacks use the original custom durability/Overslime data.
- * Dynamic tool models and full gameplay modifier integration remain pending.
+ * Material models are selected per stack; full gameplay modifier integration remains pending.
  */
 public final class TinkerPickaxeItem extends Item {
     private static final TagKey<Item> DURABILITY = TagKey.create(Registries.ITEM,
@@ -41,7 +41,7 @@ public final class TinkerPickaxeItem extends Item {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return hasBuiltStats(stack) ? ToolDurabilityDisplay.color(ToolStack.from(stack)) : 0xFF0000;
+        return hasBuiltStats(stack) ? ToolDurabilityDisplay.color(ToolStack.from(stack)) : 0;
     }
 
     public TinkerPickaxeItem(Properties properties) {

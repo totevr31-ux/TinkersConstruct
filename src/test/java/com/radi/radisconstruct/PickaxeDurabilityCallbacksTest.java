@@ -53,7 +53,7 @@ class PickaxeDurabilityCallbacksTest {
         var stack = new ItemStack(TinkerToolItems.PICKAXE);
         assertFalse(stack.getItem().isBarVisible(stack));
         assertEquals(0, stack.getItem().getBarWidth(stack));
-        assertEquals(0xFF0000, stack.getItem().getBarColor(stack));
+        assertEquals(0, stack.getItem().getBarColor(stack));
         assertFalse(stack.has(DataComponents.CUSTOM_DATA));
     }
 }

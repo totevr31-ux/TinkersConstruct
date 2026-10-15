@@ -249,3 +249,71 @@ Automated source-parity tests assert the original explicit list and the
 current parent graph. Strict packaged-JAR validation requires all fourteen
 tag files. Actual world-side reload/combined-modpack tag behavior remains
 to be tested after the gameplay station and full modifier engine are ported.
+
+
+## Original pickaxe base melee attribute bridge (mainhand)
+
+Ported the base attribute stage of upstream
+`ModifiableItemUtil.getMeleeAttributeModifiers` into Minecraft 26.3
+`DataComponents.ATTRIBUTE_MODIFIERS` on each assembled pickaxe:
+
+- `ATTACK_DAMAGE = tic_stats[tconstruct:attack_damage]` as `ADD_VALUE`
+  in `MAINHAND`, including the existing stat-build stage's intrinsic
+  Piercing reduction and material/Lightweight calculations.
+- `ATTACK_SPEED = tic_stats[tconstruct:attack_speed] - 4` as `ADD_VALUE`
+  in `MAINHAND`, keeping the original player base-speed offset.
+- Broken tools have **no** melee attributes; repair and stat rebuild
+  recalculate both attributes and mining speed without modifier accumulation.
+- Invalid / uninitialized stacks fail before melee data is written.
+
+The adapter is an actual Minecraft 26.3 item component, not a tooltip-only
+mock; original conditional melee attacks, Piercing secondary armor-bypass
+damage, attack damage/cooldown callbacks and other dynamic modifiers remain
+dependencies. No full combat parity or in-world test is claimed. Tests check
+343 supported material combinations, exact per-stack stats, correct mainhand
+slot, break/repair, invalid stacks and repeated rebuilds.
+
+
+## Original pickaxe primary player melee hit durability (server events)
+
+Minecraft 26.3 now gets the source-defined pickaxe melee wear: upstream
+`ToolAttackUtil` subtracts 1 durability when hitting a living target and
+doubles it when the tool lacks `MELEE_PRIMARY`; the original pickaxe is
+`MELEE` but **not** `MELEE_PRIMARY`, so a successful noncreative
+player attack on a living mob costs **2 durability**. The server event
+integration listens to nonlethal `ServerLivingEntityEvents.AFTER_DAMAGE`
+and lethal `AFTER_DEATH` separately (the former skips fatal hits), rejects
+blocked/zero-damage hits and checks for a direct vanilla
+`minecraft:player_attack` source. It does not charge arrows, indirect
+status effects, secondary Piercing damage or empty-handed strikes.
+
+`ToolDamageUtil.damage` preserves the original order of Overslime shield
+absorption, then persistent pickaxe durability. Broken tools keep their stack
+and lose native melee attributes; the server callback skips further wear.
+This is a safe partial integration, not the original custom attack pipeline:
+weapon crits, Piercing bypass-armor secondary damage, conditional melee
+modifiers, non-player attackers, AOE/sweep behavior and hit-related effects
+remain unported. Real-world combat tests are still required.
+
+
+## Authentic pickaxe durability bar in Minecraft inventory
+
+Connected `TinkerPickaxeItem.isBarVisible/getBarWidth/getBarColor` to the
+original Hephaestus `ToolDamageUtil` formulas. Minecraft's inventory now
+queries our actual `ItemStack` bar callbacks; no vanilla `DAMAGE` component
+is written (vanilla depletion could delete these deliberately persistent,
+breakable-and-repairable TConstruct tools).
+
+The port reproduces the original 0..13 width formula, broken-tool zero width,
+normal red-to-green HSV damage color and Overslime-specific light blue
+`0x00D0FF`. A tool with an incomplete Overslime shield shows the bar
+even if normal durability is full; a full shield hides it, matching original
+`OverslimeModifier.showDurabilityBar` priority. When any shield remains,
+the bar represents the shield's capacity fraction before switching back to
+the tool durability percentage. Uninitialized original item stacks are
+guarded from client inventory crashes.
+
+Regression tests cover vanilla `ItemStack` bar calls, normal wear, shield
+drain, cyan display, full shield overrides, broken/repaired transitions and
+all 343 supported head/handle/binding combinations. Other unported modifier
+bar hooks (upgrades and exotic durability displays) are not yet implemented.

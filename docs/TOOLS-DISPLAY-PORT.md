@@ -48,3 +48,13 @@ JAR verification checks every copied PNG against upstream and every model link.
 Not full dynamic rendering parity: modifier overlays, charging/blocking poses,
 unsupported material variants and resource-pack runtime remapping remain. No
 client bake/render or screenshot/gameplay test has been performed.
+
+## Integration with concurrent pickaxe work
+
+Integrated tools-pickaxe through 54a7cd7a8, preserving its attack events and
+regression tests. Both branches added Item durability callbacks; resolution
+keeps ToolDurabilityDisplay as the native callback implementation because it
+preserves the original floating-point durability denominator and durability
+tag check. Uninitialized items use the other branch's hidden/zero fallback.
+TinkerPickaxeDurabilityBar remains available unchanged for its existing callers;
+it is not the native Item callback implementation in this branch.
