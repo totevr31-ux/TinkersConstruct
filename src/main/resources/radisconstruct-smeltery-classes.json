@@ -5,6 +5,7 @@
   "slimeknights/tconstruct/fluids/NativeMoltenFluid$Flowing.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluid$Source.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluid.class",
+  "slimeknights/tconstruct/fluids/NativeMoltenFluidClient.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluids$Metal.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluids$Pair.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluids.class",
