@@ -113,7 +113,7 @@ public class TinkerStationAssemblyTransactionTest {
         assertNull(TinkerStationAssemblyTransaction.preview(slots, List.of(0, 1, 9), 3));
         assertNull(TinkerStationAssemblyTransaction.preview(slots, List.of(0, 1), 3));
         assertNull(TinkerStationAssemblyTransaction.preview(slots, List.of(1, 0, 2), 3));
-        slots.setItem(0, part("sword_blade", "cobalt"));
+        slots.setItem(0, part("tool_binding", "cobalt"));
         assertNull(TinkerStationAssemblyTransaction.preview(slots, PART_SLOTS, 3));
         slots = station();
         slots.setItem(3, new ItemStack(Items.DIRT));
