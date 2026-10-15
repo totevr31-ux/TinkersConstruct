@@ -8,5 +8,6 @@ public final class PartBuilderClient implements ClientModInitializer {
         MenuScreens.register(PartBuilderContent.MENU_TYPE, PartBuilderScreen::new);
         MenuScreens.register(com.radi.radisconstruct.tinkerstation.TinkerStationContent.MENU_TYPE,
             com.radi.radisconstruct.tinkerstation.TinkerStationScreen::new);
+        com.radi.radisconstruct.tinkerstation.TinkerPickaxeClientTooltips.initialize();
     }
 }
