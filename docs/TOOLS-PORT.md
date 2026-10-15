@@ -125,3 +125,22 @@ These are queries for future item callbacks, not completed gameplay mining:
 conditional break-speed traits, drops, AOE, world events and the actual item
 remain unconnected. The previous repair inventory transaction passed CI run
 38665039650. No Smeltery files changed.
+
+## Conditional mining calculations
+
+Ported original mining calculations for Momentum and ConditionalMiningSpeedModule,
+with a BREAK_SPEED adapter reading Crumbling's preserved JSON. Momentum uses
+entity-effect amplifier (-1 absent), caps at 31, boosts by level*(amplifier+1)/128,
+and computes the original truncated duration from base mining speed. Its update
+request only occurs for harvestable, effective, non-AOE breaks. No tool-persistent
+timer is invented. Crumbling keeps the exact multiplicative formula and inverted
+requires-tool predicate. Unknown break-speed hooks reject.
+
+Fixed priority extraction to follow ComposableModifier.computePriority: explicit
+JSON, otherwise first module opinion, otherwise default. Crumbling is thus 125,
+not 100. Tests cover this ordering, caps, duration, missing effects, ineffective
+blocks and real BlockState predicates.
+
+Entity effect registration/application (including original NoMilkEffect behavior),
+expiration ticking, event wiring, ranged Momentum, actual item and gameplay tests
+remain outstanding. These tested calculations do not claim those integrations.

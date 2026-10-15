@@ -57,4 +57,10 @@ public class OriginalToolTraitsTest {
             }
         }
     }
+
+    @Test void composableModulePriorityRunsCrumblingBeforeDefaultTraits() {
+        var traits = OriginalToolTraits.pickaxe(PickaxeBaseStatsTest.materials("amethyst_bronze", "cobalt", "hepatizon"), ModifierNBT.EMPTY);
+        assertEquals(java.util.List.of("tconstruct:crumbling", "tconstruct:piercing", "tconstruct:lightweight", "tconstruct:momentum"),
+            traits.modifiers().stream().map(ModifierNBT.Entry::id).toList());
+    }
 }

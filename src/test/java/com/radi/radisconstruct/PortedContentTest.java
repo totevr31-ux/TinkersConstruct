@@ -602,4 +602,18 @@ public class PortedContentTest {
         var copy = tool.getStats(); copy.putFloat("tconstruct:mining_speed", 999);
         assertEquals(8.25825f, slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic.getDestroySpeed(stack, stone), 0.00001f);
     }
+
+    @Test void originalMiningTraitsRunAgainstBlockStatesAndMergedLevels() {
+        var hepatizon = ToolDamageUtilTest.carrier("hepatizon");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(hepatizon);
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        assertEquals(14f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(tool, stone, 8, 1, 31));
+        assertEquals(8f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(tool, dirt, 8, 1, 31));
+        var amethyst = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(ToolDamageUtilTest.carrier("amethyst_bronze"));
+        assertEquals(12f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, dirt, 8, 1, -1));
+        assertEquals(8f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, stone, 8, 1, -1));
+        amethyst.setDamage(amethyst.getMaxDurability());
+        assertEquals(.3f, com.radi.radisconstruct.tinkerstation.PickaxeBreakSpeed.apply(amethyst, dirt, .3f, 1, -1));
+    }
 }

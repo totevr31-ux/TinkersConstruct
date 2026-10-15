@@ -55,6 +55,10 @@ public final class ToolStack {
     public CompoundTag getStats() {
         return data().getCompound(TAG_STATS).orElseGet(CompoundTag::new).copy();
     }
+    public float getMiningSpeedMultiplier() {
+        return data().getCompound("tic_multipliers").orElseGet(CompoundTag::new)
+            .getFloat("tconstruct:mining_speed").orElse(1f);
+    }
     public int getMaxDurability() { return durability(data()); }
     public boolean isUnbreakable() {
         return stack.has(DataComponents.UNBREAKABLE) || data().getBoolean("Unbreakable").orElse(false);

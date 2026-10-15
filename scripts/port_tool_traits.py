@@ -32,7 +32,21 @@ for name, cls in classes.items():
 for name in ('lightweight', 'enhanced', 'crumbling'):
     path = source / f'generated/resources/data/tconstruct/tinkering/modifiers/{name}.json'
     data = json.loads(path.read_text())
-    priorities['tconstruct:' + name] = data.get('priority', default)
+    # ComposableModifier.computePriority: explicit JSON wins, otherwise the
+    # first module with a priority opinion, then Modifier.DEFAULT_PRIORITY.
+    module_classes = {'tconstruct:tool_stat': 'ToolStatModule',
+                      'tconstruct:modifier_slot': 'ModifierSlotModule',
+                      'tconstruct:conditional_mining_speed': 'ConditionalMiningSpeedModule'}
+    opinions = []
+    for module in data['modules']:
+        module_path = base / ('library/modifiers/modules/' + module_classes[module['type']] + '.java')
+        module_source = module_path.read_text()
+        match = re.search(r'(?:int|Integer) getPriority\(\)\s*\{(?:\s|//[^\n]*\n)*return\s+(\d+)\s*;', module_source)
+        if 'getPriority(' in module_source and not match:
+            raise ValueError(f'Cannot extract module priority: {module_path}')
+        if match:
+            opinions.append(int(match.group(1)))
+    priorities['tconstruct:' + name] = data.get('priority', opinions[0] if opinions else default)
     shutil.copyfile(path, out / f'modifier_{name}.json')
 (out / 'priorities.json').write_text(json.dumps(priorities, indent=2) + '\n')
 print('Preserved 7 original material trait definitions and 9 modifier priorities.')
