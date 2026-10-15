@@ -3,7 +3,7 @@
   "id": "radisconstruct",
   "version": "${version}",
   "name": "Radi's Construct",
-  "description": "Incremental Hephaestus port: seven storage metals and cobalt ore with Nether generation. Tools and smeltery are not yet ported.",
+  "description": "Incremental Hephaestus 26.3 port: metals, tools foundation, and original Smeltery structure, fuel, melting and native molten metal registry. Not yet a fully playable original Smeltery.",
   "authors": [
     "Radi4"
   ],
@@ -16,6 +16,9 @@
   "entrypoints": {
     "main": [
       "com.radi.radisconstruct.RadisConstruct"
+    ],
+    "client": [
+      "slimeknights.tconstruct.fluids.NativeMoltenFluidClient"
     ]
   },
   "depends": {

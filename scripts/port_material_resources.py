@@ -255,6 +255,25 @@ write('data/tconstruct/loot_table/blocks/seared_fuel_tank.json', {
 copy('generated/resources/data/tconstruct/recipes/smeltery/melting/fuel/lava.json',
      'assets/radisconstruct/reference/smeltery/lava_fuel.json')
 
+
+# Stage 1K: register and render the ORIGINAL cobalt and iron molten liquids.
+# Preserve unmodified upstream texture bytes, names and animation metadata.
+for metal in ('cobalt', 'iron'):
+    for sprite in ('still', 'flowing'):
+        name = f'textures/block/fluid/{metal}/{sprite}.png'
+        copy(f'main/resources/{asset}/{name}', f'{asset}/{name}')
+        meta = f'{name}.mcmeta'
+        copy(f'main/resources/{asset}/{meta}', f'{asset}/{meta}')
+    name = 'molten_' + metal
+    for key in (
+        f'fluid.tconstruct.{name}',
+        f'fluid.tconstruct.flowing_{name}',
+        f'block.tconstruct.{name}_fluid',
+    ):
+        translations[key] = lang_source[key]
+    write(f'data/tconstruct/tags/fluid/{name}.json',
+          {'replace': False, 'values': [f'tconstruct:{name}', f'tconstruct:flowing_{name}']})
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
