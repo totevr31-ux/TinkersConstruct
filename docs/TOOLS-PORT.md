@@ -398,3 +398,32 @@ Still not full original Hephaestus station parity: repair kits, alternative
 repair materials, advanced tool stations, modifier application, part
 swapping, dynamically colored original tools and actual world-client click
 tests remain pending.
+
+
+## Material-aware pickaxe rendering for all 343 current source-material builds
+
+Removed the **visual** limitation of the formerly single cobalt-colored fallback
+for fully initialized original three-part pickaxes. The build now renders each
+supported combination of seven source head materials × seven source handle
+materials × seven source binding materials (343 combinations) as a separate
+16×16 inventory/tool sprite. It blends the upstream Hephaestus grayscale
+`tool/pickaxe/{handle,head,binding}.png` masks in their original compositing
+order using each corresponding original material palette indexed from
+`TinkerMaterialSpriteProvider.java`. The fallback icon is retained for
+uninitialized/missing model data.
+
+On a successful Tinker Station build, `ToolStack.rebuildPickaxeStats` now
+writes a single validated three-material string in
+`DataComponents.CUSTOM_MODEL_DATA`. The Minecraft 26.3
+`assets/tconstruct/items/pickaxe.json` uses native
+`minecraft:select` dispatch to a generated static model by this exact key.
+All three parts can vary visually; materials containing underscores remain
+unambiguous because keys use double-underscore delimiters.
+
+This is a source-derived **prebaked** visual port for the seven implemented
+materials, not yet the original runtime color/model loader for added materials,
+additional modifier layers, arbitrary custom palettes, specialized tool
+transformations, or all other tool types. Generated 343 sprites/models,
+resource selector, in-JAR presence and per-stack model choices are all
+covered by automated tests. Actual Minecraft client/model-bake/in-world
+screenshots still need verifying outside the headless GitHub smoke job.
