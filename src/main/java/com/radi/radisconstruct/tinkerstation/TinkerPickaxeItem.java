@@ -1,6 +1,7 @@
 package com.radi.radisconstruct.tinkerstation;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Original tconstruct:pickaxe item class. Its mining data is computed from
@@ -13,5 +14,21 @@ import net.minecraft.world.item.Item;
 public final class TinkerPickaxeItem extends Item {
     public TinkerPickaxeItem(Properties properties) {
         super(properties);
+    }
+
+    /** Original CUSTOM_DATA damage drives the native item bar. */
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return TinkerPickaxeDurabilityBar.visible(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        return TinkerPickaxeDurabilityBar.width(stack);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        return TinkerPickaxeDurabilityBar.color(stack);
     }
 }
