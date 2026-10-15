@@ -80,3 +80,20 @@ shield absorption, capacity clamping and persisted shield/damage codec round tri
 These helpers are not yet connected to an item or mining/combat callbacks. Repair
 amount calculation and station recipes remain unported; this is not gameplay
 validation. No Smeltery files or dependencies changed.
+
+## Original pickaxe repair preview
+
+TinkerStationRepairRecipe now ports the original material-match, per-item repair
+and per-slot consumption calculation for the supported ingot/nugget recipes.
+Only the pickaxe head is repairable; handle and binding do not enable alternative
+repair materials. It uses head durability / 3 / recipe needed, original ceil
+consumption and per-slot integer truncation, without scaling by handle durability.
+All occupied inputs must match, including surplus slots. Preview copies the tool
+and preserves its materials, traits, slots and Overslime; it consumes nothing.
+
+Registry/tag-backed tests cover real ingots/nuggets, fractional repairs, surplus
+inputs, spoofed material NBT, broken tools, codec persistence and unknown hooks.
+The caller must identify a pickaxe: this adapter is not a registered station
+recipe, and no finished tool item exists yet. Actual station consumption/output,
+repair kits, block/part inputs and other modifier hooks remain dependencies.
+No Smeltery files changed. No gameplay test has been performed.

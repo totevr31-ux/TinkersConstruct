@@ -414,4 +414,83 @@ public class PortedContentTest {
         assertEquals(materials, com.radi.radisconstruct.tinkerstation.ToolMaterialData.read(restored));
     }
 
+
+    @Test void originalPickaxeRepairUsesHeadAndPreservesPreviewInputs() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(500);
+        var ingots = new ItemStack(TinkerMaterials.cobalt.ingot(), 4);
+        var result = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingots)).orElseThrow();
+        assertEquals(List.of(2), result.consumed());
+        assertEquals(0, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(result.result()).getDamage());
+        assertEquals(500, tool.getDamage()); assertEquals(4, ingots.getCount());
+        result.result().setCount(0);
+        assertEquals(1, result.result().getCount(), "Preview output is defensive");
+        var encoded = ItemStack.CODEC.encodeStart(ops, result.result()).getOrThrow();
+        var restored = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+        assertEquals(tool.getMaterials(), slimeknights.tconstruct.library.tools.nbt.ToolStack.from(restored).getMaterials());
+    }
+
+    @Test void repairNuggetsUseFractionalValueAndPerSlotTruncation() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(500);
+        var nugget = new ItemStack(TinkerMaterials.cobalt.nugget());
+        var split = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(nugget, nugget.copy())).orElseThrow();
+        var together = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(new ItemStack(TinkerMaterials.cobalt.nugget(), 2))).orElseThrow();
+        int head = com.radi.radisconstruct.material.MaterialStatsCatalog.load().require("cobalt").head().durability();
+        assertEquals(List.of(1, 1), split.consumed());
+        assertEquals(500 - 2 * (int)(head / 3f / 9),
+            slimeknights.tconstruct.library.tools.nbt.ToolStack.from(split.result()).getDamage());
+        assertEquals(500 - (int)(2 * (head / 3f / 9)),
+            slimeknights.tconstruct.library.tools.nbt.ToolStack.from(together.result()).getDamage());
+        tool.setDamage(1);
+        assertEquals(List.of(1, 0), slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(nugget, nugget.copy())).orElseThrow().consumed());
+    }
+
+    @Test void repairRejectsHandleMaterialMixedInputsAndSpoofedMaterial() {
+        var stack = ToolDamageUtilTest.carrier("cobalt");
+        com.radi.radisconstruct.tinkerstation.ToolMaterialData.write(stack,
+            new slimeknights.tconstruct.library.tools.nbt.MaterialNBT(
+                PickaxeBaseStatsTest.materials("cobalt", "rose_gold", "rose_gold")));
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.rebuildPickaxeStats(); tool.setDamage(100);
+        var gold = com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:rose_gold");
+        assertEquals(-1, slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.getRepairIndex(tool, gold));
+        ItemStack wrong = new ItemStack(BuiltInRegistries.ITEM.getValue(id("tconstruct:rose_gold_ingot")));
+        ItemStack cobalt = new ItemStack(TinkerMaterials.cobalt.ingot());
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(cobalt, wrong)).isEmpty(), "Even surplus wrong material rejects");
+        var fake = new ItemStack(Items.STICK);
+        com.radi.radisconstruct.material.MaterialStackData.write(fake,
+            com.radi.radisconstruct.material.MaterialVariantId.parse("tconstruct:cobalt"));
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of(fake)).isEmpty());
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of()).isEmpty());
+        tool.setDamage(0);
+        assertTrue(slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe.previewPickaxe(stack, List.of(cobalt)).isEmpty());
+    }
+
+    @Test void repairBrokenPickaxeRetainsShieldAndRejectsUnknownHooks() {
+        var stack = ToolDamageUtilTest.carrier("slimesteel");
+        var tool = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(stack);
+        tool.setDamage(tool.getMaxDurability());
+        tool.setPersistentInt("tconstruct:overslime", 7);
+        var ingot = new ItemStack(BuiltInRegistries.ITEM.getValue(id("tconstruct:slimesteel_ingot")));
+        var preview = slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingot)).orElseThrow();
+        var repaired = slimeknights.tconstruct.library.tools.nbt.ToolStack.from(preview.result());
+        assertFalse(repaired.isBroken()); assertTrue(tool.isBroken());
+        assertEquals(7, repaired.getPersistentData().getInt("tconstruct:overslime").orElseThrow());
+        assertEquals(tool.getModifiers(), repaired.getModifiers());
+        net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            stack, tag -> tag.put("tic_modifiers", tool.getModifiers().withModifier("other:repair", 1).serializeToNBT()));
+        var before = stack.copy();
+        assertThrows(IllegalArgumentException.class, () -> slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe
+            .previewPickaxe(stack, List.of(ingot)));
+        assertTrue(ItemStack.matches(before, stack)); assertEquals(1, ingot.getCount());
+    }
 }
