@@ -44,6 +44,7 @@ public final class ToolStack {
         CompoundTag rebuilt = com.radi.radisconstruct.tinkerstation.PickaxeStatRebuild.rebuild(data());
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rebuilt));
         if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
+            com.radi.radisconstruct.tinkerstation.TinkerPickaxeModels.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeCombatComponents.refresh(stack);
         }
