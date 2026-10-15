@@ -43,6 +43,8 @@ public final class ToolStack {
     public void rebuildPickaxeStats() {
         CompoundTag rebuilt = com.radi.radisconstruct.tinkerstation.PickaxeStatRebuild.rebuild(data());
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rebuilt));
+        if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem)
+            com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
     }
 
     private int durability(CompoundTag tag) {
@@ -101,5 +103,7 @@ public final class ToolStack {
             tag.putBoolean(TAG_BROKEN, broken);
             tag.putInt(TAG_DAMAGE, storedDamage);
         });
+        if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem)
+            com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
     }
 }
