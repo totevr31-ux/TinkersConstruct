@@ -60,6 +60,11 @@ public class PortedContentTest {
         // The original reusable Pattern tag is needed by Part Builder crafting.
         tags.put(TagKey.create(Registries.ITEM, id("tconstruct:patterns/default")),
             List.of(BuiltInRegistries.ITEM.get(id("tconstruct:pattern")).orElseThrow()));
+        // Load the real ported durability tag for genuine item bar callbacks.
+        List<Holder<Item>> durabilityItems = new ArrayList<>();
+        for (JsonElement value : json(Path.of("src/main/resources/data/tconstruct/tags/item/modifiable/durability.json")).getAsJsonArray("values"))
+            durabilityItems.add(BuiltInRegistries.ITEM.get(id(value.getAsString())).orElseThrow());
+        tags.put(TagKey.create(Registries.ITEM, id("tconstruct:modifiable/durability")), durabilityItems);
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
