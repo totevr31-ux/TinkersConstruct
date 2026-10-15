@@ -261,6 +261,12 @@ write(f'{asset}/items/tinker_station.json',
                  'model': 'tconstruct:item/tinker_station'}})
 translations['block.tconstruct.tinker_station'] = lang_source['block.tconstruct.tinker_station']
 translations['item.tconstruct.pickaxe'] = lang_source['item.tconstruct.pickaxe']
+# Upstream TooltipUtil.getDisplayName only pulls the repairable head material
+# for this pickaxe; preserve *its actual* string keys, not English literals.
+translations['item.tconstruct.tool.format'] = lang_source['item.tconstruct.tool.format']
+for original_material in metals:
+    key = f'material.tconstruct.{original_material}'
+    translations[key] = lang_source[key]
 write(f'{asset}/lang/en_us.json', translations)
 
 # Original 3x3 shaped Tinker Station recipe retains EXACT pattern/ingredients,
