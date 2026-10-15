@@ -205,3 +205,29 @@ and there is no registered station recipe yet.
 New tests validate 343 real stack-level component combinations, exact stored
 tier/mineable tags, broken and repaired synchronization, invalid/uninitialized
 tool rejection, and actual block tag behavior with the world registry fixture.
+
+
+## Successful block-break durability callback (Fabric server stage)
+
+Server-side `PlayerBlockBreakEvents.AFTER` now invokes the original primary
+pickaxe damage path only after a *successful* break. It uses the original
+`ToolHarvestLogic#getDamage` rule for a pickaxe tagged `HARVEST_PRIMARY`:
+blocks with exactly zero hardness do not consume durability; ordinary blocks
+consume one. Creative players, other items and already broken tools are skipped.
+The original shield-aware `ToolDamageUtil.damage` consumes Overslime first,
+marks exhausted tools broken instead of deleting them and triggers the existing
+per-stack mining component refresh. Vanilla `TOOL.damagePerBlock` remains 0 to
+avoid double wear and vanilla item deletion.
+
+This intentionally covers primary single-block mining only. The original
+onBreakSpeed modifier hooks, server block-break modifier event chain,
+per-modifier conditionals, secondary AOE, special shearing and complete tool
+rendering are not included. These must be ported before claiming Hephaestus
+gameplay parity. The event is server-side and does not fabricate durability
+from a fixed vanilla material.
+
+Added deterministic regression tests for the hardness rule, actual
+server-callback core, creative/instant exclusions, Overslime consumption,
+broken-state transitions, repaired tool reuse, non-pickaxe exclusion and
+unbreakable data. The CI smoke test only reaches Fabric initialization/EULA
+gate; it cannot assert real-world break events without a running test world.
