@@ -33,7 +33,7 @@ public final class TinkerPickaxeAttackEvents {
             || !(stack.getItem() instanceof TinkerPickaxeItem)) return false;
         ToolStack tool = ToolStack.from(stack);
         if (tool.isBroken()) return false;
-        ToolDamageUtil.damage(tool, ORIGINAL_PICKAXE_LIVING_HIT_WEAR, attacker, stack);
+        TinkerPickaxeDamageEffects.damageMainHandAnimated(tool, ORIGINAL_PICKAXE_LIVING_HIT_WEAR, attacker, stack);
         return true;
     }
 
