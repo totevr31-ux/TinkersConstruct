@@ -127,6 +127,34 @@ public class PickaxeTooltipLinesTest {
         assertEquals(343,count);
     }
 
+    @Test void originalOverslimeTooltipTracksShieldAndCapacityAfterRealDamage() {
+        var stack = pickaxe("slimesteel", "slimesteel", "slimesteel");
+        var tool = ToolStack.from(stack);
+        assertTrue(tool.getModifiers().getLevel("tconstruct:overslime") > 0);
+        int capacity = tool.getVolatileData().getInt("tconstruct:overslime_cap").orElseThrow();
+        assertTrue(capacity > 0);
+
+        tool.setPersistentInt("tconstruct:overslime", 3);
+        var first = view(stack, View.DEFAULT, false);
+        var shieldLabel = first.stream().filter(line -> line.toString()
+            .contains("modifier.tconstruct.overslime")).findFirst().orElseThrow();
+        assertTrue(shieldLabel.toString().contains("3 / " + capacity), shieldLabel.toString());
+
+        ToolDamageUtil.damage(tool, 1, null, stack);
+        assertEquals(2, tool.getPersistentData().getInt("tconstruct:overslime").orElseThrow());
+        shieldLabel = view(stack, View.DEFAULT, false).stream()
+            .filter(line -> line.toString().contains("modifier.tconstruct.overslime"))
+            .findFirst().orElseThrow();
+        assertTrue(shieldLabel.toString().contains("2 / " + capacity), shieldLabel.toString());
+
+        ToolDamageUtil.damage(tool, 2, null, stack);
+        shieldLabel = view(stack, View.DEFAULT, false).stream()
+            .filter(line -> line.toString().contains("modifier.tconstruct.overslime"))
+            .findFirst().orElseThrow();
+        assertTrue(shieldLabel.toString().contains("0 / " + capacity), shieldLabel.toString());
+        assertEquals(0, tool.getDamage(), "The original shield absorbs the first three damage");
+    }
+
     @Test void allSourceTranslationsUsedInTooltipAreIncludedInPort() throws Exception {
         var original=com.google.gson.JsonParser.parseString(Files.readString(Path.of(
             "upstream/Hephaestus/src/main/resources/assets/tconstruct/lang/en_us.json"))).getAsJsonObject();
