@@ -15,7 +15,17 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PickaxeMiningComponentTest {
-    @BeforeAll static void setup() { MaterialStackDataTest.setup(); }
+    @BeforeAll static void setup() {
+        // Modern ItemStacks require registered default components bound *after*
+        // the new tconstruct:pickaxe item is registered, before any stack
+        // constructor is invoked. A vanilla-only bootstrap is insufficient.
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
+        TinkerToolItems.initialize();
+        net.minecraft.core.registries.BuiltInRegistries.DATA_COMPONENT_INITIALIZERS
+            .build(net.minecraft.data.registries.VanillaRegistries.createWorldLookup())
+            .forEach(pending -> pending.apply());
+    }
 
     private static ItemStack pickaxe(String head, String handle, String binding) {
         ItemStack stack = new ItemStack(TinkerToolItems.PICKAXE);
