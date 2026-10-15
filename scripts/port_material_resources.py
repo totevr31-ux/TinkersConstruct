@@ -267,6 +267,38 @@ translations['item.tconstruct.tool.format'] = lang_source['item.tconstruct.tool.
 for original_material in metals:
     key = f'material.tconstruct.{original_material}'
     translations[key] = lang_source[key]
+
+# Pickaxe tooltips retain original user-facing text where upstream has exact
+# translations, with explicitly namespaced extra lines for the incremental
+# 26.3 stat UI. No user-facing strings are forged in the Java tooltip logic.
+for text_key in (
+    'tooltip.tconstruct.uninitialized', 'tooltip.tconstruct.missing_data',
+    'tooltip.tconstruct.tool.broken', 'tooltip.tconstruct.hold_shift',
+    'tooltip.tconstruct.hold_ctrl',
+    'item.tconstruct.pick_head', 'item.tconstruct.tool_handle',
+    'item.tconstruct.tool_binding',
+    'stat.tconstruct.harvest_tier.minecraft.wood',
+    'stat.tconstruct.harvest_tier.minecraft.stone',
+    'stat.tconstruct.harvest_tier.minecraft.iron',
+    'stat.tconstruct.harvest_tier.minecraft.diamond',
+    'stat.tconstruct.harvest_tier.minecraft.netherite',
+    'stat.tconstruct.harvest_tier.minecraft.gold',
+    'modifier.tconstruct.overslime', 'modifier.tconstruct.overcast',
+    'modifier.tconstruct.lightweight', 'modifier.tconstruct.enhanced',
+    'modifier.tconstruct.piercing', 'modifier.tconstruct.crumbling',
+    'modifier.tconstruct.tasty', 'modifier.tconstruct.momentum',
+    'modifier.tconstruct.insatiable',
+):
+    translations[text_key] = lang_source[text_key]
+translations.update({
+    'radisconstruct.tooltip.pickaxe.durability': 'Durability: %s / %s',
+    'radisconstruct.tooltip.pickaxe.harvest_tier': 'Mining Tier: %s',
+    'radisconstruct.tooltip.pickaxe.mining_speed': 'Mining Speed: %s',
+    'radisconstruct.tooltip.pickaxe.attack_damage': 'Attack Damage: %s',
+    'radisconstruct.tooltip.pickaxe.attack_speed': 'Attack Speed: %s',
+    'radisconstruct.tooltip.pickaxe.upgrades': 'Upgrades: %s',
+    'radisconstruct.tooltip.pickaxe.abilities': 'Abilities: %s',
+})
 write(f'{asset}/lang/en_us.json', translations)
 
 # Original 3x3 shaped Tinker Station recipe retains EXACT pattern/ingredients,
