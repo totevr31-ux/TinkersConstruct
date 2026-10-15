@@ -493,4 +493,70 @@ public class PortedContentTest {
             .previewPickaxe(stack, List.of(ingot)));
         assertTrue(ItemStack.matches(before, stack)); assertEquals(1, ingot.getCount());
     }
+
+    @Test void repairTransactionConsumesExactlyOnceAndMovesToolToOutput() {
+        var inventory = new net.minecraft.world.SimpleContainer(4);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(500);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction
+            .preview(inventory, Items.STICK, 0, List.of(1, 2), 3);
+        assertNotNull(pending);
+        pending.result().setCount(0);
+        assertTrue(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertTrue(inventory.getItem(0).isEmpty()); assertTrue(inventory.getItem(2).isEmpty());
+        assertEquals(2, inventory.getItem(1).getCount());
+        assertEquals(1, inventory.getItem(3).getCount());
+        assertEquals(0, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(inventory.getItem(3)).getDamage());
+        inventory.setItem(3, ItemStack.EMPTY);
+        inventory.setItem(0, tool.copy());
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot(), 4));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending),
+            "A committed token cannot be replayed even after restoring identical inputs");
+        assertEquals(4, inventory.getItem(1).getCount());
+    }
+
+    @Test void repairTransactionRejectsStaleSlotsAndOccupiedOutputWithoutConsumption() {
+        var inventory = new net.minecraft.world.SimpleContainer(4);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(100);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.nugget(), 8));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction
+            .preview(inventory, Items.STICK, 0, List.of(1, 2), 3);
+        assertNotNull(pending);
+        inventory.getItem(1).shrink(1);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(7, inventory.getItem(1).getCount());
+        inventory.getItem(1).grow(1);
+        inventory.setItem(2, new ItemStack(Items.DIRT));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        inventory.setItem(2, ItemStack.EMPTY);
+        inventory.setItem(3, new ItemStack(Items.DIAMOND));
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(Items.DIAMOND, inventory.getItem(3).getItem());
+        inventory.setItem(3, ItemStack.EMPTY);
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(99);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(inventory, pending));
+        assertEquals(8, inventory.getItem(1).getCount());
+        assertEquals(99, slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).getDamage());
+    }
+
+    @Test void repairTransactionRejectsAliasedSlotsWrongToolAndOtherInventory() {
+        var inventory = new net.minecraft.world.SimpleContainer(3);
+        var tool = ToolDamageUtilTest.carrier("cobalt");
+        slimeknights.tconstruct.library.tools.nbt.ToolStack.from(tool).setDamage(100);
+        inventory.setItem(0, tool);
+        inventory.setItem(1, new ItemStack(TinkerMaterials.cobalt.ingot()));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1, 1), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(0), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1), 1));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(3), 2));
+        assertNull(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.DIAMOND_PICKAXE, 0, List.of(1), 2));
+        var pending = com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.preview(inventory, Items.STICK, 0, List.of(1), 2);
+        var other = new net.minecraft.world.SimpleContainer(tool.copy(), inventory.getItem(1).copy(), ItemStack.EMPTY);
+        assertFalse(com.radi.radisconstruct.tinkerstation.TinkerStationRepairTransaction.tryCommit(other, pending));
+        assertEquals(1, other.getItem(1).getCount());
+    }
 }

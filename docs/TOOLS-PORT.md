@@ -97,3 +97,17 @@ The caller must identify a pickaxe: this adapter is not a registered station
 recipe, and no finished tool item exists yet. Actual station consumption/output,
 repair kits, block/part inputs and other modifier hooks remain dependencies.
 No Smeltery files changed. No gameplay test has been performed.
+
+## Repair inventory transaction
+
+TinkerStationRepairTransaction connects repair previews to a server-thread
+Container operation: revalidate the original tool and every input (including
+empty slots), recompute the recipe, deduct exact per-slot costs, consume the
+source tool and place the repaired copy in an empty output slot. Defensive
+snapshots are inventory-bound and single-use. Invalid/aliased indices, occupied
+outputs and changed counts/components reject before any slot is written.
+
+The caller must supply its registered pickaxe identity from server code. Tests
+use the existing explicit STICK data carrier, not a playable substitute tool.
+This remains a station integration API; no item, menu or gameplay test is added.
+No Smeltery change or dependency.
