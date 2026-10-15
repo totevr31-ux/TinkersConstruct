@@ -45,10 +45,10 @@ public class PickaxeTooltipLinesTest {
     @Test void defaultViewIncludesGenuineDurabilityAndOriginalModifierNames() {
         var stack = pickaxe("cobalt", "manyullyn", "slimesteel");
         var result = view(stack, View.DEFAULT, false);
-        assertTrue(result.get(0).getString().contains(Integer.toString(
+        assertTrue(result.get(0).toString().contains(Integer.toString(
             ToolStack.from(stack).getMaxDurability())));
-        assertTrue(result.stream().anyMatch(x -> x.getString().contains("Shift")));
-        assertTrue(result.stream().anyMatch(x -> x.getString().contains("Ctrl")));
+        assertTrue(result.stream().anyMatch(x -> x.toString().contains("Shift")));
+        assertTrue(result.stream().anyMatch(x -> x.toString().contains("Ctrl")));
         assertTrue(result.stream().anyMatch(x -> x.getString().contains("modifier.tconstruct.piercing")
             || x.getString().contains("Piercing")));
         assertEquals(result, view(stack, View.DEFAULT, false));
@@ -62,7 +62,7 @@ public class PickaxeTooltipLinesTest {
         var tool = ToolStack.from(stack);
         var lines = view(stack, View.STATS, false);
         assertEquals(7, lines.size());
-        assertTrue(lines.get(0).getString().contains(Integer.toString(tool.getMaxDurability())));
+        assertTrue(lines.get(0).toString().contains(Integer.toString(tool.getMaxDurability())));
         assertTrue(lines.get(1).toString().contains("radisconstruct.tooltip.pickaxe.harvest_tier"));
         assertTrue(lines.get(2).toString().contains("radisconstruct.tooltip.pickaxe.mining_speed"));
         assertTrue(lines.get(3).toString().contains("radisconstruct.tooltip.pickaxe.attack_damage"));
