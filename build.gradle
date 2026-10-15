@@ -26,6 +26,7 @@ tasks.register('portMaterialResources', Exec) {
     inputs.dir('upstream/Hephaestus/src/generated/resources')
     inputs.file('scripts/port_material_resources.py')
     inputs.file('scripts/port_tool_traits.py')
+    inputs.file('scripts/port_pickaxe_models.py')
     outputs.dir(layout.buildDirectory.dir('portedResources'))
     commandLine 'python3', 'scripts/port_material_resources.py'
 }

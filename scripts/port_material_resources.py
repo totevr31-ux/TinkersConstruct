@@ -260,3 +260,5 @@ runpy.run_path(str(ROOT / 'scripts/validate_tool_part_masks.py'), run_name='__ma
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
 
 runpy.run_path(str(ROOT / 'scripts/port_tool_traits.py'), run_name='__main__')
+
+runpy.run_path(str(ROOT / "scripts/port_pickaxe_models.py"), run_name="__main__")
