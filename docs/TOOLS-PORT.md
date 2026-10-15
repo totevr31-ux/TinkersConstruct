@@ -294,3 +294,26 @@ This is a safe partial integration, not the original custom attack pipeline:
 weapon crits, Piercing bypass-armor secondary damage, conditional melee
 modifiers, non-player attackers, AOE/sweep behavior and hit-related effects
 remain unported. Real-world combat tests are still required.
+
+
+## Authentic pickaxe durability bar in Minecraft inventory
+
+Connected `TinkerPickaxeItem.isBarVisible/getBarWidth/getBarColor` to the
+original Hephaestus `ToolDamageUtil` formulas. Minecraft's inventory now
+queries our actual `ItemStack` bar callbacks; no vanilla `DAMAGE` component
+is written (vanilla depletion could delete these deliberately persistent,
+breakable-and-repairable TConstruct tools).
+
+The port reproduces the original 0..13 width formula, broken-tool zero width,
+normal red-to-green HSV damage color and Overslime-specific light blue
+`0x00D0FF`. A tool with an incomplete Overslime shield shows the bar
+even if normal durability is full; a full shield hides it, matching original
+`OverslimeModifier.showDurabilityBar` priority. When any shield remains,
+the bar represents the shield's capacity fraction before switching back to
+the tool durability percentage. Uninitialized original item stacks are
+guarded from client inventory crashes.
+
+Regression tests cover vanilla `ItemStack` bar calls, normal wear, shield
+drain, cyan display, full shield overrides, broken/repaired transitions and
+all 343 supported head/handle/binding combinations. Other unported modifier
+bar hooks (upgrades and exotic durability displays) are not yet implemented.
