@@ -206,6 +206,7 @@ with zipfile.ZipFile(jar) as z:
         'TinkerToolItems', 'TinkerPickaxeItem', 'TinkerPickaxeMiningComponents',
         'TinkerPickaxeCombatComponents',
         'TinkerPickaxeDurabilityBar',
+        'TinkerPickaxeDamageEffects',
         'TinkerPickaxeDisplayName',
         'TinkerPickaxeTooltipLines', 'TinkerPickaxeTooltipLines$View',
         'TinkerPickaxeBreakEvents',
