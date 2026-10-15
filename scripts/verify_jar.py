@@ -128,6 +128,12 @@ with zipfile.ZipFile(jar) as z:
     assert 'com/radi/radisconstruct/tinkerstation/ToolMaterialData.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/OriginalToolTraits.class' in names
     assert 'com/radi/radisconstruct/tinkerstation/PickaxeStatRebuild.class' in names
+    # Original tool identity and guarded station assembly must ship in the JAR.
+    for cls in (
+        'TinkerToolItems', 'TinkerStationPickaxeAssembly',
+        'TinkerStationAssemblyTransaction', 'TinkerStationAssemblyTransaction$PendingAssembly'
+    ):
+        assert f'com/radi/radisconstruct/tinkerstation/{cls}.class' in names
     for material in ('cobalt', 'manyullyn', 'amethyst_bronze', 'rose_gold', 'hepatizon', 'slimesteel', 'pig_iron'):
         original = root / f'upstream/Hephaestus/src/generated/resources/data/tconstruct/tinkering/materials/traits/{material}.json'
         assert z.read(f'assets/radisconstruct/original_tool_traits/{material}.json') == original.read_bytes()
