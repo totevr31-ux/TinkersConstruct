@@ -61,8 +61,8 @@ public class TinkerMomentumMiningTest {
         assertTrue(TinkerMomentumMining.planAfterBreak(
             tool, Blocks.STONE.defaultBlockState(), -1).isPresent());
         assertTrue(TinkerMomentumMining.planAfterBreak(
-            tool, Blocks.OBSIDIAN.defaultBlockState(), -1).isEmpty(),
-            "The bound test fixture rejects harvest requiring a higher tier");
+            tool, Blocks.OAK_LOG.defaultBlockState(), -1).isEmpty(),
+            "Non-pickaxe-effective wood must not increase Momentum");
         tool.setDamage(tool.getMaxDurability());
         assertTrue(tool.isBroken());
         assertTrue(TinkerMomentumMining.planAfterBreak(
