@@ -4,6 +4,13 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+### Continuation: original ore-melting contract
+
+- Added native `tconstruct:ore_melting` serializer sharing the live melting recipe type. Raw cobalt and raw cobalt block recipes preserve their exact original source data, including foundry byproducts (not emitted by a Smeltery).
+- Ported original integer-order yield calculation and setting bounds: defaults 12 nuggets per metal ore unit, 8 shards per gem unit. Native runtime configuration UI/file binding remains unported; current recipes use original default settings.
+- Validation: 84 tests passed, zero failures/errors/skips; JAR check and cached Fabric bootstrap passed. Checks include exact raw recipe data, native tag matching, 12000/108000-droplet cobalt outputs and invalid-rate rejection.
+- Iron conditional ore variants, sparse/dense ore ingredients and runtime configurable rates remain open; they were not replaced with hardcoded conversions.
+
 ### Continuation: complete native metal identities and standard melting
 
 - Registered all 36 metal/alloy source+flowing pairs from the original TinkerFluids metal sections, preserving IDs and attribute temperatures. Original textures/animation metadata, translations and fluid tags are packaged for every pair; client bindings now select each metal's real sprites.

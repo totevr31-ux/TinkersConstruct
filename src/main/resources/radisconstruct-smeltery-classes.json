@@ -59,7 +59,9 @@
   "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank$FluidSnapshot.class",
   "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank$FluidStackSlot.class",
   "slimeknights/tconstruct/smeltery/block/entity/tank/SmelteryTank.class",
+  "slimeknights/tconstruct/smeltery/recipe/MeltingRecipe.class",
   "slimeknights/tconstruct/smeltery/recipe/NativeMeltingRecipe$Result.class",
   "slimeknights/tconstruct/smeltery/recipe/NativeMeltingRecipe$Type.class",
-  "slimeknights/tconstruct/smeltery/recipe/NativeMeltingRecipe.class"
+  "slimeknights/tconstruct/smeltery/recipe/NativeMeltingRecipe.class",
+  "slimeknights/tconstruct/smeltery/recipe/NativeOreMeltingRecipe.class"
 ]

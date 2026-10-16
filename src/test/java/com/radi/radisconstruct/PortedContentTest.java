@@ -42,6 +42,7 @@ public class PortedContentTest {
         assertNotNull(SmelteryContent.CONTROLLER_ITEM);
         slimeknights.tconstruct.fluids.NativeMoltenFluids.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
+        slimeknights.tconstruct.smeltery.recipe.NativeOreMeltingRecipe.initialize();
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
             for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {

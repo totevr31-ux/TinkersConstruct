@@ -88,13 +88,16 @@ with zipfile.ZipFile(jar) as z:
     assert 'data/tconstruct/tags/block/seared_tanks.json' in names
     # Verify all packaged standard melting recipes against preserved originals.
     melting = [n for n in names if n.startswith('data/tconstruct/recipe/smeltery/melting/metal/') and n.endswith('.json')]
-    assert len(melting) == 32
+    assert len(melting) == 34
     for name in melting:
         relative = name.removeprefix('data/tconstruct/recipe/')
         original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
         packed = json.loads(z.read(name))
         for field in ('type', 'result', 'temperature', 'time'):
             assert packed[field] == original[field], (relative, field)
+        if packed['type'] == 'tconstruct:ore_melting':
+            assert packed['rate'] == original['rate']
+            assert packed['byproducts'] == original['byproducts']
         tag = original['ingredient']['tag']
         assert packed['ingredient'] == '#' + tag
         assert f'data/c/tags/item/{tag.removeprefix("c:")}.json' in names

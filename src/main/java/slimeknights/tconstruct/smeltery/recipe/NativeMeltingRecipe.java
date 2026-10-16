@@ -20,7 +20,7 @@ import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModule;
 /** Standard melting only. Ore boosting, damageable inputs and foundry byproducts
  * require their own ports; they must not be passed through this serializer. */
 public record NativeMeltingRecipe(String group, Ingredient ingredient, Result result,
-        int temperature, int time) implements Recipe<SingleRecipeInput>, MeltingModule.Recipe {
+        int temperature, int time) implements MeltingRecipe {
     public record Result(Fluid fluid, long amount) {
         public static final Codec<Result> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BuiltInRegistries.FLUID.byNameCodec().validate(fluid -> fluid == Fluids.EMPTY
@@ -39,10 +39,10 @@ public record NativeMeltingRecipe(String group, Ingredient ingredient, Result re
         Codec.intRange(0, Integer.MAX_VALUE).fieldOf("temperature").forGetter(NativeMeltingRecipe::temperature),
         Codec.intRange(1, Integer.MAX_VALUE / 10).fieldOf("time").forGetter(NativeMeltingRecipe::time)
     ).apply(instance, NativeMeltingRecipe::new));
-    private static final class Type implements RecipeType<NativeMeltingRecipe> {
+    private static final class Type implements RecipeType<MeltingRecipe> {
         @Override public String toString() { return "tconstruct:melting"; }
     }
-    public static final RecipeType<NativeMeltingRecipe> TYPE = Registry.register(
+    public static final RecipeType<MeltingRecipe> TYPE = Registry.register(
         BuiltInRegistries.RECIPE_TYPE, Identifier.fromNamespaceAndPath("tconstruct", "melting"), new Type());
     public static final RecipeSerializer<NativeMeltingRecipe> SERIALIZER = Registry.register(
         BuiltInRegistries.RECIPE_SERIALIZER, Identifier.fromNamespaceAndPath("tconstruct", "melting"),
@@ -60,7 +60,7 @@ public record NativeMeltingRecipe(String group, Ingredient ingredient, Result re
     @Override public boolean isSpecial() { return true; }
     @Override public boolean showNotification() { return false; }
     @Override public RecipeSerializer<NativeMeltingRecipe> getSerializer() { return SERIALIZER; }
-    @Override public RecipeType<NativeMeltingRecipe> getType() { return TYPE; }
+    @Override public RecipeType<MeltingRecipe> getType() { return TYPE; }
     @Override public PlacementInfo placementInfo() { return PlacementInfo.NOT_PLACEABLE; }
     @Override public RecipeBookCategory recipeBookCategory() { return CATEGORY; }
 }

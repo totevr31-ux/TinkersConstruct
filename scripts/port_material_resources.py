@@ -299,6 +299,17 @@ for metal, namespace, forms in standard_metals:
         write(f'data/tconstruct/recipe/{rel}', recipe)
         standard_melting_count += 1
 
+# Raw cobalt recipes use the original ore serializer and preserve byproducts.
+for form, item in (('raw', 'raw_cobalt'), ('raw_block', 'raw_cobalt_block')):
+    rel = f'smeltery/melting/metal/cobalt/{form}.json'
+    recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{rel}').read_text())
+    assert recipe['type'] == 'tconstruct:ore_melting'
+    tag = recipe['ingredient']['tag']
+    write(f'data/c/tags/item/{tag.removeprefix("c:")}.json',
+          {'replace': False, 'values': [f'tconstruct:{item}']})
+    recipe['ingredient'] = ingredient(recipe['ingredient'])
+    write(f'data/tconstruct/recipe/{rel}', recipe)
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'

@@ -35,6 +35,7 @@ class NativeMeltingRecipeTest {
                 var original = JsonParser.parseString(Files.readString(Path.of(
                     "upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/" + relative))).getAsJsonObject();
                 var packed = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+                if (!packed.get("type").getAsString().equals("tconstruct:melting")) continue;
                 assertEquals(original.get("result"), packed.get("result"));
                 assertEquals(original.get("time"), packed.get("time"));
                 assertEquals(original.get("temperature"), packed.get("temperature"));
