@@ -16,6 +16,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.Level;
@@ -74,11 +76,16 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         () -> structure == null ? List.of() : structure.getTanks());
     /**
      * Native inventory is now owned by the real controller. Original melting
-     * recipes are not registered yet: until then recipe lookup MUST return null.
-     * This prevents a pretend transformation or draining fuel for nonexistent work.
+     * recipes are resolved from the live server recipe manager, never from a
+     * hardcoded item conversion table.
      */
     private final MeltingModuleInventory meltingInventory = new MeltingModuleInventory(new MeltingModule.Context() {
-        @Override public MeltingModule.Recipe findRecipe(ItemStack stack) { return null; }
+        @Override public MeltingModule.Recipe findRecipe(ItemStack stack) {
+            return level instanceof ServerLevel server
+                ? server.recipeAccess().getRecipeFor(NativeMeltingRecipe.TYPE,
+                    new SingleRecipeInput(stack), server).map(holder -> holder.value()).orElse(null)
+                : null;
+        }
         @Override public Storage<FluidVariant> outputTank() { return getFluidCapability(); }
         @Override public void markChanged() { SmelteryControllerBlockEntity.this.setChanged(); }
     });
@@ -103,6 +110,10 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     private int fuelRate = 81;
     private final SmelteryMultiblock<SmelteryControllerBlockEntity> detector = new SmelteryMultiblock<>(this);
     private boolean needsStructureCheck = true;
+    // Block entities may deserialize before their server level is assigned.
+    // Keep the exact snapshot until recipe lookup is available, or valid saved
+    // heating progress would be reset merely because world loading is in flight.
+    private MeltingModuleInventory.Snapshot pendingMeltingSnapshot;
 
     public SmelteryControllerBlockEntity(BlockPos pos, BlockState state) {
         super(SmelteryContent.CONTROLLER_BLOCK_ENTITY, pos, state);
@@ -269,6 +280,10 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
 
     public static void serverTick(Level world, BlockPos pos, BlockState state, SmelteryControllerBlockEntity entity) {
         if (world.isClientSide()) return;
+        if (entity.pendingMeltingSnapshot != null) {
+            entity.meltingInventory.restore(entity.pendingMeltingSnapshot);
+            entity.pendingMeltingSnapshot = null;
+        }
         if (entity.needsStructureCheck || world.getGameTime() % 20 == 0) entity.updateStructure();
         if (entity.structure != null && entity.structure.hasTanks()) {
             entity.heatingCycle.tick(entity.tick, entity.fuelRate, false);
@@ -285,7 +300,8 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         out.store(FLUIDS_TAG, FluidStack.CODEC.listOf(), tank.getFluids());
         out.putLong(CAPACITY_TAG, tank.getCapacity());
         out.store(FUEL_MODULE_TAG, CompoundTag.CODEC, fuelModule.writeToTag(new CompoundTag()));
-        out.store(MELTING_TAG, MeltingModuleInventory.Snapshot.CODEC, meltingInventory.snapshot());
+        out.store(MELTING_TAG, MeltingModuleInventory.Snapshot.CODEC,
+            pendingMeltingSnapshot != null ? pendingMeltingSnapshot : meltingInventory.snapshot());
     }
 
     @Override
@@ -296,7 +312,7 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         tank.setFluids(in.read(FLUIDS_TAG, FluidStack.CODEC.listOf()).orElseGet(List::of));
         tank.setCapacity(Math.max(0L, in.getLong(CAPACITY_TAG).orElse(0L)));
         fuelModule.readFromTag(in.read(FUEL_MODULE_TAG, CompoundTag.CODEC).orElseGet(CompoundTag::new));
-        in.read(MELTING_TAG, MeltingModuleInventory.Snapshot.CODEC).ifPresent(meltingInventory::restore);
+        pendingMeltingSnapshot = in.read(MELTING_TAG, MeltingModuleInventory.Snapshot.CODEC).orElse(null);
         needsStructureCheck = true;
     }
 }

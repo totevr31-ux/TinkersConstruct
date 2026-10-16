@@ -18,6 +18,7 @@ public final class RadisConstruct implements ModInitializer {
         TinkerMaterials.initialize();
         slimeknights.tconstruct.world.TinkerWorld.initialize();
         NativeMoltenFluids.initialize();
+        slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
         SmelteryContent.initialize();
         LOGGER.info("Radi's Construct initialized: 5 metals and cobalt ore registered (7 blocks, 18 items).");
     }

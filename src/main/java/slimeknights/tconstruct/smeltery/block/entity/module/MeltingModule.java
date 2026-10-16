@@ -122,16 +122,23 @@ public final class MeltingModule {
     /** Re-evaluate on recipe reload or input change, without destroying progress. */
     public void refreshRequirements() {
         Recipe recipe = findRecipe();
-        requiredTime = recipe == null ? 0 : Math.multiplyExact(recipe.time(), 10);
-        requiredTemp = recipe == null ? 0 : recipe.temperature();
         if (recipe != null && (recipe.time() <= 0 || recipe.temperature() < 0
                 || recipe.outputFluid().isBlank() || recipe.outputAmount() <= 0)) {
             throw new IllegalArgumentException("Invalid original melting recipe");
+        }
+        int nextTime = recipe == null ? 0 : Math.multiplyExact(recipe.time(), 10);
+        int nextTemp = recipe == null ? 0 : recipe.temperature();
+        if (requiredTime != nextTime || requiredTemp != nextTemp) {
+            currentTime = 0;
+            requiredTime = nextTime;
+            requiredTemp = nextTemp;
+            context.markChanged();
         }
         if (recipe == null) currentTime = 0;
     }
 
     public boolean canHeatItem(int temperature) {
+        refreshRequirements();
         return requiredTime > 0 && !stack.isEmpty()
                 && currentTime != NO_SPACE && temperature >= requiredTemp;
     }
@@ -141,6 +148,7 @@ public final class MeltingModule {
      * (the original controller invokes this once every four game ticks).
      */
     public void heatItem(int temperature) {
+        refreshRequirements();
         if (currentTime == NO_SPACE || canHeatItem(temperature)) {
             if (currentTime == NO_SPACE || currentTime >= requiredTime) {
                 if (finish()) resetProgress();
@@ -153,6 +161,7 @@ public final class MeltingModule {
 
     /** Upstream cooling behavior: -5 progress per phase, with no-space retry. */
     public void coolItem() {
+        refreshRequirements();
         if (currentTime == NO_SPACE) {
             if (finish()) resetProgress();
         } else if (currentTime > 0 && requiredTime > 0) {

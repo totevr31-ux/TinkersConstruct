@@ -86,6 +86,17 @@ with zipfile.ZipFile(jar) as z:
     tank_tag = json.loads(z.read('data/tconstruct/tags/block/smeltery/tanks.json'))
     assert 'tconstruct:seared_fuel_tank' in tank_tag['values']
     assert 'data/tconstruct/tags/block/seared_tanks.json' in names
+    # Native standard melting keeps original quantities/heat/time and tag IDs.
+    for metal in ('iron', 'cobalt'):
+        for form in ('ingot', 'nugget', 'block'):
+            relative = f'smeltery/melting/metal/{metal}/{form}.json'
+            original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
+            packed = json.loads(z.read(f'data/tconstruct/recipe/{relative}'))
+            for field in ('type', 'result', 'temperature', 'time'):
+                assert packed[field] == original[field], (relative, field)
+            tag = original['ingredient']['tag']
+            assert packed['ingredient'] == '#' + tag
+            assert f'data/c/tags/item/{tag.removeprefix("c:")}.json' in names
     original_lava = json.loads(z.read('assets/radisconstruct/reference/smeltery/lava_fuel.json'))
     assert original_lava['fluid'] == {'amount': 50, 'name': 'minecraft:lava'}
     assert original_lava['duration'] == 100 and original_lava['temperature'] == 1000

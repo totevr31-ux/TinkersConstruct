@@ -32,13 +32,16 @@ public class PortedContentTest {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
     }
     static Identifier id(String value) { return Identifier.parse(value); }
-    @BeforeAll static void bootstrap() throws Exception {
+    @BeforeAll public static synchronized void bootstrap() throws Exception {
+        if (ops != null) return;
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         assertEquals(7, TinkerMaterials.METALS.size());
         assertNotNull(TinkerWorld.rawCobalt);
         // Register ported Smeltery items before ITEM registry tag binding/freezing.
         assertNotNull(SmelteryContent.CONTROLLER_ITEM);
+        slimeknights.tconstruct.fluids.NativeMoltenFluids.initialize();
+        slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
             for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {

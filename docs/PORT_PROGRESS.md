@@ -18,6 +18,9 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 - Bucket change: `bash gradlew --no-daemon --max-workers=2 build --console=plain` passed; 69 tests, 0 failures/errors/skips.
 - `python3 scripts/verify_jar.py` passed for the bucket change. Installable artifact staged in `dist/radisconstruct-0.3.0-cobalt+26.3.jar` (feature subset, not full parity).
 - Comparator build: 70 tests, 0 failures/errors/skips; JAR verification passed.
+- Native recipe follow-up: 75 tests, 0 failures/errors/skips. Six packaged recipes decoded through Minecraft Recipe.DIRECT_CODEC against their real bound tags; original values and matches checked. Actual molten iron produced through the heating module; changed recipes reset stale requirements. Controller save-before-level-assignment regression preserves a heating snapshot. This is subsystem validation, not a player/world melting test.
+- Final JAR SHA-256: `62e1c8ae0dcfc3390f2fd40f739993e8fb1700011d0fdc1684d62315ff8b845e`.
+- Reusable cached production smoke: `python3 scripts/smoke_server_cached.py` passed, exit 0, initializer executed, EULA gate reached; report in `ci-logs/server-cached-smoke.json`.
 - Standard production smoke download is blocked by HTTP 403 at `meta.fabricmc.net`. A production launch using the already downloaded official Fabric Loader and Mojang server succeeded: mod initializer ran, process exited 0 at the EULA gate with `eula=false`. Loader library SHA-256 hashes and Mojang server SHA-1 matched official metadata. No world/client test has run here.
 - GitHub CLI API returns HTTP 403 at `api.github.com`; native Git fetch works. PR status read from all three public GitHub dashboard pages (61 PRs total). Added API and Fabric metadata destinations to environment draft; saved draft is not applied runtime access.
 
@@ -27,7 +30,7 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 | --- | --- |
 | Smeltery multiblock/controller | Native formation, servant ownership, ordered tank, fuel and heating cycle have existing regression tests. Player workflow not verified. |
 | Fuel tank | Four-bucket native storage and persistence existed; container interaction now implemented and transaction tested. Rendering, retained-fluid block item and live player checks remain. |
-| Melting | Slot/inventory/heating modules exist; controller recipe lookup still returns null. Native recipe codecs, reload lookup and item input/GUI missing. |
+| Melting | Slot/inventory/heating modules exist; Standard native recipe codec and live server-manager lookup now implemented for six original iron/cobalt ingot/nugget/block recipes. Reload changes revalidate heat/time; ore/damageable/material recipes and item input/GUI remain missing. |
 | Molten metals | Cobalt and iron native fluids/sprites exist. Other metals/alloys, bucket items and full physical/thermal parity missing. |
 | Drain, faucet, casting table/basin | No native implementations in the selected Smeltery branch. |
 | Alloying | Controller hook returns false; real recipe system missing. |
@@ -48,8 +51,12 @@ export JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts
 bash gradlew --no-daemon --max-workers=2 build --console=plain
 python3 scripts/verify_reference.py
 python3 scripts/verify_jar.py
+python3 scripts/smoke_server_cached.py
+# Standard installer-based smoke, once meta.fabricmc.net access is applied:
 python3 scripts/smoke_server.py
 ```
+
+Legacy `SMELTERY-STATUS.json` and milestone reports describe earlier commits; use this checkpoint for current-session evidence. No new GitHub Actions result is claimed until it can be read from GitHub.
 
 The existing smoke script checks initialization at the EULA gate, not world gameplay. Never call that a world test. The current task is isolated; use the existing checkout, do not create worktrees unless requested.
 
@@ -57,7 +64,7 @@ The existing smoke script checks initialization at the EULA gate, not world game
 
 1. Verify bucket player interaction and fuel tank world save/reload in a real Minecraft environment.
 2. Verify comparator redstone propagation in-world (native response and transaction tests now implemented).
-3. Port original data-driven melting recipe codecs and reload-aware lookup; wire controller lookup without synthetic hardcoded conversions. Upstream originals are under `upstream/Hephaestus/src/main/java/slimeknights/tconstruct/library/recipe/melting` and `smeltery`.
+3. Extend the now-registered standard melting codec/manager path to original ore/damageable/material recipes, preserving ore yield rules and foundry byproducts. Add live recipe reload/world-save verification. Upstream originals are under `upstream/Hephaestus/src/main/java/slimeknights/tconstruct/library/recipe/melting` and `smeltery`.
 4. Add native item input/GUI, drain/faucet and casting recipes/storage; run the actual build/fuel/melt/cast gameplay loop.
 5. Port alloying and remaining metals before tools work resumes. Do not merge primary branches without approval.
 

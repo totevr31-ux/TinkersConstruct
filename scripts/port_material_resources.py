@@ -274,6 +274,20 @@ for metal in ('cobalt', 'iron'):
     write(f'data/tconstruct/tags/fluid/{name}.json',
           {'replace': False, 'values': [f'tconstruct:{name}', f'tconstruct:flowing_{name}']})
 
+# Standard ingot/nugget/block melting: preserve exact original quantities,
+# temperature, time and recipe IDs. Only ingredient JSON syntax changes.
+# Ores/damageable recipes must wait for their own original serializers.
+for metal, namespace in (('iron', 'minecraft'), ('cobalt', 'tconstruct')):
+    for form in ('ingot', 'nugget', 'block'):
+        rel = f'smeltery/melting/metal/{metal}/{form}.json'
+        recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{rel}').read_text())
+        assert recipe['type'] == 'tconstruct:melting'
+        original_tag = recipe['ingredient']['tag']
+        write(f'data/c/tags/item/{original_tag.removeprefix("c:")}.json',
+              {'replace': False, 'values': [f'{namespace}:{metal}_{form}']})
+        recipe['ingredient'] = ingredient(recipe['ingredient'])
+        write(f'data/tconstruct/recipe/{rel}', recipe)
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
@@ -287,4 +301,4 @@ write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_reso
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
 import runpy
 runpy.run_path(str(ROOT / 'scripts/port_material_stats.py'), run_name='__main__')
-print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipes.')
+print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3 + 6} recipes.')
