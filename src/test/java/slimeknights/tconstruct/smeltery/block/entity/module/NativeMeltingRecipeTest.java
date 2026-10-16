@@ -24,36 +24,40 @@ class NativeMeltingRecipeTest {
         com.radi.radisconstruct.PortedContentTest.bootstrap();
     }
 
-    @Test void sixPackagedRecipesRetainExactOriginalTagOutputTemperatureAndTime() throws Exception {
+    @Test void allPackagedStandardRecipesRetainOriginalTagsOutputsTemperaturesAndTimes() throws Exception {
         var registries = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
         var ops = registries.createSerializationContext(JsonOps.INSTANCE);
-        for (String metal : new String[] {"iron", "cobalt"}) {
-            for (String form : new String[] {"ingot", "nugget", "block"}) {
-                String relative = "smeltery/melting/metal/" + metal + "/" + form + ".json";
+        Path root = Path.of("build/portedResources/data/tconstruct/recipe");
+        int checked = 0;
+        try (var paths = Files.walk(root.resolve("smeltery/melting/metal"))) {
+            for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
+                String relative = root.relativize(path).toString();
                 var original = JsonParser.parseString(Files.readString(Path.of(
                     "upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/" + relative))).getAsJsonObject();
-                var packed = JsonParser.parseString(Files.readString(Path.of(
-                    "build/portedResources/data/tconstruct/recipe/" + relative))).getAsJsonObject();
+                var packed = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
                 assertEquals(original.get("result"), packed.get("result"));
                 assertEquals(original.get("time"), packed.get("time"));
                 assertEquals(original.get("temperature"), packed.get("temperature"));
                 assertEquals("#" + original.getAsJsonObject("ingredient").get("tag").getAsString(),
                     packed.get("ingredient").getAsString());
-                // Decode the actual packaged tag recipe through Minecraft's
-                // dispatcher, with generated tag contents bound by the fixture.
                 var decoded = (NativeMeltingRecipe) net.minecraft.world.item.crafting.Recipe.DIRECT_CODEC
                     .parse(ops, packed).getOrThrow();
-                String itemId = (metal.equals("iron") ? "minecraft:" : "tconstruct:") + metal + "_" + form;
+                String metal = path.getParent().getFileName().toString();
+                String form = path.getFileName().toString().replace(".json", "");
+                String namespace = java.util.Set.of("iron", "gold", "copper", "netherite").contains(metal)
+                    ? "minecraft:" : "tconstruct:";
                 assertTrue(decoded.matches(new ItemStack(BuiltInRegistries.ITEM.getValue(
-                    net.minecraft.resources.Identifier.parse(itemId)))));
+                    net.minecraft.resources.Identifier.parse(namespace + metal + "_" + form)))));
                 assertFalse(decoded.matches(new ItemStack(Items.DIRT)));
                 assertEquals(original.get("time").getAsInt(), decoded.time());
                 assertEquals(original.get("temperature").getAsInt(), decoded.temperature());
                 assertEquals(original.getAsJsonObject("result").get("amount").getAsLong(), decoded.outputAmount());
-                assertSame(NativeMoltenFluids.source(metal.equals("iron")
-                    ? NativeMoltenFluids.Metal.IRON : NativeMoltenFluids.Metal.COBALT), decoded.outputFluid().getFluid());
+                assertSame(NativeMoltenFluids.source(NativeMoltenFluids.Metal.valueOf(
+                    metal.toUpperCase(java.util.Locale.ROOT))), decoded.outputFluid().getFluid());
+                checked++;
             }
         }
+        assertEquals(32, checked);
     }
 
     @Test void nativeCodecRejectsInvalidTemperatureTimeAmountAndEmptyFluid() {

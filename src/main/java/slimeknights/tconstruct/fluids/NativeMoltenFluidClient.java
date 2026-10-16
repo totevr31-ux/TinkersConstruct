@@ -19,7 +19,7 @@ public final class NativeMoltenFluidClient implements ClientModInitializer {
 
     @Override public void onInitializeClient() {
         for (NativeMoltenFluids.Metal metal : NativeMoltenFluids.Metal.values()) {
-            String name = metal == NativeMoltenFluids.Metal.IRON ? "iron" : "cobalt";
+            String name = metal.id().substring("molten_".length());
             FluidRenderingRegistry.register(
                 NativeMoltenFluids.source(metal),
                 NativeMoltenFluids.flowing(metal),

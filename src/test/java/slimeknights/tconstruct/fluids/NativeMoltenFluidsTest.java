@@ -68,4 +68,18 @@ class NativeMoltenFluidsTest {
         assertEquals(18000,h.tank.getContained());
         assertEquals(List.of(new FluidStack(iron,9000),new FluidStack(cobalt,9000)),h.tank.getFluids());
     }
+
+    @Test void completeMetalCatalogPreservesUpstreamIdsAndAttributeTemperatures() throws Exception {
+        String original = java.nio.file.Files.readString(java.nio.file.Path.of(
+            "upstream/Hephaestus/src/main/java/slimeknights/tconstruct/fluids/TinkerFluids.java"));
+        String section = original.split("// metal ores", 2)[1].split("/\\*\\* Creates a builder", 2)[0];
+        var matcher = java.util.regex.Pattern.compile(
+            "register\\(\"(molten_[a-z_]+)\",\\s*hotBuilder\\(\\)\\.temperature\\(\\s*(\\d+)\\)").matcher(section);
+        var expected = new java.util.HashMap<String, Integer>();
+        while (matcher.find()) expected.put(matcher.group(1), Integer.parseInt(matcher.group(2)));
+        assertEquals(36, expected.size());
+        assertEquals(expected.size(), NativeMoltenFluids.Metal.values().length);
+        for (var metal : NativeMoltenFluids.Metal.values())
+            assertEquals(expected.get(metal.id()), metal.temperature(), metal.id());
+    }
 }

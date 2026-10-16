@@ -24,7 +24,41 @@ public final class NativeMoltenFluids {
 
     public enum Metal {
         IRON("molten_iron", 1100),
-        COBALT("molten_cobalt", 1250);
+        GOLD("molten_gold", 1000),
+        COPPER("molten_copper", 800),
+        COBALT("molten_cobalt", 1250),
+        SLIMESTEEL("molten_slimesteel", 1200),
+        AMETHYST_BRONZE("molten_amethyst_bronze", 1120),
+        ROSE_GOLD("molten_rose_gold", 850),
+        PIG_IRON("molten_pig_iron", 1111),
+        MANYULLYN("molten_manyullyn", 1500),
+        HEPATIZON("molten_hepatizon", 1700),
+        QUEENS_SLIME("molten_queens_slime", 1450),
+        SOULSTEEL("molten_soulsteel", 1500),
+        NETHERITE("molten_netherite", 1550),
+        KNIGHTSLIME("molten_knightslime", 1425),
+        TIN("molten_tin", 525),
+        ALUMINUM("molten_aluminum", 725),
+        LEAD("molten_lead", 630),
+        SILVER("molten_silver", 1090),
+        NICKEL("molten_nickel", 1250),
+        ZINC("molten_zinc", 720),
+        PLATINUM("molten_platinum", 1270),
+        TUNGSTEN("molten_tungsten", 1250),
+        OSMIUM("molten_osmium", 1275),
+        URANIUM("molten_uranium", 1130),
+        BRONZE("molten_bronze", 1000),
+        BRASS("molten_brass", 905),
+        ELECTRUM("molten_electrum", 1060),
+        INVAR("molten_invar", 1200),
+        CONSTANTAN("molten_constantan", 1220),
+        PEWTER("molten_pewter", 700),
+        STEEL("molten_steel", 1250),
+        ENDERIUM("molten_enderium", 1650),
+        LUMIUM("molten_lumium", 1350),
+        SIGNALUM("molten_signalum", 1425),
+        REFINED_GLOWSTONE("molten_refined_glowstone", 1125),
+        REFINED_OBSIDIAN("molten_refined_obsidian", 1775);
         private final String id;
         private final int temperature;
         Metal(String id, int temperature) { this.id = id; this.temperature = temperature; }

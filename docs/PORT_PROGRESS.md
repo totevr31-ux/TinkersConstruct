@@ -4,6 +4,13 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+### Continuation: complete native metal identities and standard melting
+
+- Registered all 36 metal/alloy source+flowing pairs from the original TinkerFluids metal sections, preserving IDs and attribute temperatures. Original textures/animation metadata, translations and fluid tags are packaged for every pair; client bindings now select each metal's real sprites.
+- Expanded standard ingot/nugget/block melting to 32 original recipes across currently registered mod materials and vanilla iron/gold/copper/netherite. Netherite has no invented nugget item.
+- Build passed: 81 tests, zero failures/errors/skips. Native decoder tests exercise all 32 real tagged recipes and match their real item stacks; catalog test compares all 36 identifiers/temperatures directly to original Java source. JAR checks cover all recipe values and fluid assets. Cached production bootstrap passed.
+- This registers molten identities and standard recipes, not the original fluid damage/viscosity/dispenser behavior or alloying execution. Those remain unfinished.
+
 ### Continuation: native item automation
 
 - Rechecked remote heads and all four open PRs before editing; #62 is still the only Smeltery follow-up. No primary branch was merged.

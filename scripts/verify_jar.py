@@ -86,17 +86,26 @@ with zipfile.ZipFile(jar) as z:
     tank_tag = json.loads(z.read('data/tconstruct/tags/block/smeltery/tanks.json'))
     assert 'tconstruct:seared_fuel_tank' in tank_tag['values']
     assert 'data/tconstruct/tags/block/seared_tanks.json' in names
-    # Native standard melting keeps original quantities/heat/time and tag IDs.
-    for metal in ('iron', 'cobalt'):
-        for form in ('ingot', 'nugget', 'block'):
-            relative = f'smeltery/melting/metal/{metal}/{form}.json'
-            original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
-            packed = json.loads(z.read(f'data/tconstruct/recipe/{relative}'))
-            for field in ('type', 'result', 'temperature', 'time'):
-                assert packed[field] == original[field], (relative, field)
-            tag = original['ingredient']['tag']
-            assert packed['ingredient'] == '#' + tag
-            assert f'data/c/tags/item/{tag.removeprefix("c:")}.json' in names
+    # Verify all packaged standard melting recipes against preserved originals.
+    melting = [n for n in names if n.startswith('data/tconstruct/recipe/smeltery/melting/metal/') and n.endswith('.json')]
+    assert len(melting) == 32
+    for name in melting:
+        relative = name.removeprefix('data/tconstruct/recipe/')
+        original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
+        packed = json.loads(z.read(name))
+        for field in ('type', 'result', 'temperature', 'time'):
+            assert packed[field] == original[field], (relative, field)
+        tag = original['ingredient']['tag']
+        assert packed['ingredient'] == '#' + tag
+        assert f'data/c/tags/item/{tag.removeprefix("c:")}.json' in names
+    molten = json.loads(z.read('assets/radisconstruct/molten-metals.json'))
+    assert len(molten) == 36
+    for name in molten:
+        metal = name.removeprefix('molten_')
+        for sprite in ('still', 'flowing'):
+            assert f'assets/tconstruct/textures/block/fluid/{metal}/{sprite}.png' in names
+            assert f'assets/tconstruct/textures/block/fluid/{metal}/{sprite}.png.mcmeta' in names
+        assert f'data/tconstruct/tags/fluid/{name}.json' in names
     original_lava = json.loads(z.read('assets/radisconstruct/reference/smeltery/lava_fuel.json'))
     assert original_lava['fluid'] == {'amount': 50, 'name': 'minecraft:lava'}
     assert original_lava['duration'] == 100 and original_lava['temperature'] == 1000
