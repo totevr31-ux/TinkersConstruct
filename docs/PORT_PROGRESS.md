@@ -7,6 +7,7 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a93e23ee70c` (stage 1K, already merged into `radisconstruct-smeltery`). This is a Smeltery-only follow-up; no main-branch merge was performed. Its eventual integration into stage1 must preserve the separate Part Builder and tools work. A diff against stage1 includes divergent existing branch history, not intentional deletion of those systems.
 
 - Added real bucket/container interactions to the Seared Fuel Tank through Fabric FluidStorageUtil, replacing the upstream Mantle helper at the native block hook. Server owns mutations; client predicts animation only. Delegates creative, stacked-container exchange and sounds to Fabric.
+- Comparator output now uses the original `floor(15 * amount / capacity)` formula and notifies comparator neighbors only on a committed signal change. Boundary regression covers all 15 thresholds, draining and rollback. Live redstone propagation remains untested.
 - Regression tests exercise real Fabric bucket storage adapters: lava fill/drain roundtrip, full/nearly full rejection, incompatible fluid rejection, insufficient extraction, atomic rollback. These are container/tank tests, **not live-player tests**.
 
 ## Evidence in this session
@@ -16,7 +17,8 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 - Baseline build: 65 tests, 0 failures/errors/skips.
 - Bucket change: `bash gradlew --no-daemon --max-workers=2 build --console=plain` passed; 69 tests, 0 failures/errors/skips.
 - `python3 scripts/verify_jar.py` passed for the bucket change. Installable artifact staged in `dist/radisconstruct-0.3.0-cobalt+26.3.jar` (feature subset, not full parity).
-- Production smoke currently blocked before execution: `meta.fabricmc.net` returns proxy CONNECT HTTP 403. No world/client test has run here.
+- Comparator build: 70 tests, 0 failures/errors/skips; JAR verification passed.
+- Standard production smoke download is blocked by HTTP 403 at `meta.fabricmc.net`. A production launch using the already downloaded official Fabric Loader and Mojang server succeeded: mod initializer ran, process exited 0 at the EULA gate with `eula=false`. Loader library SHA-256 hashes and Mojang server SHA-1 matched official metadata. No world/client test has run here.
 - GitHub CLI API returns HTTP 403 at `api.github.com`; native Git fetch works. PR status read from all three public GitHub dashboard pages (61 PRs total). Added API and Fabric metadata destinations to environment draft; saved draft is not applied runtime access.
 
 ## Functional assessment
@@ -54,7 +56,7 @@ The existing smoke script checks initialization at the EULA gate, not world game
 ## Next priorities
 
 1. Verify bucket player interaction and fuel tank world save/reload in a real Minecraft environment.
-2. Restore original comparator response to committed fluid changes.
+2. Verify comparator redstone propagation in-world (native response and transaction tests now implemented).
 3. Port original data-driven melting recipe codecs and reload-aware lookup; wire controller lookup without synthetic hardcoded conversions. Upstream originals are under `upstream/Hephaestus/src/main/java/slimeknights/tconstruct/library/recipe/melting` and `smeltery`.
 4. Add native item input/GUI, drain/faucet and casting recipes/storage; run the actual build/fuel/melt/cast gameplay loop.
 5. Port alloying and remaining metals before tools work resumes. Do not merge primary branches without approval.

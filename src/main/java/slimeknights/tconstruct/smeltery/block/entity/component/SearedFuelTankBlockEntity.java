@@ -23,6 +23,7 @@ public final class SearedFuelTankBlockEntity extends BlockEntity {
     private static final String AMOUNT_TAG = "tank_amount";
 
     private final FuelStorage fluidStorage = new FuelStorage();
+    private int lastComparatorStrength;
 
     public SearedFuelTankBlockEntity(BlockPos pos, BlockState state) {
         super(SmelteryContent.FUEL_TANK_BLOCK_ENTITY, pos, state);
@@ -32,10 +33,23 @@ public final class SearedFuelTankBlockEntity extends BlockEntity {
     public FluidVariant getStoredFluid() { return fluidStorage.getResource(); }
     public long getStoredAmount() { return fluidStorage.getAmount(); }
 
+    /** Upstream ITankBlockEntity: floor(15 * amount / capacity), no +1 offset. */
+    public int getComparatorStrength() {
+        return (int) (15 * getStoredAmount() / CAPACITY);
+    }
+
     private final class FuelStorage extends SingleVariantStorage<FluidVariant> {
         @Override protected FluidVariant getBlankVariant() { return FluidVariant.blank(); }
         @Override protected long getCapacity(FluidVariant variant) { return CAPACITY; }
-        @Override protected void onFinalCommit() { SearedFuelTankBlockEntity.this.setChanged(); }
+        @Override protected void onFinalCommit() {
+            SearedFuelTankBlockEntity.this.setChanged();
+            int strength = getComparatorStrength();
+            if (strength != lastComparatorStrength) {
+                lastComparatorStrength = strength;
+                if (level != null && !level.isClientSide())
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            }
+        }
 
         void restore(FluidVariant fluid, long quantity) {
             if (quantity < 0 || quantity > CAPACITY)
@@ -60,5 +74,6 @@ public final class SearedFuelTankBlockEntity extends BlockEntity {
         FluidVariant fluid = input.read(FLUID_TAG, FluidVariant.CODEC).orElse(FluidVariant.blank());
         long amount = input.getLong(AMOUNT_TAG).orElse(0L);
         fluidStorage.restore(fluid, amount);
+        lastComparatorStrength = getComparatorStrength();
     }
 }

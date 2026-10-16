@@ -82,4 +82,33 @@ class SearedFuelTankBlockEntityTest {
         assertNull(NativeMeltingFuelLookup.find(FluidVariant.of(Fluids.WATER)));
         assertNull(NativeMeltingFuelLookup.find(FluidVariant.blank()));
     }
+
+    @Test void comparatorUsesOriginalFloorFormulaAtAllFifteenBoundaries() {
+        assertTrue(SmelteryContent.FUEL_TANK.defaultBlockState().hasAnalogOutputSignal());
+        var lava = FluidVariant.of(Fluids.LAVA);
+        long capacity = SearedFuelTankBlockEntity.CAPACITY;
+        for (int signal = 1; signal <= 15; signal++) {
+            long threshold = (capacity * signal + 14) / 15;
+            var tank = entity();
+            try (var tx = Transaction.openOuter()) {
+                tank.getFluidStorage().insert(lava, threshold - 1, tx);
+                tx.commit();
+            }
+            assertEquals(signal - 1, tank.getComparatorStrength());
+            try (var tx = Transaction.openOuter()) {
+                tank.getFluidStorage().insert(lava, 1, tx);
+                tx.commit();
+            }
+            assertEquals(signal, tank.getComparatorStrength());
+            try (var tx = Transaction.openOuter()) {
+                tank.getFluidStorage().extract(lava, threshold, tx);
+            } // Simulation/aborted extraction must not alter the final signal.
+            assertEquals(signal, tank.getComparatorStrength());
+            try (var tx = Transaction.openOuter()) {
+                tank.getFluidStorage().extract(lava, threshold, tx);
+                tx.commit();
+            }
+            assertEquals(0, tank.getComparatorStrength());
+        }
+    }
 }

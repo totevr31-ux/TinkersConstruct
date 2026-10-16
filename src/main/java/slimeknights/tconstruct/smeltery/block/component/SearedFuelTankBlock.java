@@ -5,6 +5,7 @@
 package slimeknights.tconstruct.smeltery.block.component;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil;
@@ -41,6 +42,12 @@ public final class SearedFuelTankBlock extends BaseEntityBlock {
             ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    @Override protected boolean hasAnalogOutputSignal(BlockState state) { return true; }
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        return level.getBlockEntity(pos) instanceof SearedFuelTankBlockEntity tank
+            ? tank.getComparatorStrength() : 0;
+    }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new SearedFuelTankBlockEntity(pos, state);
     }
