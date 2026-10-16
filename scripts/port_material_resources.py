@@ -279,6 +279,13 @@ for molten_name, _ in molten_catalog:
         translations[key] = lang_source[key]
     write(f'data/tconstruct/tags/fluid/{name}.json',
           {'replace': False, 'values': [f'tconstruct:{name}', f'tconstruct:flowing_{name}']})
+    common_tag = f'generated/resources/data/c/tags/fluids/{name}.json'
+    if (UPSTREAM / common_tag).exists():
+        copy(common_tag, f'data/c/tags/fluid/{name}.json')
+
+# Original unconditional alloy whose complete inputs are registered natively.
+copy('generated/resources/data/tconstruct/recipes/smeltery/alloys/molten_rose_gold.json',
+     'data/tconstruct/recipe/smeltery/alloys/molten_rose_gold.json')
 
 # Standard ingot/nugget/block melting: preserve exact original quantities,
 # temperature, time and recipe IDs. Only ingredient JSON syntax changes.

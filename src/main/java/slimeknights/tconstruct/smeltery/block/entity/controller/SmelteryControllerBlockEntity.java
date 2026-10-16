@@ -18,6 +18,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe;
+import slimeknights.tconstruct.smeltery.recipe.NativeAlloyRecipe;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.Level;
@@ -103,8 +104,14 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
             @Override public void coolItems() { meltingInventory.coolItems(); }
         },
         new SmelteryHeatingCycle.Alloying() {
-            @Override public boolean canAlloy(int temperature) { return false; }
-            @Override public void alloy(int temperature) { /* Unported alloying; no fabricated output. */ }
+            @Override public boolean canAlloy(int temperature) {
+                return matchingAlloys().stream().anyMatch(recipe -> recipe.perform(tank, temperature, false));
+            }
+            @Override public void alloy(int temperature) {
+                var candidates = matchingAlloys();
+                java.util.Collections.shuffle(candidates);
+                for (var recipe : candidates) recipe.perform(tank, temperature, true);
+            }
         },
         this::setActive);
     private int tick;
@@ -119,6 +126,17 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         () -> structure != null && pendingMeltingSnapshot == null);
 
     public MeltingItemStorage getItemStorage() { return itemStorage; }
+
+    private List<NativeAlloyRecipe> matchingAlloys() {
+        var result = new ArrayList<NativeAlloyRecipe>();
+        if (level instanceof ServerLevel server) {
+            var input = new NativeAlloyRecipe.Input(tank);
+            for (var holder : server.recipeAccess().getRecipes())
+                if (holder.value() instanceof NativeAlloyRecipe recipe && recipe.matches(input, server))
+                    result.add(recipe);
+        }
+        return result;
+    }
 
     public SmelteryControllerBlockEntity(BlockPos pos, BlockState state) {
         super(SmelteryContent.CONTROLLER_BLOCK_ENTITY, pos, state);

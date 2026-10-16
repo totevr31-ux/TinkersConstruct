@@ -4,6 +4,16 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+### Continuation: native alloying phase and original Rose Gold
+
+- Ported original AlloyRecipe ingredient ordering/distinct-layer matching, temperature gating, drained-space accounting, one-batch execution and result-as-input validation. Native transactions make input drains and output fill atomic, including a no-side-effect fuel-demand simulation.
+- Connected controller alloy callbacks to live recipe-manager contents. Matching candidates are captured before execution and shuffled as in original MultiAlloyingModule; new recipes after reload are discovered without stale caches.
+- Original Rose Gold recipe is copied byte-for-byte. Original common molten-fluid alias tags are packaged. Other alloy recipes requiring unported fluids/conditional compatibility are not activated yet.
+- Java 25 build: **88 tests, zero failures/errors/skips**. Added exact original Rose Gold decode, full-tank net-zero crafting, temperature threshold, insufficient-input and output-capacity rollback, duplicate-layer rejection, and decoder validation tests.
+- Original snapshot verification passed (19,850 unchanged files); runtime JAR verification and cached production bootstrap passed. Latest JAR SHA-256: `9b7318be52dc7bb4545a5549dbf391235fde09f968c58eaffb1e1eb7a4c160bb`.
+- Pending human prerequisite: explicit response to the Minecraft EULA question for the isolated world-starting server. `eula=false` remains in place. No live hopper, melting, alloying, save/reload or client gameplay is claimed. The next integration checkpoint must exercise these changes in a real world before further gameplay integration.
+- Full goal remains unfinished: conditional iron/sparse/dense/damageable melting, configurable ore rates, remaining alloys/nonmetal fluids, casting table/basin, drain/faucet, GUI/sync, entity melting and original survival recipes/behaviors.
+
 ### Continuation: original ore-melting contract
 
 - Added native `tconstruct:ore_melting` serializer sharing the live melting recipe type. Raw cobalt and raw cobalt block recipes preserve their exact original source data, including foundry byproducts (not emitted by a Smeltery).
@@ -59,10 +69,10 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 | --- | --- |
 | Smeltery multiblock/controller | Native formation, servant ownership, ordered tank, fuel and heating cycle have existing regression tests. Player workflow not verified. |
 | Fuel tank | Four-bucket native storage and persistence existed; container interaction now implemented and transaction tested. Rendering, retained-fluid block item and live player checks remain. |
-| Melting | Slot/inventory/heating modules exist; Standard native recipe codec and live server-manager lookup now implemented for six original iron/cobalt ingot/nugget/block recipes. Reload changes revalidate heat/time; ore/damageable/material recipes and item input/GUI remain missing. |
-| Molten metals | Cobalt and iron native fluids/sprites exist. Other metals/alloys, bucket items and full physical/thermal parity missing. |
+| Melting | Slot/inventory/heating modules exist; Standard native codec and live lookup now cover 32 original recipes across 11 metals. Reload changes revalidate heat/time; raw cobalt ore serializer/default yield and Fabric item automation now added. Conditional iron/sparse/dense/damageable/material recipes and GUI remain missing. |
+| Molten metals | All 36 metal/alloy source/flowing pairs, original sprites/animations and temperatures now registered. Nonmetal fluids, bucket items and original physical/thermal parity remain incomplete. |
 | Drain, faucet, casting table/basin | No native implementations in the selected Smeltery branch. |
-| Alloying | Controller hook returns false; real recipe system missing. |
+| Alloying | Native original matching/atomic crafting is connected to the controller; Rose Gold recipe active and subsystem tested. Remaining alloy data/inputs and live-world tests are open. |
 | Persistence/sync | Controller tank, fuel and melting snapshots exist. Live world reload and client synchronization unverified; ordered tank sync packet unported. |
 | Materials/Part Builder/Tinker Station | Extensive separate stage1 work exists (PRs through #52); not reimplemented or merged here. Must validate its artifact separately. |
 | Pickaxe/models/Momentum | Active draft PRs #53/#60/#61. Keep their implementation branches untouched. Other tools, abilities, books and integrations still need behavior-level audit. |

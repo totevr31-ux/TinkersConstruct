@@ -43,6 +43,7 @@ public class PortedContentTest {
         slimeknights.tconstruct.fluids.NativeMoltenFluids.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeOreMeltingRecipe.initialize();
+        slimeknights.tconstruct.smeltery.recipe.NativeAlloyRecipe.initialize();
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
         try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
             for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
@@ -61,6 +62,20 @@ public class PortedContentTest {
         items.bindAllTagsToEmpty();
         items.bindTags(tags);
         items.freeze(); // Finalize holder tag membership, as normal world loading does.
+        Map<TagKey<net.minecraft.world.level.material.Fluid>, List<Holder<net.minecraft.world.level.material.Fluid>>> fluidTags = new HashMap<>();
+        var catalog = json(ROOT.resolve("assets/radisconstruct/molten-metals.json"));
+        for (String name : catalog.keySet()) {
+            var source = BuiltInRegistries.FLUID.get(id("tconstruct:" + name)).orElseThrow();
+            var flowing = BuiltInRegistries.FLUID.get(id("tconstruct:flowing_" + name)).orElseThrow();
+            List<Holder<net.minecraft.world.level.material.Fluid>> values = List.of(source, flowing);
+            fluidTags.put(TagKey.create(Registries.FLUID, id("tconstruct:" + name)), values);
+            if (Files.exists(ROOT.resolve("data/c/tags/fluid/" + name + ".json")))
+                fluidTags.put(TagKey.create(Registries.FLUID, id("c:" + name)), values);
+        }
+        var fluids = (MappedRegistry<net.minecraft.world.level.material.Fluid>) BuiltInRegistries.FLUID;
+        fluids.bindAllTagsToEmpty();
+        fluids.bindTags(fluidTags);
+        fluids.freeze();
         ops = lookup.createSerializationContext(JsonOps.INSTANCE);
     }
     @Test void allCraftingConversionsMatchAndPreserveAmounts() throws Exception {
