@@ -4,6 +4,12 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+Current draft PR: [#62](https://github.com/totevr31-ux/TinkersConstruct/pull/62), base `radisconstruct-smeltery`, head `radisconstruct-smeltery-next`.
+
+Pushed implementation commits: `ba6d638c2` (container interaction), `092dfe0c2` (comparator), `687f45727` (native standard melting recipes and tests).
+
+GitHub Actions for implementation commit `687f457279c58934631dc5b63a8d44d4dd22ebba`: [run 38899457519](https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38899457519), **success**. Build/tests, upstream verification, runtime JAR verification, production Fabric bootstrap and artifact upload all passed. This smoke stops at the EULA gate; world/client gameplay is still unverified.
+
 Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a93e23ee70c` (stage 1K, already merged into `radisconstruct-smeltery`). This is a Smeltery-only follow-up; no main-branch merge was performed. Its eventual integration into stage1 must preserve the separate Part Builder and tools work. A diff against stage1 includes divergent existing branch history, not intentional deletion of those systems.
 
 - Added real bucket/container interactions to the Seared Fuel Tank through Fabric FluidStorageUtil, replacing the upstream Mantle helper at the native block hook. Server owns mutations; client predicts animation only. Delegates creative, stacked-container exchange and sounds to Fabric.
@@ -21,8 +27,8 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 - Native recipe follow-up: 75 tests, 0 failures/errors/skips. Six packaged recipes decoded through Minecraft Recipe.DIRECT_CODEC against their real bound tags; original values and matches checked. Actual molten iron produced through the heating module; changed recipes reset stale requirements. Controller save-before-level-assignment regression preserves a heating snapshot. This is subsystem validation, not a player/world melting test.
 - Final JAR SHA-256: `62e1c8ae0dcfc3390f2fd40f739993e8fb1700011d0fdc1684d62315ff8b845e`.
 - Reusable cached production smoke: `python3 scripts/smoke_server_cached.py` passed, exit 0, initializer executed, EULA gate reached; report in `ci-logs/server-cached-smoke.json`.
-- Standard production smoke download is blocked by HTTP 403 at `meta.fabricmc.net`. A production launch using the already downloaded official Fabric Loader and Mojang server succeeded: mod initializer ran, process exited 0 at the EULA gate with `eula=false`. Loader library SHA-256 hashes and Mojang server SHA-1 matched official metadata. No world/client test has run here.
-- GitHub CLI API returns HTTP 403 at `api.github.com`; native Git fetch works. PR status read from all three public GitHub dashboard pages (61 PRs total). Added API and Fabric metadata destinations to environment draft; saved draft is not applied runtime access.
+- Initial standard production smoke download was blocked by HTTP 403 at `meta.fabricmc.net`; that access now works. The installer next requires `launchermeta.mojang.com`, which returned proxy 403; that domain was added to the saved draft. A production launch using the already downloaded official Fabric Loader and Mojang server succeeded: mod initializer ran, process exited 0 at the EULA gate with `eula=false`. Loader library SHA-256 hashes and Mojang server SHA-1 matched official metadata. No world/client test has run here.
+- Initial GitHub API HTTP 403 resolved after network changes; fetch/push, API reads, PR creation and CI reads now work. Before editing, all three public dashboard pages were inspected (61 pre-existing PRs total). No new credentials were needed.
 
 ## Functional assessment
 
@@ -56,7 +62,7 @@ python3 scripts/smoke_server_cached.py
 python3 scripts/smoke_server.py
 ```
 
-Legacy `SMELTERY-STATUS.json` and milestone reports describe earlier commits; use this checkpoint for current-session evidence. No new GitHub Actions result is claimed until it can be read from GitHub.
+Legacy `SMELTERY-STATUS.json` and milestone reports describe earlier commits; use this checkpoint for current-session evidence. The successful Actions run above validates the current implementation commit.
 
 The existing smoke script checks initialization at the EULA gate, not world gameplay. Never call that a world test. The current task is isolated; use the existing checkout, do not create worktrees unless requested.
 
@@ -67,6 +73,12 @@ The existing smoke script checks initialization at the EULA gate, not world game
 3. Extend the now-registered standard melting codec/manager path to original ore/damageable/material recipes, preserving ore yield rules and foundry byproducts. Add live recipe reload/world-save verification. Upstream originals are under `upstream/Hephaestus/src/main/java/slimeknights/tconstruct/library/recipe/melting` and `smeltery`.
 4. Add native item input/GUI, drain/faucet and casting recipes/storage; run the actual build/fuel/melt/cast gameplay loop.
 5. Port alloying and remaining metals before tools work resumes. Do not merge primary branches without approval.
+
+## Environment checkpoint
+
+Saved draft now selects the pushed implementation commit in `TinkersConstruct` (instead of legacy `1.26.2`), with tested Java 25 install/activation instructions and startup checks. Review/save and publication in environment settings remain user actions; a fresh-task restoration has not been tested. No running process is assumed to survive publication.
+
+Next coding session should begin with native controller item-input/GUI and ore melting variants, while retaining the active tools PRs. The full goal is not complete; no in-game completion percentage is claimed.
 
 ## Pull Request inventory
 
