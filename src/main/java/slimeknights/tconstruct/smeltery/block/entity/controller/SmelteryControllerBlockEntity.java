@@ -255,6 +255,22 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         setChanged();
     }
 
+    /** Block replacement/removal, not chunk unload. Native storage is not a
+     * vanilla Container, so BlockEntity's default hook cannot drop its inputs.
+     * Restore pending save data first, then clear after dropping every slot.
+     */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (!(level instanceof ServerLevel)) return;
+        if (pendingMeltingSnapshot != null) {
+            meltingInventory.restore(pendingMeltingSnapshot);
+            pendingMeltingSnapshot = null;
+        }
+        meltingInventory.resize(0, this::dropOverflow);
+        invalidateStructure();
+    }
+
     public void updateStructure() {
         Level world = level;
         if (world == null || world.isClientSide() || !world.hasChunkAt(worldPosition)) return;

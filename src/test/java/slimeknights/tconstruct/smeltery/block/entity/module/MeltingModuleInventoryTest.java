@@ -71,4 +71,22 @@ class MeltingModuleInventoryTest {
         assertEquals(Items.IRON_INGOT,restored.getStackInSlot(390).getItem());
         assertTrue(restored.getStackInSlot(399).isEmpty());
     }
+
+    @Test void removalDrainPreservesComponentsAndCannotDropInputsTwice() {
+        var inventory = new MeltingModuleInventory(new Context());
+        inventory.resize(3, ignored -> fail());
+        var named = new ItemStack(Items.IRON_INGOT);
+        named.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+            net.minecraft.network.chat.Component.literal("recover on removal"));
+        inventory.setStackInSlot(0, named);
+        inventory.setStackInSlot(2, new ItemStack(Items.DIRT));
+        var drops = new ArrayList<ItemStack>();
+        inventory.resize(0, drops::add);
+        assertEquals(2, drops.size());
+        assertTrue(ItemStack.matches(named, drops.getFirst()));
+        assertTrue(drops.get(1).is(Items.DIRT));
+        inventory.resize(0, drops::add);
+        assertEquals(2, drops.size());
+        assertEquals(0, inventory.getSlotCount());
+    }
 }

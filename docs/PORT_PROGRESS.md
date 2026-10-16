@@ -4,6 +4,15 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+### Latest checkpoint: controller removal and world-test prerequisite
+
+- Native `preRemoveSideEffects` now restores any pending saved inventory, drops the one-item inputs with their components, clears the slots and releases servant ownership. It does not run on ordinary chunk unloading. This closes the item-loss path introduced by exposing non-Container item automation.
+- Build passed: **89 tests**, zero failures/errors/skips. Inventory drain regression checks component preservation and repeated-removal idempotence. The actual block-removal/world lifecycle is still unverified.
+- Runtime JAR verification and production cached bootstrap passed. Latest JAR SHA-256: `a4691fe16fd00100751d716d46367d8f6bd836653698a68ce272435df672cdf5`.
+- GitHub Actions passed the preceding 88-test alloying commit `67df579b62a8dac347137451132b1164697415ce`: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/38901849455 . New removal commit needs its own CI result.
+- Human prerequisite for goal verification: answer the pending question about accepting the Minecraft EULA for the isolated test server. No acceptance has been inferred; `eula=false` remains. The next session must run real world integration tests for formation, automated input, fuel, melting, alloying, removal and save/reload before claiming these systems playable.
+- No PR was merged, no upstream file changed, and the complete Smeltery goal remains unfinished. See the unfinished-systems list below; no background continuation or completion is claimed while this prerequisite is pending.
+
 ### Continuation: native alloying phase and original Rose Gold
 
 - Ported original AlloyRecipe ingredient ordering/distinct-layer matching, temperature gating, drained-space accounting, one-batch execution and result-as-input validation. Native transactions make input drains and output fill atomic, including a no-side-effect fuel-demand simulation.
