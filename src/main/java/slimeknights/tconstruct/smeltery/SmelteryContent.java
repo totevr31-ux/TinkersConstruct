@@ -7,6 +7,7 @@ package slimeknights.tconstruct.smeltery;
 import com.radi.radisconstruct.RadisConstruct;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -85,6 +86,8 @@ public final class SmelteryContent {
             });
         FluidStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.getFluidStorage(), FUEL_TANK_BLOCK_ENTITY);
+        ItemStorage.SIDED.registerForBlockEntity(
+            (blockEntity, direction) -> blockEntity.getItemStorage(), CONTROLLER_BLOCK_ENTITY);
         RadisConstruct.LOGGER.info("Registered original Smeltery Controller, Seared Bricks, four-bucket Fuel Tank and native fluid capability.");
     }
 }

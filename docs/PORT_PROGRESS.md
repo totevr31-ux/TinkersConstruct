@@ -4,6 +4,15 @@ Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is 
 
 ## Current work
 
+### Continuation: native item automation
+
+- Rechecked remote heads and all four open PRs before editing; #62 is still the only Smeltery follow-up. No primary branch was merged.
+- Controller now exposes real Fabric ItemStorage on all sides when formed and after pending save-state restoration. Like original MeltingModuleInventory it accepts any input, at exactly one item per interior slot; recipes determine whether heating is possible.
+- Transaction snapshots include the input components and heating time/requirements. Stable per-slot participants support nested transactions. Retained handles cannot insert/extract after structure invalidation or slot removal.
+- Java 25 build passed: 80 tests, zero failures/errors/skips. Regression cases cover large insertion, capacity, exact-variant extraction, heating-progress rollback, nested commit/outer abort, and stale-handle rejection.
+- Runtime JAR check and cached production Fabric bootstrap passed; still stops at EULA gate. This is not a live hopper/world test.
+- Next: extend original metal ore recipes/yield rules, then player GUI and casting. Awaiting explicit EULA response before a world-starting dedicated-server test; continue independent development meanwhile.
+
 Current draft PR: [#62](https://github.com/totevr31-ux/TinkersConstruct/pull/62), base `radisconstruct-smeltery`, head `radisconstruct-smeltery-next`.
 
 Pushed implementation commits: `ba6d638c2` (container interaction), `092dfe0c2` (comparator), `687f45727` (native standard melting recipes and tests).

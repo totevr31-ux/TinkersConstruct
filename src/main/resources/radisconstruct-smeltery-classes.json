@@ -23,6 +23,8 @@
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule$FuelInfo.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule$FuelRecipe.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/FuelModule.class",
+  "slimeknights/tconstruct/smeltery/block/entity/module/MeltingItemStorage$Slot.class",
+  "slimeknights/tconstruct/smeltery/block/entity/module/MeltingItemStorage.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/MeltingModule$Context.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/MeltingModule$Recipe.class",
   "slimeknights/tconstruct/smeltery/block/entity/module/MeltingModule$Snapshot.class",

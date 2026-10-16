@@ -35,6 +35,7 @@ import slimeknights.tconstruct.smeltery.block.entity.multiblock.SmelteryMultiblo
 import slimeknights.tconstruct.smeltery.block.entity.module.FuelModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
+import slimeknights.tconstruct.smeltery.block.entity.module.MeltingItemStorage;
 import slimeknights.tconstruct.smeltery.block.entity.module.SmelteryHeatingCycle;
 import slimeknights.tconstruct.smeltery.block.entity.module.NativeFuelContext;
 import slimeknights.tconstruct.smeltery.block.entity.module.NativeMeltingFuelLookup;
@@ -114,6 +115,10 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     // Keep the exact snapshot until recipe lookup is available, or valid saved
     // heating progress would be reset merely because world loading is in flight.
     private MeltingModuleInventory.Snapshot pendingMeltingSnapshot;
+    private final MeltingItemStorage itemStorage = new MeltingItemStorage(meltingInventory,
+        () -> structure != null && pendingMeltingSnapshot == null);
+
+    public MeltingItemStorage getItemStorage() { return itemStorage; }
 
     public SmelteryControllerBlockEntity(BlockPos pos, BlockState state) {
         super(SmelteryContent.CONTROLLER_BLOCK_ENTITY, pos, state);
