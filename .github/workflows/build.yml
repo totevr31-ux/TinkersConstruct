@@ -35,6 +35,9 @@ jobs:
       - name: Check preserved upstream snapshot
         run: python3 scripts/verify_reference.py
 
+      - name: Install PNG processing dependency
+        run: python3 -m pip install --user 'Pillow==11.3.0'
+
       - name: Build foundation with checked-in Gradle Wrapper
         run: |
           set -euo pipefail
