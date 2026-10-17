@@ -139,6 +139,24 @@ with zipfile.ZipFile(jar) as z:
         assert 'tconstruct:seared_drain' in json.loads(z.read(f'data/tconstruct/tags/block/smeltery/{tag}.json'))['values']
     for template in ('io', 'io_fluid', 'faucet', 'faucet_up'):
         assert 'loader' not in json.loads(z.read(f'assets/tconstruct/models/block/template/{template}.json'))
+    construction = json.loads(z.read('assets/radisconstruct/construction-recipes.json'))
+    assert len(construction) == 9
+    for name in construction:
+        relative = f'smeltery/seared/{name}.json'
+        expected = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
+        def ingredient(value):
+            return '#' + value['tag'] if 'tag' in value else value['item']
+        if 'key' in expected:
+            expected['key'] = {key: ingredient(value) for key, value in expected['key'].items()}
+        if 'ingredients' in expected:
+            expected['ingredients'] = [ingredient(value) for value in expected['ingredients']]
+        if 'ingredient' in expected:
+            expected['ingredient'] = ingredient(expected['ingredient'])
+        result = expected['result']
+        expected['result'] = {'id': result} if isinstance(result, str) else {('id' if key == 'item' else key): value for key, value in result.items()}
+        assert json.loads(z.read(f'data/tconstruct/recipe/{relative}')) == expected
+    assert 'assets/tconstruct/items/seared_brick.json' in names
+    assert 'assets/tconstruct/blockstates/grout.json' in names
     original_lava = json.loads(z.read('assets/radisconstruct/reference/smeltery/lava_fuel.json'))
     assert original_lava['fluid'] == {'amount': 50, 'name': 'minecraft:lava'}
     assert original_lava['duration'] == 100 and original_lava['temperature'] == 1000

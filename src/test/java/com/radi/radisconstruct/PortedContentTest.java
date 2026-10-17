@@ -59,6 +59,12 @@ public class PortedContentTest {
                 }
             }
         }
+        // Representative native vanilla/Fabric tags for the construction recipe fixtures.
+        tags.put(TagKey.create(Registries.ITEM, id("minecraft:sand")), List.of(
+            BuiltInRegistries.ITEM.get(id("minecraft:sand")).orElseThrow(),
+            BuiltInRegistries.ITEM.get(id("minecraft:red_sand")).orElseThrow()));
+        tags.put(TagKey.create(Registries.ITEM, id("c:glass_blocks")), List.of(
+            BuiltInRegistries.ITEM.get(id("minecraft:glass")).orElseThrow()));
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
@@ -143,7 +149,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(16, checked);
+        assertEquals(17, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {

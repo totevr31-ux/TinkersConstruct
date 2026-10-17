@@ -4,6 +4,14 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: original construction foundations
+
+- Registered original grout (including original strength, friction, sand sound and instrument) and seared brick, with original textures/models and native grout loot.
+- Ported nine exact original construction recipes: small/large grout, furnace seared brick, seared bricks from bricks, fuel tank, table, basin, drain and three-faucet batch. Only native ingredient/result JSON syntax changes; patterns, counts, smelting time and experience are preserved.
+- Runtime vanilla/Fabric supplies the original sand/glass tags; codec fixtures bind representative entries rather than changing gameplay tags.
+- Validation: **110 tests**, zero failures/errors/skips, successful Java 25 build, strict JAR comparison against all nine originals, native crafting matches/outputs and furnace decoding, cached production bootstrap passed. JAR SHA-256: `7960384628d3d1eeda795ea609da74dd20b46f3c0f2da11f182373f2cf5e7e4e`.
+- Survival progression is not complete: no substitute controller/melter recipe was created. Original controller acquisition uses specialized retextured casting and starting molten metal production still needs the original melter/heater path. Those remain open alongside GUI and client rendering.
+
 ### 2026-10-17: native Drain and Faucet transport
 
 - Added original `seared_drain` and `seared_faucet` registrations, native block entities, facing/collision states, static original models/textures and loot. Drain is in original floor/wall roles and participates in existing servant ownership.

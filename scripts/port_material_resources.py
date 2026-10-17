@@ -397,6 +397,30 @@ for name in ('seared_drain', 'seared_faucet'):
             'condition': {'type': 'minecraft:survives_explosion'},
             'entries': [{'type': 'minecraft:item', 'name': f'tconstruct:{name}'}]}]})
 
+# Original survival foundations; no substitute controller/melter recipe is invented.
+for name in ('grout', 'seared_brick'):
+    native_model(f'models/item/{name}.json')
+    write(f'{asset}/items/{name}.json', {'model': {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}})
+    translation = ('block.' if name == 'grout' else 'item.') + 'tconstruct.' + name
+    translations[translation] = lang_source[translation]
+copy(f'main/resources/{asset}/blockstates/grout.json', f'{asset}/blockstates/grout.json')
+port_loot('grout')
+construction = ['grout', 'grout_multiple', 'seared_brick', 'seared_bricks_from_brick',
+                'fuel_tank', 'table', 'basin', 'drain', 'faucet']
+for name in construction:
+    relative = f'smeltery/seared/{name}.json'
+    recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{relative}').read_text())
+    if 'key' in recipe:
+        recipe['key'] = {key: ingredient(value) for key, value in recipe['key'].items()}
+    if 'ingredients' in recipe:
+        recipe['ingredients'] = [ingredient(value) for value in recipe['ingredients']]
+    if 'ingredient' in recipe:
+        recipe['ingredient'] = ingredient(recipe['ingredient'])
+    result = recipe['result']
+    recipe['result'] = {'id': result} if isinstance(result, str) else {('id' if key == 'item' else key): value for key, value in result.items()}
+    write(f'data/tconstruct/recipe/{relative}', recipe)
+write('assets/radisconstruct/construction-recipes.json', construction)
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'

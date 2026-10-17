@@ -59,6 +59,15 @@ public final class SmelteryContent {
         new Block(BlockBehaviour.Properties.of().setId(BRICKS_KEY)
             .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
     public static final Item SEARED_BRICKS_ITEM = item("seared_bricks", SEARED_BRICKS);
+    private static final ResourceKey<Block> GROUT_KEY = blockKey("grout");
+    public static final Block GROUT = Registry.register(BuiltInRegistries.BLOCK, GROUT_KEY,
+        new Block(BlockBehaviour.Properties.of().setId(GROUT_KEY)
+            .mapColor(net.minecraft.world.level.material.MapColor.COLOR_LIGHT_GRAY).sound(SoundType.SAND)
+            .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.SNARE).strength(3.0f).friction(0.8f)));
+    public static final Item GROUT_ITEM = item("grout", GROUT);
+    private static final ResourceKey<Item> SEARED_BRICK_KEY = ResourceKey.create(Registries.ITEM, id("seared_brick"));
+    public static final Item SEARED_BRICK = Registry.register(BuiltInRegistries.ITEM, SEARED_BRICK_KEY,
+        new Item(new Item.Properties().setId(SEARED_BRICK_KEY)));
 
     private static final ResourceKey<Block> CONTROLLER_KEY = blockKey("smeltery_controller");
     public static final SmelteryControllerBlock CONTROLLER = Registry.register(
@@ -127,6 +136,8 @@ public final class SmelteryContent {
                 output.accept(INGOT_CAST);
                 output.accept(DRAIN_ITEM);
                 output.accept(FAUCET_ITEM);
+                output.accept(GROUT_ITEM);
+                output.accept(SEARED_BRICK);
             });
         FluidStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.getFluidStorage(), FUEL_TANK_BLOCK_ENTITY);
