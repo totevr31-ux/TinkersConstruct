@@ -26,7 +26,10 @@ import slimeknights.tconstruct.smeltery.block.entity.component.SearedFuelTankBlo
  * interaction helper; fluid rendering and retained-fluid block items are pending.
  */
 public final class SearedFuelTankBlock extends BaseEntityBlock {
-    public SearedFuelTankBlock(Properties properties) { super(properties); }
+    private final long capacity;
+    public SearedFuelTankBlock(Properties properties) { this(properties, SearedFuelTankBlockEntity.CAPACITY); }
+    public SearedFuelTankBlock(Properties properties, long capacity) { super(properties); this.capacity = capacity; }
+    public long capacity() { return capacity; }
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
             BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {

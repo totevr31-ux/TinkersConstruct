@@ -87,9 +87,23 @@ public final class SmelteryContent {
             .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
     public static final Item FUEL_TANK_ITEM = item("seared_fuel_tank", FUEL_TANK);
 
+    private static SearedFuelTankBlock tankBlock(String name, long capacity) {
+        var key = blockKey(name);
+        return Registry.register(BuiltInRegistries.BLOCK, key, new SearedFuelTankBlock(
+            BlockBehaviour.Properties.of().setId(key).mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
+                .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM).sound(SoundType.METAL).strength(3, 9)
+                .requiresCorrectToolForDrops().noOcclusion(), capacity));
+    }
+    public static final SearedFuelTankBlock FUEL_GAUGE = tankBlock("seared_fuel_gauge", 4 * net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET);
+    public static final SearedFuelTankBlock INGOT_TANK = tankBlock("seared_ingot_tank", 48 * net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.INGOT);
+    public static final SearedFuelTankBlock INGOT_GAUGE = tankBlock("seared_ingot_gauge", 48 * net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.INGOT);
+    public static final Item FUEL_GAUGE_ITEM = item("seared_fuel_gauge", FUEL_GAUGE);
+    public static final Item INGOT_TANK_ITEM = item("seared_ingot_tank", INGOT_TANK);
+    public static final Item INGOT_GAUGE_ITEM = item("seared_ingot_gauge", INGOT_GAUGE);
+
     public static final BlockEntityType<SearedFuelTankBlockEntity> FUEL_TANK_BLOCK_ENTITY =
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("seared_fuel_tank"),
-            FabricBlockEntityTypeBuilder.create(SearedFuelTankBlockEntity::new, FUEL_TANK).build());
+            FabricBlockEntityTypeBuilder.create(SearedFuelTankBlockEntity::new, FUEL_TANK, FUEL_GAUGE, INGOT_TANK, INGOT_GAUGE).build());
 
     private static NativeCastingBlock castingBlock(String name, boolean table) {
         var key = blockKey(name);
@@ -115,6 +129,28 @@ public final class SmelteryContent {
     public static final BlockEntityType<NativeDrainBlockEntity> DRAIN_BLOCK_ENTITY =
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("drain"),
             FabricBlockEntityTypeBuilder.create(NativeDrainBlockEntity::new, DRAIN).build());
+    private static slimeknights.tconstruct.smeltery.block.NativeSmallControllerBlock smallController(String name, boolean heater) {
+        var key = blockKey(name);
+        return Registry.register(BuiltInRegistries.BLOCK, key, new slimeknights.tconstruct.smeltery.block.NativeSmallControllerBlock(
+            smallControllerProperties(key, heater), heater));
+    }
+    private static BlockBehaviour.Properties smallControllerProperties(ResourceKey<Block> key, boolean heater) {
+        var properties = BlockBehaviour.Properties.of().setId(key).mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
+            .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM).sound(SoundType.METAL)
+            .strength(8, 28).requiresCorrectToolForDrops()
+            .lightLevel(state -> state.getValue(slimeknights.tconstruct.smeltery.block.NativeSmallControllerBlock.ACTIVE) ? 13 : 0);
+        return heater ? properties : properties.noOcclusion();
+    }
+    public static final slimeknights.tconstruct.smeltery.block.NativeSmallControllerBlock MELTER = smallController("seared_melter", false);
+    public static final slimeknights.tconstruct.smeltery.block.NativeSmallControllerBlock HEATER = smallController("seared_heater", true);
+    public static final Item MELTER_ITEM = item("seared_melter", MELTER);
+    public static final Item HEATER_ITEM = item("seared_heater", HEATER);
+    public static final BlockEntityType<slimeknights.tconstruct.smeltery.block.entity.controller.NativeMelterBlockEntity> MELTER_BLOCK_ENTITY =
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("melter"), FabricBlockEntityTypeBuilder.create(
+            slimeknights.tconstruct.smeltery.block.entity.controller.NativeMelterBlockEntity::new, MELTER).build());
+    public static final BlockEntityType<slimeknights.tconstruct.smeltery.block.entity.NativeHeaterBlockEntity> HEATER_BLOCK_ENTITY =
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("heater"), FabricBlockEntityTypeBuilder.create(
+            slimeknights.tconstruct.smeltery.block.entity.NativeHeaterBlockEntity::new, HEATER).build());
     private static final ResourceKey<Block> FAUCET_KEY = blockKey("seared_faucet");
     public static final NativeFaucetBlock FAUCET = Registry.register(BuiltInRegistries.BLOCK, FAUCET_KEY,
         new NativeFaucetBlock(BlockBehaviour.Properties.of().setId(FAUCET_KEY).sound(SoundType.STONE)
@@ -138,6 +174,8 @@ public final class SmelteryContent {
                 output.accept(FAUCET_ITEM);
                 output.accept(GROUT_ITEM);
                 output.accept(SEARED_BRICK);
+                output.accept(FUEL_GAUGE_ITEM); output.accept(INGOT_TANK_ITEM); output.accept(INGOT_GAUGE_ITEM);
+                output.accept(MELTER_ITEM); output.accept(HEATER_ITEM);
             });
         FluidStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.getFluidStorage(), FUEL_TANK_BLOCK_ENTITY);
@@ -149,6 +187,9 @@ public final class SmelteryContent {
             (blockEntity, direction) -> blockEntity.module().items(), CASTING_BLOCK_ENTITY);
         FluidStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.storage(), DRAIN_BLOCK_ENTITY);
+        FluidStorage.SIDED.registerForBlockEntity((entity, direction) -> entity.tank(), MELTER_BLOCK_ENTITY);
+        ItemStorage.SIDED.registerForBlockEntity((entity, direction) -> entity.items(), MELTER_BLOCK_ENTITY);
+        ItemStorage.SIDED.registerForBlockEntity((entity, direction) -> entity.items(), HEATER_BLOCK_ENTITY);
         RadisConstruct.LOGGER.info("Registered original Smeltery Controller, Seared Bricks, four-bucket Fuel Tank and native fluid capability.");
     }
 }

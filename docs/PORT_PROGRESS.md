@@ -4,6 +4,16 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: native Melter, Heater and complete seared tank variants
+
+- Registered original Melter and Heater with native block entities, fuel topology tags, original facing/formation/active states and original 8/28 controller hardness/resistance, metal sounds and active light. Added all four seared tank identities, including gauge variants used by the original Melter recipe; fuel tanks/gauges hold four buckets and ingot tanks/gauges hold 48 ingots.
+- Melter owns exactly three native transactional input slots, a single-fluid 12-ingot output tank and the existing original fluid/solid FuelModule. Live server recipe lookup handles registered melting recipes; output is accessible to native Faucet/pipe and container interaction. The upstream Melter tick-0 fallthrough is preserved: heating/cooling and one-unit fuel usage occur on ticks 0 and 2, with acquisition only on tick 0 and only on demand. There is no alloying in the Melter.
+- Heater exposes one native fuel-filtered slot, uses current native CookingFuel evaluation, persists stacks/components and drops inputs on physical block removal. Melter preserves pending input progress before level/recipe assignment, fluid and remaining fuel through native save codecs; physical removal recovers inputs.
+- Added five unchanged-pattern construction recipes (fuel gauge, ingot tank/gauge, Melter, Heater), retaining both gauge alternatives in the Melter recipe. Original model trees/textures are ported with legacy custom-renderer metadata removed; dynamic visuals remain open.
+- Validation: **118 tests**, zero failures/errors/skips, Java 25 build, strict packaged class/resource/14-construction-recipe verification and all 19,850 original-file checks passed. Production cached bootstrap passed at eula=false. JAR SHA-256: `d68bcdf916678f38b8fd494d5c374188ca20089e56bb265bf0b447787024f17c`.
+- Integrated subsystem regression melts three real copper ingots through the original recipe into the actual Melter tank, blocks output against an incompatible liquid without consuming input and resumes after draining. Separate tests check original heating cadence, demand/temperature gating, capacity/rollback and save-before-level behavior.
+- Scope limits: player menus/screens are still missing; item feeding currently uses native automation. Client dynamic tank/item rendering and real loaded-world tests remain unverified. Original controller retextured casting acquisition is the next survival dependency, not replaced with an invented crafting recipe.
+
 ### 2026-10-17: native molten fluid attributes and world light
 
 - Connected all 36 source/flowing pairs to Fabric FluidVariantAttributes: original temperatures, viscosity 10000, liquid classification, translated names and lava bucket fill/empty sounds. Native world LiquidBlocks now emit their original individual luminance values rather than zero light.

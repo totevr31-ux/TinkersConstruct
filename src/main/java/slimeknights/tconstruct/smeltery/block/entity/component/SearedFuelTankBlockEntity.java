@@ -29,18 +29,21 @@ public final class SearedFuelTankBlockEntity extends BlockEntity {
         super(SmelteryContent.FUEL_TANK_BLOCK_ENTITY, pos, state);
     }
 
+    public long capacity() {
+        return ((slimeknights.tconstruct.smeltery.block.component.SearedFuelTankBlock)getBlockState().getBlock()).capacity();
+    }
     public Storage<FluidVariant> getFluidStorage() { return fluidStorage; }
     public FluidVariant getStoredFluid() { return fluidStorage.getResource(); }
     public long getStoredAmount() { return fluidStorage.getAmount(); }
 
     /** Upstream ITankBlockEntity: floor(15 * amount / capacity), no +1 offset. */
     public int getComparatorStrength() {
-        return (int) (15 * getStoredAmount() / CAPACITY);
+        return (int) (15 * getStoredAmount() / capacity());
     }
 
     private final class FuelStorage extends SingleVariantStorage<FluidVariant> {
         @Override protected FluidVariant getBlankVariant() { return FluidVariant.blank(); }
-        @Override protected long getCapacity(FluidVariant variant) { return CAPACITY; }
+        @Override protected long getCapacity(FluidVariant variant) { return capacity(); }
         @Override protected void onFinalCommit() {
             SearedFuelTankBlockEntity.this.setChanged();
             int strength = getComparatorStrength();
@@ -52,7 +55,7 @@ public final class SearedFuelTankBlockEntity extends BlockEntity {
         }
 
         void restore(FluidVariant fluid, long quantity) {
-            if (quantity < 0 || quantity > CAPACITY)
+            if (quantity < 0 || quantity > capacity())
                 throw new IllegalArgumentException("Invalid Seared Fuel Tank amount: " + quantity);
             if ((fluid == null || fluid.isBlank()) && quantity != 0)
                 throw new IllegalArgumentException("Nonempty tank requires a fluid");

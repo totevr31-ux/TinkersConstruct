@@ -33,6 +33,8 @@ def copy(source, target):
     copied[target] = {'source': source, 'sha256': hashlib.sha256(src.read_bytes()).hexdigest()}
 
 def ingredient(value):
+    if isinstance(value, list):
+        return [ingredient(v) for v in value]
     if 'item' in value:
         return value['item']
     if 'tag' in value:
@@ -384,7 +386,7 @@ def native_model(part):
             copy(f'main/resources/{asset}/{texture_path}', f'{asset}/{texture_path}')
             if (UPSTREAM / f'main/resources/{asset}/{texture_path}.mcmeta').exists():
                 copy(f'main/resources/{asset}/{texture_path}.mcmeta', f'{asset}/{texture_path}.mcmeta')
-for name in ('seared_drain', 'seared_faucet'):
+for name in ('seared_drain', 'seared_faucet', 'seared_fuel_gauge', 'seared_ingot_tank', 'seared_ingot_gauge', 'seared_melter', 'seared_heater'):
     copy(f'main/resources/{asset}/blockstates/{name}.json', f'{asset}/blockstates/{name}.json')
     native_model(f'models/item/{name}.json')
     states = json.loads((UPSTREAM / f'main/resources/{asset}/blockstates/{name}.json').read_text())
@@ -406,7 +408,7 @@ for name in ('grout', 'seared_brick'):
 copy(f'main/resources/{asset}/blockstates/grout.json', f'{asset}/blockstates/grout.json')
 port_loot('grout')
 construction = ['grout', 'grout_multiple', 'seared_brick', 'seared_bricks_from_brick',
-                'fuel_tank', 'table', 'basin', 'drain', 'faucet']
+                'fuel_tank', 'table', 'basin', 'drain', 'faucet', 'fuel_gauge', 'ingot_tank', 'ingot_gauge', 'melter', 'heater']
 for name in construction:
     relative = f'smeltery/seared/{name}.json'
     recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{relative}').read_text())
@@ -421,6 +423,14 @@ for name in construction:
     write(f'data/tconstruct/recipe/{relative}', recipe)
 write('assets/radisconstruct/construction-recipes.json', construction)
 
+# Original fuel topology, restricted to registered blocks.
+tanks = ['tconstruct:seared_' + name for name in ('fuel_tank', 'fuel_gauge', 'ingot_tank', 'ingot_gauge')]
+for tag in ('seared_tanks', 'smeltery/tanks'):
+    write(f'data/tconstruct/tags/block/{tag}.json', {'replace': False, 'values': tanks})
+write('data/tconstruct/tags/block/fuel_tanks.json', {'replace': False, 'values': ['tconstruct:seared_heater', '#tconstruct:seared_tanks']})
+write('data/tconstruct/tags/block/heater_controllers.json', {'replace': False, 'values': ['tconstruct:seared_melter']})
+write('data/tconstruct/tags/block/smeltery/wall.json', {'replace': False, 'values': ['tconstruct:seared_bricks', 'tconstruct:seared_drain'] + tanks})
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
@@ -428,7 +438,7 @@ for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
     values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
     if tag == 'mineable/pickaxe':
-        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller', 'tconstruct:seared_fuel_tank'))
+        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller', 'tconstruct:seared_fuel_tank', 'tconstruct:seared_fuel_gauge', 'tconstruct:seared_ingot_tank', 'tconstruct:seared_ingot_gauge', 'tconstruct:seared_melter', 'tconstruct:seared_heater'))
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})

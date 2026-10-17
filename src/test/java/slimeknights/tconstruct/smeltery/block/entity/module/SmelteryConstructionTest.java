@@ -23,6 +23,7 @@ class SmelteryConstructionTest {
     @BeforeAll static void bootstrap() throws Exception { com.radi.radisconstruct.PortedContentTest.bootstrap(); }
     static JsonObject json(String path) throws Exception { return JsonParser.parseString(Files.readString(Path.of(path))).getAsJsonObject(); }
     static ItemStack ingredient(JsonElement value) {
+        if (value.isJsonArray()) return ingredient(value.getAsJsonArray().get(0));
         String id = value.getAsString();
         if (id.startsWith("#")) return new ItemStack(BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM,
             Identifier.parse(id.substring(1)))).orElseThrow().stream().findFirst().orElseThrow());
@@ -45,11 +46,11 @@ class SmelteryConstructionTest {
         return CraftingInput.of(width, height, stacks);
     }
 
-    @Test void allEightOriginalCraftingRecipesMatchAndPreserveOutputCounts() throws Exception {
+    @Test void allOriginalCraftingRecipesMatchAndPreserveOutputCounts() throws Exception {
         var ops = net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)
             .createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE);
         int checked = 0;
-        for (String name : List.of("grout", "grout_multiple", "seared_bricks_from_brick", "fuel_tank", "table", "basin", "drain", "faucet")) {
+        for (String name : List.of("grout", "grout_multiple", "seared_bricks_from_brick", "fuel_tank", "table", "basin", "drain", "faucet", "fuel_gauge", "ingot_tank", "ingot_gauge", "melter", "heater")) {
             String relative = "smeltery/seared/" + name + ".json";
             var original = json("upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes/" + relative);
             var packed = json("build/portedResources/data/tconstruct/recipe/" + relative);
@@ -63,7 +64,7 @@ class SmelteryConstructionTest {
             assertFalse(recipe.matches(CraftingInput.of(1, 1, List.of(new ItemStack(Items.DIRT))), null), name);
             checked++;
         }
-        assertEquals(8, checked);
+        assertEquals(13, checked);
     }
 
     @Test void originalGroutSmeltingProducesSearedBrickWithOriginalTimeAndExperience() throws Exception {
