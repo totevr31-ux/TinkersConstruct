@@ -50,6 +50,9 @@ class SearedFuelTankContainerTest {
     }
 
     @Test void lavaBucketFillsTankAndCanBeRecoveredWithAnEmptyBucket() {
+        assertNotNull(net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext
+            .withConstant(new ItemStack(Items.LAVA_BUCKET)).find(
+                net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.ITEM));
         var tank = tank();
         var hand = new Hand(new ItemStack(Items.LAVA_BUCKET));
         assertNotNull(hand.fluids());

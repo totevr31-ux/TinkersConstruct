@@ -167,6 +167,7 @@ public final class SmelteryContent {
 
     public static void initialize() {
         slimeknights.tconstruct.smeltery.menu.NativeSingleItemMenu.initialize();
+        slimeknights.tconstruct.smeltery.menu.NativeMeltingMenu.initialize();
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)
             .register(output -> output.accept(SEARED_BRICKS_ITEM));
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)
