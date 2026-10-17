@@ -19,16 +19,12 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * GUI integration: validated server-side craft button, without client-trusted
- * material IDs. Only shapes supported by current original head/handle stats
- * are offered. More original material types and patterns are later stages.
+ * material IDs. All original tool-part shapes are offered; the separate
+ * repair-kit recipe still needs its dedicated repair behavior.
  */
 public final class PartBuilderMenu extends AbstractContainerMenu {
     public static final List<String> PART_IDS = PartBuilderRecipeCosts.load().all().keySet().stream()
-        .filter(part -> {
-            String type = ToolPartCatalog.load().all().get(part);
-            return "HeadMaterialStats".equals(type) || "HandleMaterialStats".equals(type)
-            || "ExtraMaterialStats".equals(type);
-        }).toList();
+        .filter(part -> ToolPartCatalog.load().all().containsKey(part)).toList();
     private final Container station;
 
     public PartBuilderMenu(int id, Inventory player) {

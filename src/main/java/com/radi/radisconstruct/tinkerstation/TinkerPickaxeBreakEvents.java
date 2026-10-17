@@ -45,6 +45,8 @@ public final class TinkerPickaxeBreakEvents {
         int cost = originalDamageForPrimaryBreak(hardness);
         if (cost == 0) return false;
 
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack))
+            return com.radi.radisconstruct.tools.MaterialToolSupport.damage(stack, cost, miner);
         ToolStack tool = ToolStack.from(stack);
         if (tool.isBroken()) return false;
         // Damage hooks consume Overslime first; the original broken tool must

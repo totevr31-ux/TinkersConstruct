@@ -2,6 +2,9 @@
   "replace": false,
   "values": [
     "#tconstruct:modifiable/harvest/primary",
-    "#tconstruct:modifiable/harvest/stone"
+    "#tconstruct:modifiable/harvest/stone",
+    "tconstruct:dagger",
+    "tconstruct:sword",
+    "tconstruct:cleaver"
   ]
 }

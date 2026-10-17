@@ -1,5 +1,6 @@
 package com.radi.radisconstruct.partbuilder;
 
+import com.radi.radisconstruct.material.PartBuilderRecipeCosts;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -8,59 +9,72 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-/** Reuses Minecraft's dispenser inventory background while mechanics migrate. */
+/** Visible, paged selector for every original tool-part shape. */
 public final class PartBuilderScreen extends AbstractContainerScreen<PartBuilderMenu> {
-    private static final Identifier TEXTURE =
-        Identifier.withDefaultNamespace("textures/gui/container/dispenser.png");
-    private int selected;
-    private Button craftButton;
+  private static final Identifier BACKGROUND =
+      Identifier.parse("minecraft:textures/gui/container/generic_54.png");
+  private static final int PAGE_SIZE = 5;
+  private int page;
 
-    public PartBuilderScreen(PartBuilderMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-    }
+  public PartBuilderScreen(PartBuilderMenu menu, Inventory inventory, Component title) {
+    super(menu, inventory, title, 306, 167);
+    inventoryLabelY = 74;
+  }
 
-    @Override
-    protected void init() {
-        super.init();
-        addRenderableWidget(Button.builder(Component.literal("<"), button -> change(-1))
-            .bounds(leftPos + 8, topPos + 58, 20, 20).build());
-        craftButton = addRenderableWidget(Button.builder(Component.empty(),
-            button -> {
-                if (minecraft != null && minecraft.gameMode != null && !PartBuilderMenu.PART_IDS.isEmpty()) {
-                    minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 100 + selected);
-                }
-            }).bounds(leftPos + 31, topPos + 58, 114, 20).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), button -> change(1))
-            .bounds(leftPos + 148, topPos + 58, 20, 20).build());
-        refresh();
-    }
+  @Override
+  protected void init() {
+    super.init();
+    showPage();
+  }
 
-    private void change(int direction) {
-        if (PartBuilderMenu.PART_IDS.isEmpty()) return;
-        selected = Math.floorMod(selected + direction, PartBuilderMenu.PART_IDS.size());
-        refresh();
+  private void showPage() {
+    clearWidgets();
+    for (int i = page * PAGE_SIZE;
+        i < Math.min((page + 1) * PAGE_SIZE, PartBuilderMenu.PART_IDS.size());
+        i++) {
+      int index = i;
+      String part = PartBuilderMenu.PART_IDS.get(i);
+      int cost = PartBuilderRecipeCosts.load().find(part).materialUnits();
+      addRenderableWidget(
+          Button.builder(
+                  Component.literal(part.replace('_', ' ') + " (" + cost + ")"),
+                  button -> {
+                    if (minecraft != null && minecraft.gameMode != null)
+                      minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 100 + index);
+                  })
+              .bounds(leftPos + 181, topPos + 18 + (i % PAGE_SIZE) * 22, 120, 20)
+              .build());
     }
+    if (page > 0)
+      addRenderableWidget(
+          Button.builder(
+                  Component.literal("<"),
+                  button -> {
+                    page--;
+                    showPage();
+                  })
+              .bounds(leftPos + 181, topPos + 133, 56, 20)
+              .build());
+    if ((page + 1) * PAGE_SIZE < PartBuilderMenu.PART_IDS.size())
+      addRenderableWidget(
+          Button.builder(
+                  Component.literal(">"),
+                  button -> {
+                    page++;
+                    showPage();
+                  })
+              .bounds(leftPos + 245, topPos + 133, 56, 20)
+              .build());
+  }
 
-    private void refresh() {
-        if (craftButton == null) return;
-        if (PartBuilderMenu.PART_IDS.isEmpty()) {
-            craftButton.setMessage(Component.literal("No supported parts"));
-            craftButton.active = false;
-        } else {
-            String part = PartBuilderMenu.PART_IDS.get(selected);
-            var recipe = com.radi.radisconstruct.material.PartBuilderRecipeCosts.load().find(part);
-            int units = recipe == null ? 0 : recipe.materialUnits();
-            // Display the actual upstream material cost rather than a guessed number.
-            craftButton.setMessage(Component.literal(units + "x ")
-                .append(Component.translatable("item.tconstruct." + part)));
-            craftButton.active = recipe != null;
-        }
-    }
-
-    @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractBackground(graphics, mouseX, mouseY, delta);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos,
-            0.0F, 0.0F, imageWidth, imageHeight, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT);
-    }
+  @Override
+  public void extractBackground(
+      GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    super.extractBackground(graphics, mouseX, mouseY, delta);
+    graphics.blit(
+        RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0, 0, 176, 71, 256, 256);
+    graphics.blit(
+        RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos + 71, 0, 126, 176, 96, 256, 256);
+    graphics.fill(leftPos + 177, topPos + 3, leftPos + 304, topPos + 161, 0xFF363636);
+  }
 }

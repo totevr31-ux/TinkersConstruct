@@ -43,7 +43,9 @@ public final class ToolStack {
     public void rebuildPickaxeStats() {
         CompoundTag rebuilt = com.radi.radisconstruct.tinkerstation.PickaxeStatRebuild.rebuild(data());
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rebuilt));
-        if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack)) {
+            com.radi.radisconstruct.tools.MaterialToolSupport.refresh(stack);
+        } else if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeCombatComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeModelComponents.refresh(stack);
@@ -106,7 +108,9 @@ public final class ToolStack {
             tag.putBoolean(TAG_BROKEN, broken);
             tag.putInt(TAG_DAMAGE, storedDamage);
         });
-        if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack)) {
+            com.radi.radisconstruct.tools.MaterialToolSupport.refresh(stack);
+        } else if (stack.getItem() instanceof com.radi.radisconstruct.tinkerstation.TinkerPickaxeItem) {
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeMiningComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeCombatComponents.refresh(stack);
             com.radi.radisconstruct.tinkerstation.TinkerPickaxeModelComponents.refresh(stack);
