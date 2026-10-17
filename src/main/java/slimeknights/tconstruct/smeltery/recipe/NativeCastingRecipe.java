@@ -21,21 +21,22 @@ import net.minecraft.world.level.Level;
 public record NativeCastingRecipe(boolean table, String group, Optional<Ingredient> cast,
         NativeAlloyRecipe.Ingredient fluid, Result result, int coolingTime,
         boolean castConsumed, boolean switchSlots, boolean retextured) implements Recipe<NativeCastingRecipe.Input> {
-    /** Retain original tag-based ItemOutput instead of hardcoding mod items. */
-    public record Result(ItemStack stack, Optional<Identifier> tag, int count) {
-        public Result { stack = stack.copy(); }
-        @Override public ItemStack stack() { return stack.copy(); }
-        private static final Codec<Result> DIRECT = ItemStack.CODEC.xmap(
-            stack -> new Result(stack, Optional.empty(), stack.getCount()), Result::stack);
+    /** Keep item IDs unresolved while recipes load; item components are bound later. */
+    public record Result(Optional<Identifier> item, Optional<Identifier> tag, int count) {
+        private static final Codec<Result> DIRECT = RecordCodecBuilder.create(instance -> instance.group(
+            Identifier.CODEC.fieldOf("id").forGetter(value -> value.item().orElseThrow()),
+            Codec.intRange(1, 99).optionalFieldOf("count", 1).forGetter(Result::count)
+        ).apply(instance, (id, count) -> new Result(Optional.of(id), Optional.empty(), count)));
         private static final Codec<Result> TAGGED = RecordCodecBuilder.create(instance -> instance.group(
             Identifier.CODEC.fieldOf("tag").forGetter(value -> value.tag().orElseThrow()),
             Codec.intRange(1, 99).optionalFieldOf("count", 1).forGetter(Result::count)
-        ).apply(instance, (tag, count) -> new Result(ItemStack.EMPTY, Optional.of(tag), count)));
+        ).apply(instance, (tag, count) -> new Result(Optional.empty(), Optional.of(tag), count)));
         public static final Codec<Result> CODEC = Codec.either(DIRECT, TAGGED).xmap(
             either -> either.map(value -> value, value -> value),
             value -> value.tag().isPresent() ? Either.right(value) : Either.left(value));
         public ItemStack resolve() {
-            if (tag.isEmpty()) return stack.copy();
+            if (tag.isEmpty()) return BuiltInRegistries.ITEM.get(item.orElseThrow())
+                .map(value -> new ItemStack(value, count)).orElse(ItemStack.EMPTY);
             return BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, tag.get()))
                 .flatMap(items -> items.stream().findFirst()).map(item -> new ItemStack(item, count))
                 .orElse(ItemStack.EMPTY);
