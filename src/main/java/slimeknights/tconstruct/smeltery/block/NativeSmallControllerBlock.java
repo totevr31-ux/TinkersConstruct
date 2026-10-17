@@ -11,6 +11,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
@@ -22,6 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import slimeknights.tconstruct.smeltery.SmelteryContent;
 import slimeknights.tconstruct.smeltery.block.entity.NativeHeaterBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.NativeMelterBlockEntity;
+import slimeknights.tconstruct.smeltery.menu.NativeMeltingMenu;
+import slimeknights.tconstruct.smeltery.menu.NativeStorageContainer;
 
 public final class NativeSmallControllerBlock extends BaseEntityBlock {
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
@@ -65,10 +70,26 @@ public final class NativeSmallControllerBlock extends BaseEntityBlock {
             if (world.isClientSide()) return InteractionResult.SUCCESS;
             if (FluidStorageUtil.interactWithFluidStorage(melter.tank(), player, hand)) return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return useWithoutItem(state, world, pos, player, hit);
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!heater || player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (!heater) {
+            if (!world.isClientSide() && world.getBlockEntity(pos) instanceof NativeMelterBlockEntity entity)
+                player.openMenu(new ExtendedMenuProvider<Integer>() {
+                    @Override public Integer getScreenOpeningData(ServerPlayer user) { return 3; }
+                    @Override public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id,
+                            net.minecraft.world.entity.player.Inventory inventory, Player user) {
+                        var input = new NativeStorageContainer(entity.items().getSlots(),
+                            current -> !entity.isRemoved() && world.getBlockEntity(pos) == entity
+                                && current.distanceToSqr(pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5) <= 64,
+                            entity::setChanged);
+                        return new NativeMeltingMenu(NativeMeltingMenu.MELTER, id, inventory, input, 3);
+                    }
+                    @Override public Component getDisplayName() { return Component.translatable("block.tconstruct.seared_melter"); }
+                });
+            return InteractionResult.SUCCESS;
+        }
         if (!world.isClientSide() && world.getBlockEntity(pos) instanceof NativeHeaterBlockEntity entity)
             player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, user) ->
                 new slimeknights.tconstruct.smeltery.menu.NativeSingleItemMenu(id, inventory, entity.menuContainer()),
