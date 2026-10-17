@@ -438,6 +438,17 @@ write('data/tconstruct/tags/block/smeltery/wall.json', {'replace': False, 'value
 copy(f'main/resources/{asset}/textures/gui/heater.png', f'{asset}/textures/gui/heater.png')
 translations['gui.tconstruct.heater'] = lang_source['gui.tconstruct.heater']
 
+# Original names for the 14 now-registered tool part item IDs.
+# Keep translations byte-for-byte equivalent to Hephaestus, without inventing
+# material-dependent rendered names before the client material renderer is ported.
+for part in (
+    'pick_head', 'hammer_head', 'small_axe_head', 'broad_axe_head',
+    'small_blade', 'broad_blade', 'round_plate', 'large_plate',
+    'bow_limb', 'bow_grip', 'bowstring', 'tool_binding',
+    'tool_handle', 'tough_handle',
+):
+    key = f'item.tconstruct.{part}'
+    translations[key] = lang_source[key]
 write(f'{asset}/lang/en_us.json', translations)
 registered_blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block',
     'seared_bricks', 'grout', 'smeltery_controller', 'seared_fuel_tank', 'seared_fuel_gauge',
@@ -448,8 +459,91 @@ for tag in ('mineable/pickaxe', 'mineable/shovel', 'needs_iron_tool', 'needs_dia
     original = json.loads(source.read_text())['values']
     values = [f'tconstruct:{block}' for block in registered_blocks if f'tconstruct:{block}' in original]
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
+# Original blank Pattern: retain upstream art, craft quantities and tag IDs.
+# This is the minimal reusable input for Part Builder, not an invented cast.
+pattern_model = f'{asset}/models/item/pattern.json'
+pattern_texture = f'{asset}/textures/item/materials/pattern.png'
+copy(f'main/resources/{pattern_model}', pattern_model)
+copy(f'main/resources/{pattern_texture}', pattern_texture)
+write(f'{asset}/items/pattern.json',
+      {'model': {'type': 'minecraft:model', 'model': 'tconstruct:item/pattern'}})
+translations['item.tconstruct.pattern'] = lang_source['item.tconstruct.pattern']
+original_pattern_tag = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/tags/items/patterns/default.json').read_text())
+write('data/tconstruct/tags/item/patterns/default.json', original_pattern_tag)
+# Keep the original shared rod tag, providing the vanilla stick baseline.
+write('data/c/tags/item/wooden_rods.json',
+      {'replace': False, 'values': ['minecraft:stick']})
+upstream_pattern_recipe = json.loads(
+    (UPSTREAM / 'generated/resources/data/tconstruct/recipes/tables/pattern.json').read_text())
+upstream_pattern_recipe['key'] = {
+    key: ingredient(value) for key, value in upstream_pattern_recipe['key'].items()
+}
+upstream_pattern_recipe['result']['id'] = upstream_pattern_recipe['result'].pop('item')
+write('data/tconstruct/recipe/tables/pattern.json', upstream_pattern_recipe)
+# The translation resource was already written above for the original
+# material/part items; re-emit with the Pattern entry included.
+write(f'{asset}/lang/en_us.json', translations)
+
+# Original Part Builder table: port the vanilla-compatible geometry and art.
+# The upstream custom table model loader/retexturing requires unported code.
+table = f'{asset}/models/block/table/'
+copy(f'main/resources/{table}table.json', f'{table}table.json')
+upstream_part_model = json.loads((UPSTREAM / f'main/resources/{table}part_builder.json').read_text())
+for key in ('loader', 'retextured', 'items'):
+    upstream_part_model.pop(key, None)
+write(f'{table}part_builder.json', upstream_part_model)
+for name in ('part_builder_top', 'side', 'bottom'):
+    path = f'{asset}/textures/block/table/{name}.png'
+    copy(f'main/resources/{path}', path)
+copy(f'main/resources/{asset}/blockstates/part_builder.json', f'{asset}/blockstates/part_builder.json')
+copy(f'main/resources/{asset}/models/item/part_builder.json', f'{asset}/models/item/part_builder.json')
+write(f'{asset}/items/part_builder.json',
+      {'model': {'type': 'minecraft:model', 'model': 'tconstruct:item/part_builder'}})
+translations['block.tconstruct.part_builder'] = lang_source['block.tconstruct.part_builder']
+write(f'{asset}/lang/en_us.json', translations)
+# The original crafting recipe needs Mantle retexturing. Keep its 2x2
+# pattern and ingredient identities while disabling unported color matching.
+upstream_builder = json.loads((UPSTREAM /
+    'generated/resources/data/tconstruct/recipes/tables/part_builder.json').read_text())
+ported_builder = {
+    'type': 'minecraft:crafting_shaped',
+    'category': upstream_builder['category'],
+    'key': {k: ingredient(v) for k,v in upstream_builder['key'].items()},
+    'pattern': upstream_builder['pattern'],
+    'result': {'id': upstream_builder['result']['item']},
+    'show_notification': upstream_builder['show_notification'],
+}
+write('data/tconstruct/recipe/tables/part_builder.json', ported_builder)
+# Original tag has unported custom-wood entries; retain vanilla planks until
+# lavawood/blazewood/nahuatl items exist, avoiding missing-required tag entries.
+write('data/tconstruct/tags/item/planklike.json',
+      {'replace': False, 'values': ['#minecraft:planks']})
+write('data/tconstruct/loot_table/blocks/part_builder.json', {
+    'type': 'minecraft:block',
+    'pools': [{'rolls': 1, 'entries': [{'type': 'minecraft:item',
+                                      'name': 'tconstruct:part_builder'}],
+               'conditions': [{'condition': 'minecraft:survives_explosion'}]}]
+})
+
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
-                                         'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
+                                         'scope': 'Native Smeltery and original tool resources'})
 import runpy
 runpy.run_path(str(ROOT / 'scripts/port_material_stats.py'), run_name='__main__')
 print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3 + standard_melting_count} recipes.')
+runpy.run_path(str(ROOT / 'scripts/port_tool_parts_index.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_tool_part_models.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_material_sprite_rules.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_tool_part_masks.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_tool_part_fallback_models.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/generate_material_part_textures.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_recipes.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_ingots.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/index_upstream_part_builder_nuggets.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/index_upstream_tinker_station_blueprints.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/report_part_builder_recipe_shapes.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/validate_tool_part_masks.py'), run_name='__main__')
+runpy.run_path(str(ROOT / 'scripts/port_tool_traits.py'), run_name='__main__')
+
+runpy.run_path(str(ROOT / "scripts/port_pickaxe_models.py"), run_name="__main__")
+runpy.run_path(str(ROOT / "scripts/port_all_tools.py"), run_name="__main__")

@@ -41,7 +41,7 @@ with (LOGS / 'server-smoke.log').open('w') as log:
     result = subprocess.run(['java', '-Xmx2G', '-jar', 'fabric-server-launch.jar', 'nogui'],
                             cwd=RUNTIME, stdout=log, stderr=subprocess.STDOUT, timeout=180)
 output = (LOGS / 'server-smoke.log').read_text(errors='replace')
-initialized = "Radi's Construct initialized:" in output
+initialized = "Radi's Construct initialized" in output
 eula_gate = 'You need to agree to the EULA' in output
 assert 'eula=false' in (RUNTIME / 'eula.txt').read_text(), 'EULA was unexpectedly changed'
 report = {'minecraft': mc, 'loader': loader, 'jar': jar.name,

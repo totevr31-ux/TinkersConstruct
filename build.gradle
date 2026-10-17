@@ -11,6 +11,8 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
+sourceSets.main.java.srcDir('src/client/java')
+
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
     withSourcesJar()
@@ -23,12 +25,20 @@ tasks.register('portMaterialResources', Exec) {
     inputs.dir('upstream/Hephaestus/src/main/resources')
     inputs.dir('upstream/Hephaestus/src/generated/resources')
     inputs.file('scripts/port_material_resources.py')
+    inputs.file('scripts/port_tool_traits.py')
+    inputs.file('scripts/port_pickaxe_models.py')
+    inputs.file('scripts/port_all_tools.py')
     outputs.dir(layout.buildDirectory.dir('portedResources'))
     commandLine 'python3', 'scripts/port_material_resources.py'
 }
 processResources {
     dependsOn tasks.named('portMaterialResources')
     from(layout.buildDirectory.dir('portedResources'))
+    // Keep the entire original definition, including traits/slots/harvest logic.
+    from('upstream/Hephaestus/src/generated/resources/data/tconstruct/tinkering/tool_definitions') {
+        include 'pickaxe.json'
+        into 'assets/radisconstruct/original_tool_definitions'
+    }
     def props = [version: project.version, minecraft_version: project.minecraft_version,
                  loader_version: project.loader_version, fabric_api_version: project.fabric_api_version]
     inputs.properties(props)
@@ -44,4 +54,10 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 
-test { useJUnitPlatform() }
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
+}
