@@ -109,6 +109,28 @@ with zipfile.ZipFile(jar) as z:
             assert f'assets/tconstruct/textures/block/fluid/{metal}/{sprite}.png' in names
             assert f'assets/tconstruct/textures/block/fluid/{metal}/{sprite}.png.mcmeta' in names
         assert f'data/tconstruct/tags/fluid/{name}.json' in names
+    casting = json.loads(z.read('assets/radisconstruct/casting-recipes.json'))
+    assert len(casting) == 23
+    for relative in casting:
+        original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
+        packed = json.loads(z.read(f'data/tconstruct/recipe/{relative}'))
+        for field in ('type', 'fluid', 'cooling_time', 'cast_consumed', 'switch_slots'):
+            assert packed.get(field) == original.get(field), (relative, field)
+        if 'cast' in original:
+            cast = original['cast']
+            assert packed['cast'] == ('#' + cast['tag'] if 'tag' in cast else cast['item'])
+        expected = original['result']
+        if isinstance(expected, str):
+            expected = {'id': expected}
+        elif 'item' in expected:
+            expected = dict(expected)
+            expected['id'] = expected.pop('item')
+        assert packed['result'] == expected
+    for name in ('seared_table', 'seared_basin', 'ingot_cast'):
+        assert f'assets/tconstruct/items/{name}.json' in names
+    for kind in ('table', 'basin'):
+        assert 'loader' not in json.loads(z.read(f'assets/tconstruct/models/block/template/{kind}.json'))
+        assert f'data/tconstruct/loot_table/blocks/seared_{kind}.json' in names
     original_lava = json.loads(z.read('assets/radisconstruct/reference/smeltery/lava_fuel.json'))
     assert original_lava['fluid'] == {'amount': 50, 'name': 'minecraft:lava'}
     assert original_lava['duration'] == 100 and original_lava['temperature'] == 1000

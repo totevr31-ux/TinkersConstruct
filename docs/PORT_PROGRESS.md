@@ -1,8 +1,19 @@
 # Radi's Construct port checkpoint
 
-Audit: 2026-10-16. Target: Minecraft 26.3, Fabric, Java 25. Development base is `radisconstruct-stage1`; `1.26.2` is the preserved legacy branch.
+Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric, Java 25. Development base is `radisconstruct-stage1`; `1.26.2` is the preserved legacy branch.
 
 ## Current work
+
+### 2026-10-17: native Casting Table and Casting Basin
+
+- Rechecked all remote heads, local commits and four open PRs before continuing; #62 remains the only active Smeltery PR. Stayed on the separate `radisconstruct-smeltery-next` branch; no primary branch was merged.
+- Registered original `seared_table`, `seared_basin` and `ingot_cast` identities, original facing states/collision geometry, static models/textures and native loot. Native world entities tick casting, support player pickup/cast placement, sided fluid/item transfer, comparator states, redstone slot switching, update packets, removal recovery and registry-aware persistence.
+- Ported ItemCastingRecipe semantics: optional/reusable/consumed casts, recipe-sized fluid capacity, original cooling, slot switching XOR redstone, and original tag-resolved ItemOutput. All 23 active recipes preserve source IDs, amounts, cooling and result selection (11 metal blocks, 11 gold-cast ingots, golden ingot-cast creation).
+- A single transaction participant covers fluid, recipe selection, item slots and timer. Nested rollback restores all of them. Partial pours do not cool; partial extraction pauses cooling; a missing/reloaded recipe retains contained fluid. Input automation accepts one item; output extraction does not remove reusable casts or cooling work.
+- Validation: Java 25/Gradle Wrapper build passed; **99 tests, zero failures/errors/skips**. Tests decode all 23 real recipes, cast every registered metal block/ingot, create the original gold cast, check rollback/persistence/reload/redstone/removal, and run original iron melting -> ordered tank -> Basin -> real iron block. This is native subsystem integration, **not live-world gameplay**.
+- Original 19,850-file verification, strict JAR/resource check and cached production Fabric bootstrap passed. JAR SHA-256: `7683e872c88313695f6b0ee3b31266cf08e9c736dbac5a929411167c94f527d8`.
+- Still unported for casting: native dynamic item/fluid renderer and original cooling/click audio, molding/sand casts, specialized material/container/potion recipes and complete survival acquisition. Original static geometry is retained while the old Mantle custom loader fields are omitted; no claim of complete visual parity.
+- Next: real native Drain/Faucet transport; then survival construction and client visual integration. Keep `eula=false` pending the existing EULA question; this does not prevent independent development.
 
 ### Latest checkpoint: controller removal and world-test prerequisite
 
@@ -80,7 +91,7 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 | Fuel tank | Four-bucket native storage and persistence existed; container interaction now implemented and transaction tested. Rendering, retained-fluid block item and live player checks remain. |
 | Melting | Slot/inventory/heating modules exist; Standard native codec and live lookup now cover 32 original recipes across 11 metals. Reload changes revalidate heat/time; raw cobalt ore serializer/default yield and Fabric item automation now added. Conditional iron/sparse/dense/damageable/material recipes and GUI remain missing. |
 | Molten metals | All 36 metal/alloy source/flowing pairs, original sprites/animations and temperatures now registered. Nonmetal fluids, bucket items and original physical/thermal parity remain incomplete. |
-| Drain, faucet, casting table/basin | No native implementations in the selected Smeltery branch. |
+| Drain, faucet, casting table/basin | Native Table/Basin with 23 original recipes, transactional cooling, persistence and interactions now implemented; Drain/Faucet and full casting visuals/recipe catalog remain open. |
 | Alloying | Native original matching/atomic crafting is connected to the controller; Rose Gold recipe active and subsystem tested. Remaining alloy data/inputs and live-world tests are open. |
 | Persistence/sync | Controller tank, fuel and melting snapshots exist. Live world reload and client synchronization unverified; ordered tank sync packet unported. |
 | Materials/Part Builder/Tinker Station | Extensive separate stage1 work exists (PRs through #52); not reimplemented or merged here. Must validate its artifact separately. |

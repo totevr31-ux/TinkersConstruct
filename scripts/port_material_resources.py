@@ -317,6 +317,49 @@ for form, item in (('raw', 'raw_cobalt'), ('raw_block', 'raw_cobalt_block')):
     recipe['ingredient'] = ingredient(recipe['ingredient'])
     write(f'data/tconstruct/recipe/{rel}', recipe)
 
+# Original casting table/basin geometry; native dynamic renderer is separate.
+for kind in ('basin', 'table'):
+    name = 'seared_' + kind
+    for part in (f'blockstates/{name}.json', f'models/item/{name}.json', f'models/block/smeltery/{kind}.json'):
+        copy(f'main/resources/{asset}/{part}', f'{asset}/{part}')
+    template = json.loads((UPSTREAM / f'main/resources/{asset}/models/block/template/{kind}.json').read_text())
+    for custom in ('loader', 'fluid', 'items'):
+        template.pop(custom, None)
+    write(f'{asset}/models/block/template/{kind}.json', template)
+    for face in ('top', 'side', 'bottom'):
+        part = f'textures/block/smeltery/casting/{kind}_{face}.png'
+        copy(f'main/resources/{asset}/{part}', f'{asset}/{part}')
+    write(f'{asset}/items/{name}.json', {'model': {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}})
+    translations[f'block.tconstruct.{name}'] = lang_source[f'block.tconstruct.{name}']
+    write(f'data/tconstruct/loot_table/blocks/{name}.json', {
+        'type': 'minecraft:block', 'pools': [{'rolls': 1.0,
+            'condition': {'type': 'minecraft:survives_explosion'},
+            'entries': [{'type': 'minecraft:item', 'name': f'tconstruct:{name}'}]}]})
+for part in ('models/item/ingot_cast.json', 'textures/item/cast/ingot.png'):
+    copy(f'main/resources/{asset}/{part}', f'{asset}/{part}')
+write(f'{asset}/items/ingot_cast.json', {'model': {'type': 'minecraft:model', 'model': 'tconstruct:item/ingot_cast'}})
+translations['item.tconstruct.ingot_cast'] = lang_source['item.tconstruct.ingot_cast']
+copy('generated/resources/data/tconstruct/tags/items/casts/multi_use/ingot.json',
+     'data/tconstruct/tags/item/casts/multi_use/ingot.json')
+write('data/c/tags/item/ingots.json', {'replace': False,
+    'values': [f'{namespace}:{metal}_ingot' for metal, namespace, _ in standard_metals]})
+casting_paths = [f'smeltery/casting/metal/{metal}/{form}.json'
+    for metal, _, _ in standard_metals for form in ('block', 'ingot_gold_cast')]
+casting_paths += ['smeltery/casts/gold_casts/ingots.json']
+for rel in casting_paths:
+    recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{rel}').read_text())
+    if 'cast' in recipe:
+        recipe['cast'] = ingredient(recipe['cast'])
+    result = recipe['result']
+    if isinstance(result, str):
+        recipe['result'] = {'id': result}
+    else:
+        recipe['result'] = dict(result)
+        if 'item' in recipe['result']:
+            recipe['result']['id'] = recipe['result'].pop('item')
+    write(f'data/tconstruct/recipe/{rel}', recipe)
+write('assets/radisconstruct/casting-recipes.json', casting_paths)
+
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'

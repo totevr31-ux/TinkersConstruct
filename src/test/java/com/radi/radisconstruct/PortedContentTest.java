@@ -44,15 +44,19 @@ public class PortedContentTest {
         slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeOreMeltingRecipe.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeAlloyRecipe.initialize();
+        slimeknights.tconstruct.smeltery.recipe.NativeCastingRecipe.initialize();
         Map<TagKey<Item>, List<Holder<Item>>> tags = new HashMap<>();
-        try (var paths = Files.walk(ROOT.resolve("data/c/tags/item"))) {
-            for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
-                String name = ROOT.resolve("data/c/tags/item").relativize(p).toString().replace("\\", "/").replace(".json", "");
-                List<Holder<Item>> values = new ArrayList<>();
-                for (JsonElement value : json(p).getAsJsonArray("values")) {
-                    values.add(BuiltInRegistries.ITEM.get(id(value.getAsString())).orElseThrow());
+        for (String namespace : List.of("c", "tconstruct")) {
+            Path tagRoot = ROOT.resolve("data/" + namespace + "/tags/item");
+            if (!Files.exists(tagRoot)) continue;
+            try (var paths = Files.walk(tagRoot)) {
+                for (Path p : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
+                    String name = tagRoot.relativize(p).toString().replace("\\", "/").replace(".json", "");
+                    List<Holder<Item>> values = new ArrayList<>();
+                    for (JsonElement value : json(p).getAsJsonArray("values"))
+                        values.add(BuiltInRegistries.ITEM.get(id(value.getAsString())).orElseThrow());
+                    tags.put(TagKey.create(Registries.ITEM, id(namespace + ":" + name)), values);
                 }
-                tags.put(TagKey.create(Registries.ITEM, id("c:" + name)), values);
             }
         }
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
@@ -139,7 +143,7 @@ public class PortedContentTest {
                 checked++;
             }
         }
-        assertEquals(12, checked);
+        assertEquals(14, checked);
     }
     @Test void bothOreFeaturesDecodeWithTheirPlacements() throws Exception {
         for (String size : List.of("small", "large")) {

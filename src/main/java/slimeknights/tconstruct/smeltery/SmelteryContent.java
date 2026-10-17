@@ -25,6 +25,8 @@ import slimeknights.tconstruct.smeltery.block.controller.SmelteryControllerBlock
 import slimeknights.tconstruct.smeltery.block.component.SearedFuelTankBlock;
 import slimeknights.tconstruct.smeltery.block.entity.component.SearedFuelTankBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryControllerBlockEntity;
+import slimeknights.tconstruct.smeltery.block.NativeCastingBlock;
+import slimeknights.tconstruct.smeltery.block.entity.NativeCastingBlockEntity;
 
 /**
  * Stage 1F: the original Smeltery Controller / Seared Bricks registry identities.
@@ -76,6 +78,23 @@ public final class SmelteryContent {
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("seared_fuel_tank"),
             FabricBlockEntityTypeBuilder.create(SearedFuelTankBlockEntity::new, FUEL_TANK).build());
 
+    private static NativeCastingBlock castingBlock(String name, boolean table) {
+        var key = blockKey(name);
+        return Registry.register(BuiltInRegistries.BLOCK, key, new NativeCastingBlock(
+            BlockBehaviour.Properties.of().setId(key).sound(SoundType.STONE)
+                .strength(3.0f, 9.0f).requiresCorrectToolForDrops().noOcclusion(), table));
+    }
+    public static final NativeCastingBlock CASTING_TABLE = castingBlock("seared_table", true);
+    public static final NativeCastingBlock CASTING_BASIN = castingBlock("seared_basin", false);
+    public static final Item CASTING_TABLE_ITEM = item("seared_table", CASTING_TABLE);
+    public static final Item CASTING_BASIN_ITEM = item("seared_basin", CASTING_BASIN);
+    private static final ResourceKey<Item> INGOT_CAST_KEY = ResourceKey.create(Registries.ITEM, id("ingot_cast"));
+    public static final Item INGOT_CAST = Registry.register(BuiltInRegistries.ITEM, INGOT_CAST_KEY,
+        new Item(new Item.Properties().setId(INGOT_CAST_KEY)));
+    public static final BlockEntityType<NativeCastingBlockEntity> CASTING_BLOCK_ENTITY =
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("casting"),
+            FabricBlockEntityTypeBuilder.create(NativeCastingBlockEntity::new, CASTING_TABLE, CASTING_BASIN).build());
+
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)
             .register(output -> output.accept(SEARED_BRICKS_ITEM));
@@ -83,11 +102,18 @@ public final class SmelteryContent {
             .register(output -> {
                 output.accept(CONTROLLER_ITEM);
                 output.accept(FUEL_TANK_ITEM);
+                output.accept(CASTING_TABLE_ITEM);
+                output.accept(CASTING_BASIN_ITEM);
+                output.accept(INGOT_CAST);
             });
         FluidStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.getFluidStorage(), FUEL_TANK_BLOCK_ENTITY);
         ItemStorage.SIDED.registerForBlockEntity(
             (blockEntity, direction) -> blockEntity.getItemStorage(), CONTROLLER_BLOCK_ENTITY);
+        FluidStorage.SIDED.registerForBlockEntity(
+            (blockEntity, direction) -> blockEntity.module(), CASTING_BLOCK_ENTITY);
+        ItemStorage.SIDED.registerForBlockEntity(
+            (blockEntity, direction) -> blockEntity.module().items(), CASTING_BLOCK_ENTITY);
         RadisConstruct.LOGGER.info("Registered original Smeltery Controller, Seared Bricks, four-bucket Fuel Tank and native fluid capability.");
     }
 }
