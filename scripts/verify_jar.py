@@ -148,6 +148,12 @@ with zipfile.ZipFile(jar) as z:
         assert f'assets/tconstruct/items/{name}.json' in names
         assert f'data/tconstruct/loot_table/blocks/{name}.json' in names
     assert json.loads(z.read('data/tconstruct/tags/block/fuel_tanks.json'))['values'] == ['tconstruct:seared_heater', '#tconstruct:seared_tanks']
+    packed_blocks = {'tconstruct:' + name.removeprefix('assets/tconstruct/blockstates/').removesuffix('.json')
+                     for name in names if name.startswith('assets/tconstruct/blockstates/') and name.endswith('.json')}
+    for tag in ('mineable/pickaxe', 'mineable/shovel', 'needs_iron_tool', 'needs_diamond_tool'):
+        original = json.loads((root / f'upstream/Hephaestus/src/generated/resources/data/minecraft/tags/blocks/{tag}.json').read_text())
+        packed = json.loads(z.read(f'data/minecraft/tags/block/{tag}.json'))
+        assert set(packed['values']) == set(original['values']) & packed_blocks, tag
     construction = json.loads(z.read('assets/radisconstruct/construction-recipes.json'))
     assert len(construction) == 14
     for name in construction:

@@ -4,6 +4,12 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: original mining tags and seared physical properties
+
+- Corrected missing pickaxe membership for Casting Table/Basin, Drain and Faucet; included original shovel membership for grout. All four generated mining/tool-level tags are now the exact original membership intersected with the registered block subset.
+- Restored original seared metal sounds/map color/instrument, controller 8/28 strength/resistance and active light, tough Drain 6/18 values and the original nonsolid spawn/redstone/suffocation/view predicates for tanks, casting blocks and Faucet. Earlier stone-sound/ordinary-strength placeholders are removed.
+- Validation: Java 25 build with **121 passing tests**, strict JAR verification (mining tags independently compared against original membership and packaged blockstates), all 19,850 original-file checks and production cached bootstrap passed. JAR SHA-256: `cfaafec228feaf176721711cd15418ebfb8f02ae7692e28d4436fab44f7f1c3a`. No loaded-world/client claim.
+
 ### 2026-10-17: original controller casting and native texture identity
 
 - Enabled original `tconstruct:retextured_casting_basin`/table codecs, sharing native casting recipe types. Casting now calls recipe assembly, so specialized result components are not lost by directly reading a static result stack.

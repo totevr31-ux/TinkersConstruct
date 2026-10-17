@@ -57,7 +57,8 @@ public final class SmelteryContent {
     public static final Block SEARED_BRICKS = Registry.register(
         BuiltInRegistries.BLOCK, BRICKS_KEY,
         new Block(BlockBehaviour.Properties.of().setId(BRICKS_KEY)
-            .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
+            .mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
+            .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM).sound(SoundType.METAL).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
     public static final Item SEARED_BRICKS_ITEM = item("seared_bricks", SEARED_BRICKS);
     private static final ResourceKey<Block> GROUT_KEY = blockKey("grout");
     public static final Block GROUT = Registry.register(BuiltInRegistries.BLOCK, GROUT_KEY,
@@ -72,8 +73,8 @@ public final class SmelteryContent {
     private static final ResourceKey<Block> CONTROLLER_KEY = blockKey("smeltery_controller");
     public static final SmelteryControllerBlock CONTROLLER = Registry.register(
         BuiltInRegistries.BLOCK, CONTROLLER_KEY,
-        new SmelteryControllerBlock(BlockBehaviour.Properties.of().setId(CONTROLLER_KEY)
-            .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
+        new SmelteryControllerBlock(smallControllerProperties(CONTROLLER_KEY, true)
+            .lightLevel(state -> state.getValue(SmelteryControllerBlock.ACTIVE) ? 13 : 0)));
     public static final Item CONTROLLER_ITEM = item("smeltery_controller", CONTROLLER);
 
     public static final BlockEntityType<SmelteryControllerBlockEntity> CONTROLLER_BLOCK_ENTITY =
@@ -83,16 +84,13 @@ public final class SmelteryContent {
     private static final ResourceKey<Block> FUEL_TANK_KEY = blockKey("seared_fuel_tank");
     public static final SearedFuelTankBlock FUEL_TANK = Registry.register(
         BuiltInRegistries.BLOCK, FUEL_TANK_KEY,
-        new SearedFuelTankBlock(BlockBehaviour.Properties.of().setId(FUEL_TANK_KEY)
-            .sound(SoundType.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
+        new SearedFuelTankBlock(searedNonSolidProperties(FUEL_TANK_KEY)));
     public static final Item FUEL_TANK_ITEM = item("seared_fuel_tank", FUEL_TANK);
 
     private static SearedFuelTankBlock tankBlock(String name, long capacity) {
         var key = blockKey(name);
         return Registry.register(BuiltInRegistries.BLOCK, key, new SearedFuelTankBlock(
-            BlockBehaviour.Properties.of().setId(key).mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
-                .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM).sound(SoundType.METAL).strength(3, 9)
-                .requiresCorrectToolForDrops().noOcclusion(), capacity));
+            searedNonSolidProperties(key), capacity));
     }
     public static final SearedFuelTankBlock FUEL_GAUGE = tankBlock("seared_fuel_gauge", 4 * net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET);
     public static final SearedFuelTankBlock INGOT_TANK = tankBlock("seared_ingot_tank", 48 * net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.INGOT);
@@ -105,11 +103,17 @@ public final class SmelteryContent {
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("seared_fuel_tank"),
             FabricBlockEntityTypeBuilder.create(SearedFuelTankBlockEntity::new, FUEL_TANK, FUEL_GAUGE, INGOT_TANK, INGOT_GAUGE).build());
 
+    private static BlockBehaviour.Properties searedNonSolidProperties(ResourceKey<Block> key) {
+        return BlockBehaviour.Properties.of().setId(key).mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
+            .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM).sound(SoundType.METAL)
+            .strength(3, 9).requiresCorrectToolForDrops().noOcclusion()
+            .isValidSpawn((state, world, pos, entity) -> false).isRedstoneConductor((state, world, pos) -> false)
+            .isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos, bounds) -> false);
+    }
     private static NativeCastingBlock castingBlock(String name, boolean table) {
         var key = blockKey(name);
         return Registry.register(BuiltInRegistries.BLOCK, key, new NativeCastingBlock(
-            BlockBehaviour.Properties.of().setId(key).sound(SoundType.STONE)
-                .strength(3.0f, 9.0f).requiresCorrectToolForDrops().noOcclusion(), table));
+            searedNonSolidProperties(key), table));
     }
     public static final NativeCastingBlock CASTING_TABLE = castingBlock("seared_table", true);
     public static final NativeCastingBlock CASTING_BASIN = castingBlock("seared_basin", false);
@@ -123,8 +127,10 @@ public final class SmelteryContent {
             FabricBlockEntityTypeBuilder.create(NativeCastingBlockEntity::new, CASTING_TABLE, CASTING_BASIN).build());
     private static final ResourceKey<Block> DRAIN_KEY = blockKey("seared_drain");
     public static final NativeDrainBlock DRAIN = Registry.register(BuiltInRegistries.BLOCK, DRAIN_KEY,
-        new NativeDrainBlock(BlockBehaviour.Properties.of().setId(DRAIN_KEY).sound(SoundType.STONE)
-            .strength(3.0f, 9.0f).requiresCorrectToolForDrops()));
+        new NativeDrainBlock(BlockBehaviour.Properties.of().setId(DRAIN_KEY)
+            .mapColor(net.minecraft.world.level.material.MapColor.COLOR_GRAY)
+            .instrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM)
+            .sound(SoundType.METAL).strength(6, 18).requiresCorrectToolForDrops()));
     public static final Item DRAIN_ITEM = item("seared_drain", DRAIN);
     public static final BlockEntityType<NativeDrainBlockEntity> DRAIN_BLOCK_ENTITY =
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("drain"),
@@ -153,8 +159,7 @@ public final class SmelteryContent {
             slimeknights.tconstruct.smeltery.block.entity.NativeHeaterBlockEntity::new, HEATER).build());
     private static final ResourceKey<Block> FAUCET_KEY = blockKey("seared_faucet");
     public static final NativeFaucetBlock FAUCET = Registry.register(BuiltInRegistries.BLOCK, FAUCET_KEY,
-        new NativeFaucetBlock(BlockBehaviour.Properties.of().setId(FAUCET_KEY).sound(SoundType.STONE)
-            .strength(3.0f, 9.0f).requiresCorrectToolForDrops().noOcclusion()));
+        new NativeFaucetBlock(searedNonSolidProperties(FAUCET_KEY)));
     public static final Item FAUCET_ITEM = item("seared_faucet", FAUCET);
     public static final BlockEntityType<NativeFaucetBlockEntity> FAUCET_BLOCK_ENTITY =
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("faucet"),

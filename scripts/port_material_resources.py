@@ -436,13 +436,14 @@ write('data/tconstruct/tags/block/heater_controllers.json', {'replace': False, '
 write('data/tconstruct/tags/block/smeltery/wall.json', {'replace': False, 'values': ['tconstruct:seared_bricks', 'tconstruct:seared_drain'] + tanks})
 
 write(f'{asset}/lang/en_us.json', translations)
-for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):
+registered_blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block',
+    'seared_bricks', 'grout', 'smeltery_controller', 'seared_fuel_tank', 'seared_fuel_gauge',
+    'seared_ingot_tank', 'seared_ingot_gauge', 'seared_melter', 'seared_heater',
+    'seared_table', 'seared_basin', 'seared_drain', 'seared_faucet']
+for tag in ('mineable/pickaxe', 'mineable/shovel', 'needs_iron_tool', 'needs_diamond_tool'):
     source = UPSTREAM / f'generated/resources/data/minecraft/tags/blocks/{tag}.json'
     original = json.loads(source.read_text())['values']
-    blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block']
-    values = [f'tconstruct:{block}' for block in blocks if f'tconstruct:{block}' in original]
-    if tag == 'mineable/pickaxe':
-        values.extend(('tconstruct:seared_bricks', 'tconstruct:smeltery_controller', 'tconstruct:seared_fuel_tank', 'tconstruct:seared_fuel_gauge', 'tconstruct:seared_ingot_tank', 'tconstruct:seared_ingot_gauge', 'tconstruct:seared_melter', 'tconstruct:seared_heater'))
+    values = [f'tconstruct:{block}' for block in registered_blocks if f'tconstruct:{block}' in original]
     write(f'data/minecraft/tags/block/{tag}.json', {'replace': False, 'values': values})
 write('radisconstruct-port-manifest.json', {'metals': list(metals), 'copied_resources': copied,
                                          'scope': '7 storage metals, cobalt ore/raw cobalt, original Nether veins; no alloying'})
