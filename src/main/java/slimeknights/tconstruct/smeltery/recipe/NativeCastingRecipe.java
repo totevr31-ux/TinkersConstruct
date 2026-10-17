@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 /** Original optional cast, fluid amount, cooling and slot-switch semantics. */
 public record NativeCastingRecipe(boolean table, String group, Optional<Ingredient> cast,
         NativeAlloyRecipe.Ingredient fluid, Result result, int coolingTime,
-        boolean castConsumed, boolean switchSlots) implements Recipe<NativeCastingRecipe.Input> {
+        boolean castConsumed, boolean switchSlots, boolean retextured) implements Recipe<NativeCastingRecipe.Input> {
     /** Retain original tag-based ItemOutput instead of hardcoding mod items. */
     public record Result(ItemStack stack, Optional<Identifier> tag, int count) {
         public Result { stack = stack.copy(); }
@@ -50,7 +50,7 @@ public record NativeCastingRecipe(boolean table, String group, Optional<Ingredie
         }
         @Override public boolean isEmpty() { return fluid.isBlank(); }
     }
-    private static MapCodec<NativeCastingRecipe> codec(boolean table) {
+    private static MapCodec<NativeCastingRecipe> codec(boolean table, boolean retextured) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.optionalFieldOf("group", "").forGetter(NativeCastingRecipe::group),
             Ingredient.CODEC.optionalFieldOf("cast").forGetter(NativeCastingRecipe::cast),
@@ -60,7 +60,7 @@ public record NativeCastingRecipe(boolean table, String group, Optional<Ingredie
             Codec.BOOL.optionalFieldOf("cast_consumed", false).forGetter(NativeCastingRecipe::castConsumed),
             Codec.BOOL.optionalFieldOf("switch_slots", false).forGetter(NativeCastingRecipe::switchSlots)
         ).apply(instance, (group, cast, fluid, result, cooling, consumed, switched) ->
-            new NativeCastingRecipe(table, group, cast, fluid, result, cooling, consumed, switched)));
+            new NativeCastingRecipe(table, group, cast, fluid, result, cooling, consumed, switched, retextured)));
     }
     private static final class Type implements RecipeType<NativeCastingRecipe> {
         private final String name;
@@ -73,23 +73,28 @@ public record NativeCastingRecipe(boolean table, String group, Optional<Ingredie
         return Registry.register(BuiltInRegistries.RECIPE_TYPE,
             Identifier.fromNamespaceAndPath("tconstruct", name), new Type(name));
     }
-    private static RecipeSerializer<NativeCastingRecipe> serializer(String name, boolean table) {
-        var codec = codec(table);
+    private static RecipeSerializer<NativeCastingRecipe> serializer(String name, boolean table, boolean retextured) {
+        var codec = codec(table, retextured);
         return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER,
             Identifier.fromNamespaceAndPath("tconstruct", name),
             new RecipeSerializer<>(codec, ByteBufCodecs.fromCodecWithRegistries(codec.codec())));
     }
-    public static final RecipeSerializer<NativeCastingRecipe> TABLE_SERIALIZER = serializer("casting_table", true);
-    public static final RecipeSerializer<NativeCastingRecipe> BASIN_SERIALIZER = serializer("casting_basin", false);
-    public static void initialize() {}
+    public static final RecipeSerializer<NativeCastingRecipe> TABLE_SERIALIZER = serializer("casting_table", true, false);
+    public static final RecipeSerializer<NativeCastingRecipe> BASIN_SERIALIZER = serializer("casting_basin", false, false);
+    public static final RecipeSerializer<NativeCastingRecipe> RETEXTURED_TABLE_SERIALIZER = serializer("retextured_casting_table", true, true);
+    public static final RecipeSerializer<NativeCastingRecipe> RETEXTURED_BASIN_SERIALIZER = serializer("retextured_casting_basin", false, true);
+    public static void initialize() { slimeknights.tconstruct.smeltery.NativeRetexturing.initialize(); }
     @Override public boolean matches(Input input, Level level) {
         return table == input.table() && fluid.matches(input.fluid()) && !result.resolve().isEmpty()
             && (cast.isPresent() ? cast.get().test(input.cast()) : input.cast().isEmpty());
     }
-    @Override public ItemStack assemble(Input input) { return result.resolve(); }
+    @Override public ItemStack assemble(Input input) {
+        var output = result.resolve();
+        return retextured ? slimeknights.tconstruct.smeltery.NativeRetexturing.apply(output, input.cast()) : output;
+    }
     @Override public boolean isSpecial() { return true; }
     @Override public boolean showNotification() { return false; }
-    @Override public RecipeSerializer<NativeCastingRecipe> getSerializer() { return table ? TABLE_SERIALIZER : BASIN_SERIALIZER; }
+    @Override public RecipeSerializer<NativeCastingRecipe> getSerializer() { return retextured ? (table ? RETEXTURED_TABLE_SERIALIZER : RETEXTURED_BASIN_SERIALIZER) : (table ? TABLE_SERIALIZER : BASIN_SERIALIZER); }
     @Override public RecipeType<NativeCastingRecipe> getType() { return table ? TABLE : BASIN; }
     @Override public PlacementInfo placementInfo() { return PlacementInfo.NOT_PLACEABLE; }
     @Override public RecipeBookCategory recipeBookCategory() { return NativeMeltingRecipe.CATEGORY; }

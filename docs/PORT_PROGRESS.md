@@ -4,6 +4,14 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: original controller casting and native texture identity
+
+- Enabled original `tconstruct:retextured_casting_basin`/table codecs, sharing native casting recipe types. Casting now calls recipe assembly, so specialized result components are not lost by directly reading a static result stack.
+- Activated the exact original controller recipe: smeltery-brick cast consumed, 36000 molten copper, 100-tick cooling. No replacement crafting recipe was added. The currently registered brick subset is used as the cast ingredient.
+- Added persistent/networked native `tconstruct:texture` component corresponding to original RetexturedBlockItem texture identity. Controller placement applies it, world saves preserve it, component collection exposes it to native copy-components loot, and update tags carry it. Dynamic texture/model rendering remains unported and is not claimed here.
+- Validation: **121 tests**, zero failures/errors/skips, Java 25 build, strict packaged recipe/component-loot/class checks and production cached bootstrap at eula=false passed. Subsystem test melts four actual copper ingots via the original recipe into the real Melter tank, transactionally transfers all 36000 units to a Basin (including rollback), waits exactly 100 ticks and obtains the native controller with consumed brick cast and preserved texture component. Stack codecs and controller placement/save/component collection round-trip the texture. Additional Heater regression checks saved stack components and aborted/committed extraction.
+- JAR SHA-256: `9a373a0f9d3f3616e7ee0e448ea700bd0537f264e2728add8b9635e86796a585`. Melter-stage CI passed: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/39010395774 . All 19,850 original source files remain unchanged. No loaded-world/client test or complete player workflow is claimed; native menus/screens and dynamic rendering remain open.
+
 ### 2026-10-17: native Melter, Heater and complete seared tank variants
 
 - Registered original Melter and Heater with native block entities, fuel topology tags, original facing/formation/active states and original 8/28 controller hardness/resistance, metal sounds and active light. Added all four seared tank identities, including gauge variants used by the original Melter recipe; fuel tanks/gauges hold four buckets and ingot tanks/gauges hold 48 ingots.

@@ -59,8 +59,8 @@ class CastingModuleTest {
         }
     }
 
-    @Test void allTwentyThreeRecipesPreserveOriginalFieldsAndNativeResults() throws Exception {
-        assertEquals(23, recipes.size());
+    @Test void allRecipesPreserveOriginalFieldsAndNativeResults() throws Exception {
+        assertEquals(24, recipes.size());
         for (var entry : recipes.entrySet()) {
             String path = entry.getKey().getPath() + ".json";
             var original = JsonParser.parseString(Files.readString(Path.of(
@@ -234,4 +234,45 @@ class CastingModuleTest {
         assertTrue(basin.module.takeItem().is(Items.IRON_BLOCK));
         assertTrue(basin.module.takeItem().isEmpty());
     }
+    @Test void originalControllerCastingConsumesFourCopperIngotsAndPreservesTextureThroughStackCodec() throws Exception {
+        var f = new Fixture(false);
+        assertTrue(f.module.insertCast(new ItemStack(SmelteryContent.SEARED_BRICKS_ITEM)));
+        var copper = FluidVariant.of(NativeMoltenFluids.source(NativeMoltenFluids.Metal.COPPER));
+        var melter = new slimeknights.tconstruct.smeltery.block.entity.controller.NativeMelterBlockEntity(
+            net.minecraft.core.BlockPos.ZERO, SmelteryContent.MELTER.defaultBlockState());
+        var ops = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY).createSerializationContext(JsonOps.INSTANCE);
+        var melting = slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.CODEC.codec().parse(ops,
+            JsonParser.parseString(Files.readString(Path.of("build/portedResources/data/tconstruct/recipe/smeltery/melting/metal/copper/ingot.json")))).getOrThrow();
+        var slot = new MeltingModule(new MeltingModule.Context() {
+            @Override public MeltingModule.Recipe findRecipe(ItemStack stack) { return melting.matches(stack) ? melting : null; }
+            @Override public net.fabricmc.fabric.api.transfer.v1.storage.Storage<FluidVariant> outputTank() { return melter.tank(); }
+            @Override public void markChanged() {}
+        });
+        for (int ingot = 0; ingot < 4; ingot++) {
+            slot.setStack(new ItemStack(Items.COPPER_INGOT));
+            for (int phase = 0; phase < 70; phase++) slot.heatItem(800);
+            assertTrue(slot.getStack().isEmpty());
+        }
+        assertEquals(36000, melter.tank().getAmount());
+        try (var tx = Transaction.openOuter()) {
+            assertEquals(36000, melter.tank().extract(copper, 36000, tx));
+            assertEquals(36000, f.module.insert(copper, 36000, tx));
+        }
+        assertEquals(36000, melter.tank().getAmount()); assertEquals(0, f.module.getAmount());
+        try (var tx = Transaction.openOuter()) {
+            melter.tank().extract(copper, 36000, tx); f.module.insert(copper, 36000, tx); tx.commit();
+        }
+        for (int tick = 0; tick < 99; tick++) f.module.tick(false);
+        assertTrue(f.module.output().isEmpty()); f.module.tick(false);
+        assertTrue(f.module.input().isEmpty()); assertTrue(f.module.output().is(SmelteryContent.CONTROLLER_ITEM));
+        var texture = Identifier.parse("tconstruct:seared_bricks");
+        assertEquals(texture, f.module.output().get(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE));
+        var encoded = ItemStack.CODEC.encodeStart(ops, f.module.output()).getOrThrow();
+        var decoded = ItemStack.CODEC.parse(ops, encoded).getOrThrow();
+        assertEquals(texture, decoded.get(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE));
+        assertEquals(0, melter.tank().getAmount()); assertEquals(0, f.module.getAmount());
+        assertSame(NativeCastingRecipe.RETEXTURED_BASIN_SERIALIZER,
+            recipes.get(Identifier.parse("tconstruct:smeltery/casting/seared/smeltery_controller")).getSerializer());
+    }
+
 }

@@ -332,9 +332,28 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
         entity.tick = (entity.tick + 1) % 20;
     }
 
+    private net.minecraft.resources.Identifier texture = slimeknights.tconstruct.smeltery.NativeRetexturing.DEFAULT;
+    public net.minecraft.resources.Identifier texture() { return texture; }
+    @Override protected void applyImplicitComponents(net.minecraft.core.component.DataComponentGetter components) {
+        super.applyImplicitComponents(components);
+        texture = components.getOrDefault(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE,
+            slimeknights.tconstruct.smeltery.NativeRetexturing.DEFAULT);
+    }
+    @Override protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        components.set(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE, texture);
+    }
+    @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        var tag = new net.minecraft.nbt.CompoundTag(); tag.putString("texture", texture.toString()); return tag;
+    }
+    @Override public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
     @Override
     protected void saveAdditional(ValueOutput out) {
         super.saveAdditional(out);
+        out.store("texture", net.minecraft.resources.Identifier.CODEC, texture);
         if (structure != null) out.store(STRUCTURE_TAG, CompoundTag.CODEC, structure.writeToTag());
         out.store(FLUIDS_TAG, FluidStack.CODEC.listOf(), tank.getFluids());
         out.putLong(CAPACITY_TAG, tank.getCapacity());
@@ -346,6 +365,8 @@ public final class SmelteryControllerBlockEntity extends BlockEntity implements 
     @Override
     protected void loadAdditional(ValueInput in) {
         super.loadAdditional(in);
+        texture = in.read("texture", net.minecraft.resources.Identifier.CODEC).orElse(slimeknights.tconstruct.smeltery.NativeRetexturing.DEFAULT);
+        if (level != null && level.isClientSide()) return;
         structure = in.read(STRUCTURE_TAG, CompoundTag.CODEC)
             .map(detector::readFromTag).orElse(null);
         tank.setFluids(in.read(FLUIDS_TAG, FluidStack.CODEC.listOf()).orElseGet(List::of));

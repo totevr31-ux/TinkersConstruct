@@ -146,6 +146,10 @@ public class PortedContentTest {
                     assertTrue(roundTrip.contains("minecraft:fortune"));
                     assertTrue(roundTrip.contains("tconstruct:raw_cobalt"));
                 } else assertTrue(roundTrip.contains("minecraft:survives_explosion"));
+                if (path.getFileName().toString().equals("smeltery_controller.json")) {
+                    assertTrue(roundTrip.contains("minecraft:copy_components"));
+                    assertTrue(roundTrip.contains("tconstruct:texture"));
+                }
                 checked++;
             }
         }

@@ -64,4 +64,21 @@ class SmelteryControllerRegistrationTest {
         assertEquals(600, decoded.items().getFirst().module().required());
         assertTrue(decoded.items().getFirst().module().stack().is(net.minecraft.world.item.Items.IRON_INGOT));
     }
+    @Test void castingTextureSurvivesPlacementComponentsWorldSaveAndLootCollection() {
+        var registries = net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
+        var texture = net.minecraft.resources.Identifier.parse("minecraft:stone");
+        var stack = new net.minecraft.world.item.ItemStack(SmelteryContent.CONTROLLER_ITEM);
+        stack.set(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE, texture);
+        var entity = new SmelteryControllerBlockEntity(BlockPos.ZERO, SmelteryContent.CONTROLLER.defaultBlockState());
+        entity.applyComponentsFromItemStack(stack);
+        assertEquals(texture, entity.texture());
+        var saved = entity.saveWithoutMetadata(registries);
+        var restored = new SmelteryControllerBlockEntity(BlockPos.ZERO, SmelteryContent.CONTROLLER.defaultBlockState());
+        restored.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, registries, saved));
+        assertEquals(texture, restored.texture());
+        assertEquals(texture, restored.collectComponents().get(slimeknights.tconstruct.smeltery.NativeRetexturing.TEXTURE));
+        assertEquals(texture.toString(), restored.getUpdateTag(registries).getString("texture").orElseThrow());
+    }
+
 }

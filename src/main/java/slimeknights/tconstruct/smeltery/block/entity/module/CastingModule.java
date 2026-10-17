@@ -192,7 +192,7 @@ public final class CastingModule extends SnapshotParticipant<CastingModule.State
         if (amount != capacity) return;
         if (timer < Integer.MAX_VALUE) timer++;
         if (timer >= cooling) {
-            var result = recipe.result().resolve();
+            var result = recipe.assemble(new NativeCastingRecipe.Input(recipe.table(), input, fluid));
             if (recipe.switchSlots() != powered) {
                 output = recipe.castConsumed() ? ItemStack.EMPTY : input;
                 input = result;

@@ -110,7 +110,7 @@ with zipfile.ZipFile(jar) as z:
             assert f'assets/tconstruct/textures/block/fluid/{metal}/{sprite}.png.mcmeta' in names
         assert f'data/tconstruct/tags/fluid/{name}.json' in names
     casting = json.loads(z.read('assets/radisconstruct/casting-recipes.json'))
-    assert len(casting) == 23
+    assert len(casting) == 24
     for relative in casting:
         original = json.loads((root / 'upstream/Hephaestus/src/generated/resources/data/tconstruct/recipes' / relative).read_text())
         packed = json.loads(z.read(f'data/tconstruct/recipe/{relative}'))
@@ -128,6 +128,9 @@ with zipfile.ZipFile(jar) as z:
         assert packed['result'] == expected
     for name in ('seared_table', 'seared_basin', 'ingot_cast'):
         assert f'assets/tconstruct/items/{name}.json' in names
+    controller_loot = json.loads(z.read('data/tconstruct/loot_table/blocks/smeltery_controller.json'))
+    assert controller_loot['pools'][0]['entries'][0]['modifier'] == {
+        'type': 'minecraft:copy_components', 'source': 'block_entity', 'include': ['tconstruct:texture']}
     for kind in ('table', 'basin'):
         assert 'loader' not in json.loads(z.read(f'assets/tconstruct/models/block/template/{kind}.json'))
         assert f'data/tconstruct/loot_table/blocks/seared_{kind}.json' in names

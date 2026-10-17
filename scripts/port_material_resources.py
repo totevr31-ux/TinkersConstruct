@@ -209,7 +209,8 @@ write('data/tconstruct/loot_table/blocks/smeltery_controller.json', {
     'pools': [{
         'rolls': 1.0, 'bonus_rolls': 0.0,
         'condition': {'type': 'minecraft:survives_explosion'},
-        'entries': [{'type': 'minecraft:item', 'name': 'tconstruct:smeltery_controller'}]
+        'entries': [{'type': 'minecraft:item', 'name': 'tconstruct:smeltery_controller',
+                     'modifier': {'type': 'minecraft:copy_components', 'source': 'block_entity', 'include': ['tconstruct:texture']}}]
     }]
 })
 # Original Smeltery references a larger seared catalog. Only registered
@@ -308,6 +309,9 @@ for metal, namespace, forms in standard_metals:
         write(f'data/tconstruct/recipe/{rel}', recipe)
         standard_melting_count += 1
 
+# Registered subset of original smeltery-brick cast ingredient.
+write('data/tconstruct/tags/item/smeltery_bricks.json', {'replace': False, 'values': ['tconstruct:seared_bricks']})
+
 # Raw cobalt recipes use the original ore serializer and preserve byproducts.
 for form, item in (('raw', 'raw_cobalt'), ('raw_block', 'raw_cobalt_block')):
     rel = f'smeltery/melting/metal/cobalt/{form}.json'
@@ -347,7 +351,7 @@ write('data/c/tags/item/ingots.json', {'replace': False,
     'values': [f'{namespace}:{metal}_ingot' for metal, namespace, _ in standard_metals]})
 casting_paths = [f'smeltery/casting/metal/{metal}/{form}.json'
     for metal, _, _ in standard_metals for form in ('block', 'ingot_gold_cast')]
-casting_paths += ['smeltery/casts/gold_casts/ingots.json']
+casting_paths += ['smeltery/casts/gold_casts/ingots.json', 'smeltery/casting/seared/smeltery_controller.json']
 for rel in casting_paths:
     recipe = json.loads((UPSTREAM / f'generated/resources/data/tconstruct/recipes/{rel}').read_text())
     if 'cast' in recipe:

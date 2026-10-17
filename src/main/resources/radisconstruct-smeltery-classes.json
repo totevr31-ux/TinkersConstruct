@@ -10,6 +10,7 @@
   "slimeknights/tconstruct/fluids/NativeMoltenFluids$Metal.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluids$Pair.class",
   "slimeknights/tconstruct/fluids/NativeMoltenFluids.class",
+  "slimeknights/tconstruct/smeltery/NativeRetexturing.class",
   "slimeknights/tconstruct/smeltery/SmelteryContent.class",
   "slimeknights/tconstruct/smeltery/block/NativeCastingBlock.class",
   "slimeknights/tconstruct/smeltery/block/NativeDrainBlock.class",
