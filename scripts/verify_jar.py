@@ -31,6 +31,8 @@ with zipfile.ZipFile(jar) as z:
     assert meta['depends']['java'] == '>=25'
     assert '${' not in z.read('fabric.mod.json').decode(), 'Unexpanded metadata'
     assert meta['entrypoints']['main'] == ['com.radi.radisconstruct.RadisConstruct']
+    assert 'slimeknights.tconstruct.smeltery.client.NativeSmelteryClient' in meta['entrypoints']['client']
+    assert 'assets/tconstruct/textures/gui/heater.png' in names
     cls = z.read('com/radi/radisconstruct/RadisConstruct.class')
     assert cls[:4] == b'\xca\xfe\xba\xbe', 'Missing compiled class'
     assert struct.unpack('>H', cls[6:8])[0] == 69, 'Expected Java 25 bytecode'

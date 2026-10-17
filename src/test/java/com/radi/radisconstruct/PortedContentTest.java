@@ -40,6 +40,7 @@ public class PortedContentTest {
         assertNotNull(TinkerWorld.rawCobalt);
         // Register ported Smeltery items before ITEM registry tag binding/freezing.
         assertNotNull(SmelteryContent.CONTROLLER_ITEM);
+        slimeknights.tconstruct.smeltery.menu.NativeSingleItemMenu.initialize();
         slimeknights.tconstruct.fluids.NativeMoltenFluids.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeMeltingRecipe.initialize();
         slimeknights.tconstruct.smeltery.recipe.NativeOreMeltingRecipe.initialize();

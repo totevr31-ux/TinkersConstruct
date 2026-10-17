@@ -166,6 +166,7 @@ public final class SmelteryContent {
             FabricBlockEntityTypeBuilder.create(NativeFaucetBlockEntity::new, FAUCET).build());
 
     public static void initialize() {
+        slimeknights.tconstruct.smeltery.menu.NativeSingleItemMenu.initialize();
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)
             .register(output -> output.accept(SEARED_BRICKS_ITEM));
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS)

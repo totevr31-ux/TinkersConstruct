@@ -19,6 +19,10 @@ public final class NativeHeaterBlockEntity extends BlockEntity {
     private final NativeFuelContext fuels = new NativeFuelContext(this, new SimpleContainer(0), fluid -> null);
     private final FuelSlot items = new FuelSlot();
     public NativeHeaterBlockEntity(BlockPos pos, BlockState state) { super(SmelteryContent.HEATER_BLOCK_ENTITY, pos, state); }
+    public net.minecraft.world.Container menuContainer() {
+        return new slimeknights.tconstruct.smeltery.menu.NativeStorageContainer(java.util.List.of(items),
+            player -> !isRemoved() && net.minecraft.world.Container.stillValidBlockEntity(this, player), this::setChanged);
+    }
     public FuelSlot items() { return items; }
     public final class FuelSlot extends SingleVariantStorage<ItemVariant> {
         @Override protected ItemVariant getBlankVariant() { return ItemVariant.blank(); }
@@ -26,6 +30,7 @@ public final class NativeHeaterBlockEntity extends BlockEntity {
         @Override protected boolean canInsert(ItemVariant resource) {
             return !isRemoved() && level instanceof ServerLevel && fuels.solidBurnTime(resource) > 3;
         }
+        @Override protected boolean canExtract(ItemVariant resource) { return !isRemoved(); }
         @Override protected void onFinalCommit() { setChanged(); }
         void restore(ItemStack stack) { variant = ItemVariant.of(stack); amount = stack.getCount(); }
         ItemStack stack() { return variant.toStack((int)amount); }

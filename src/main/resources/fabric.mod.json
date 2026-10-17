@@ -18,7 +18,8 @@
       "com.radi.radisconstruct.RadisConstruct"
     ],
     "client": [
-      "slimeknights.tconstruct.fluids.NativeMoltenFluidClient"
+      "slimeknights.tconstruct.fluids.NativeMoltenFluidClient",
+      "slimeknights.tconstruct.smeltery.client.NativeSmelteryClient"
     ]
   },
   "depends": {

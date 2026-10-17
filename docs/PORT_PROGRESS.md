@@ -4,6 +4,14 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: native Heater player menu and original screen
+
+- Added original `tconstruct:single_item` menu identity, original 80/20 slot position, original 176x133 Heater screen/background and player inventory offset 51. Both empty-hand and held-item interactions open the Heater menu unless sneaking; the server validates block presence/distance through the native container check.
+- New native storage/container bridge shares the authoritative transactional Heater slot with automation, preserving stack components, fuel filtering and capacity. Native storage slots explicitly apply container predicates (vanilla Slot itself accepts everything). Rejected replacement aborts atomically. Quick-move uses native safeInsert/write-back for copied storage reads, merges existing stacks before empty slots and preserves source remainders when the player inventory is full.
+- Registered a dedicated client-only entrypoint and native MenuScreens binding. Original Heater texture bytes are verified in the JAR; native menu synchronization carries the authoritative input item. Removed Heater storage cannot be extracted through an old handle.
+- Validation: **125 tests**, zero failures/errors/skips, Java 25 build, strict JAR verification, unchanged 19,850-file original check and production cached bootstrap at eula=false passed. Tests exercise real native Slot insertion/merging/pickup, rejected fuel/replacement rollback, shift-click in both directions, full-player-inventory backpressure and inventory/hotbar fallback. JAR SHA-256: `a2a3411b1b7f28db6d6509c73cfe28ad0006e63a3c79dbd7aeeb219691198f53`.
+- No visual/client or loaded-world test is claimed. Heater UI is implemented but needs in-game validation. Melter/controller menus, heating/fuel/tank UI synchronization and dynamic rendering are still missing; do not call the whole survival/player workflow complete. Mining/property-stage CI passed: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/39010697652 .
+
 ### 2026-10-17: original mining tags and seared physical properties
 
 - Corrected missing pickaxe membership for Casting Table/Basin, Drain and Faucet; included original shovel membership for grout. All four generated mining/tool-level tags are now the exact original membership intersected with the registered block subset.
@@ -137,10 +145,10 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 | System | Evidence / remaining work |
 | --- | --- |
 | Smeltery multiblock/controller | Native formation, servant ownership, ordered tank, fuel and heating cycle have existing regression tests. Player workflow not verified. |
-| Fuel tank | Four-bucket native storage and persistence existed; container interaction now implemented and transaction tested. Rendering, retained-fluid block item and live player checks remain. |
+| Fuel tanks / Melter / Heater | All four original seared tank variants and recipes; three-slot, 12-ingot native Melter with original heating/fuel cycle; fuel-filtered Heater with native player menu and original screen. Melter/controller menus, visuals, retained-fluid tank items and live checks remain. |
 | Melting | Slot/inventory/heating modules exist; Standard native codec and live lookup now cover 32 original recipes across 11 metals. Reload changes revalidate heat/time; raw cobalt ore serializer/default yield and Fabric item automation now added. Conditional iron/sparse/dense/damageable/material recipes and GUI remain missing. |
 | Molten metals | All 36 metal/alloy source/flowing pairs, original sprites/animations and temperatures now registered. Nonmetal fluids, bucket items and original physical/thermal parity remain incomplete. |
-| Drain, faucet, casting table/basin | Native Table/Basin (23 recipes), validated Drain ownership and original packet-based Faucet now implemented and subsystem integrated. Full dynamic visuals, richer recipes and live-world testing remain open. |
+| Drain, faucet, casting table/basin | Native Table/Basin (24 recipes including original retextured controller acquisition), validated Drain ownership and original packet-based Faucet now implemented and subsystem integrated. Full dynamic visuals, richer recipes and live-world testing remain open. |
 | Alloying | Native original matching/atomic crafting is connected to the controller; Rose Gold recipe active and subsystem tested. Remaining alloy data/inputs and live-world tests are open. |
 | Persistence/sync | Controller tank, fuel and melting snapshots exist. Live world reload and client synchronization unverified; ordered tank sync packet unported. |
 | Materials/Part Builder/Tinker Station | Extensive separate stage1 work exists (PRs through #52); not reimplemented or merged here. Must validate its artifact separately. |

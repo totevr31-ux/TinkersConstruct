@@ -435,6 +435,9 @@ write('data/tconstruct/tags/block/fuel_tanks.json', {'replace': False, 'values':
 write('data/tconstruct/tags/block/heater_controllers.json', {'replace': False, 'values': ['tconstruct:seared_melter']})
 write('data/tconstruct/tags/block/smeltery/wall.json', {'replace': False, 'values': ['tconstruct:seared_bricks', 'tconstruct:seared_drain'] + tanks})
 
+copy(f'main/resources/{asset}/textures/gui/heater.png', f'{asset}/textures/gui/heater.png')
+translations['gui.tconstruct.heater'] = lang_source['gui.tconstruct.heater']
+
 write(f'{asset}/lang/en_us.json', translations)
 registered_blocks = [f'{metal}_block' for metal in metals] + ['cobalt_ore', 'raw_cobalt_block',
     'seared_bricks', 'grout', 'smeltery_controller', 'seared_fuel_tank', 'seared_fuel_gauge',
