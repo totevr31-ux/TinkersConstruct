@@ -27,6 +27,7 @@ import slimeknights.tconstruct.world.TinkerWorld;
 public class PortedContentTest {
     static final Path ROOT = Path.of("build/portedResources");
     static RegistryOps<JsonElement> ops;
+    static HolderLookup.Provider worldLookup;
     static JsonObject json(Path path) throws Exception {
         return JsonParser.parseString(Files.readString(path)).getAsJsonObject();
     }
@@ -66,6 +67,7 @@ public class PortedContentTest {
             durabilityItems.add(BuiltInRegistries.ITEM.get(id(value.getAsString())).orElseThrow());
         tags.put(TagKey.create(Registries.ITEM, id("tconstruct:modifiable/durability")), durabilityItems);
         HolderLookup.Provider lookup = VanillaRegistries.createWorldLookup();
+        worldLookup = lookup;
         // Since 26.2, item defaults are bound after the dynamic registries exist.
         BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(lookup).forEach(pending -> pending.apply());
         MappedRegistry<Item> items = (MappedRegistry<Item>) BuiltInRegistries.ITEM;

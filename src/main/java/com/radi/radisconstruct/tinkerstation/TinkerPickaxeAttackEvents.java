@@ -31,6 +31,8 @@ public final class TinkerPickaxeAttackEvents {
                                                 boolean successfulLivingHit, LivingEntity attacker) {
         if (!successfulLivingHit || creative || stack == null || stack.isEmpty()
             || !(stack.getItem() instanceof TinkerPickaxeItem)) return false;
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack))
+            return com.radi.radisconstruct.tools.MaterialToolSupport.damage(stack, ORIGINAL_PICKAXE_LIVING_HIT_WEAR, attacker);
         ToolStack tool = ToolStack.from(stack);
         if (tool.isBroken()) return false;
         ToolDamageUtil.damage(tool, ORIGINAL_PICKAXE_LIVING_HIT_WEAR, attacker, stack);

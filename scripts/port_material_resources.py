@@ -262,3 +262,4 @@ print(f'Ported {len(copied)} original resources and {len(metals) * 4 + 3} recipe
 runpy.run_path(str(ROOT / 'scripts/port_tool_traits.py'), run_name='__main__')
 
 runpy.run_path(str(ROOT / "scripts/port_pickaxe_models.py"), run_name="__main__")
+runpy.run_path(str(ROOT / "scripts/port_all_tools.py"), run_name="__main__")

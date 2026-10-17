@@ -27,6 +27,7 @@ tasks.register('portMaterialResources', Exec) {
     inputs.file('scripts/port_material_resources.py')
     inputs.file('scripts/port_tool_traits.py')
     inputs.file('scripts/port_pickaxe_models.py')
+    inputs.file('scripts/port_all_tools.py')
     outputs.dir(layout.buildDirectory.dir('portedResources'))
     commandLine 'python3', 'scripts/port_material_resources.py'
 }

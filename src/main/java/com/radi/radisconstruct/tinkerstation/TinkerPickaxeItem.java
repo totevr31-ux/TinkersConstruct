@@ -30,17 +30,20 @@ public final class TinkerPickaxeItem extends Item {
     public boolean isBarVisible(ItemStack stack) {
         // Original ModifiableItem.canBeDepleted() is true. Keep its custom
         // damage path: adding vanilla MAX_DAMAGE would risk deleting tools.
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack)) return ToolStack.from(stack).getDamage()>0;
         return hasBuiltStats(stack) && ToolDurabilityDisplay.visibility(
             ToolStack.from(stack), true, stack.is(DURABILITY));
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack)) return com.radi.radisconstruct.tools.MaterialToolSupport.barWidth(stack);
         return hasBuiltStats(stack) ? ToolDurabilityDisplay.width(ToolStack.from(stack)) : 0;
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
+        if (com.radi.radisconstruct.tools.MaterialToolSupport.owns(stack)) return com.radi.radisconstruct.tools.MaterialToolSupport.barColor(stack);
         return hasBuiltStats(stack) ? ToolDurabilityDisplay.color(ToolStack.from(stack)) : 0;
     }
 

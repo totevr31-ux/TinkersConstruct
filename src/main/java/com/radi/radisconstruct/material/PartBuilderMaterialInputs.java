@@ -1,6 +1,7 @@
 package com.radi.radisconstruct.material;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * Server-authoritative lookup of currently ported upstream material inputs.
@@ -15,7 +16,8 @@ public final class PartBuilderMaterialInputs {
 
     public record Match(MaterialVariantId material, int itemsPerUnit) {
         public Match {
-            if (material == null || material.hasVariant() || (itemsPerUnit != 1 && itemsPerUnit != 9))
+            if (material == null || material.hasVariant()
+                || (itemsPerUnit != 1 && itemsPerUnit != 4 && itemsPerUnit != 9))
                 throw new IllegalArgumentException("Unsupported material denomination");
         }
 
@@ -32,6 +34,8 @@ public final class PartBuilderMaterialInputs {
 
     public static Match resolve(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
+        // Original tools/materials/string.json: four string make one material unit.
+        if (stack.is(Items.STRING)) return new Match(new MaterialVariantId("tconstruct", "string", ""), 4);
         for (var entry : PartBuilderIngotIngredients.load().values()) {
             if (PartBuilderIngotIngredients.matches(stack, entry.material()))
                 return new Match(entry.material(), entry.needed());

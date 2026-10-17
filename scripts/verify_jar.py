@@ -31,6 +31,8 @@ with zipfile.ZipFile(jar) as z:
     assert meta['depends']['java'] == '>=25'
     assert '${' not in z.read('fabric.mod.json').decode(), 'Unexpanded metadata'
     assert meta['entrypoints']['main'] == ['com.radi.radisconstruct.RadisConstruct']
+    from verify_all_tools import verify
+    verify(root, z)
     cls = z.read('com/radi/radisconstruct/RadisConstruct.class')
     assert cls[:4] == b'\xca\xfe\xba\xbe', 'Missing compiled class'
     assert struct.unpack('>H', cls[6:8])[0] == 69, 'Expected Java 25 bytecode'

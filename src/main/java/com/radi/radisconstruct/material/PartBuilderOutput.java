@@ -2,6 +2,7 @@ package com.radi.radisconstruct.material;
 
 import net.minecraft.world.item.ItemStack;
 import java.util.Objects;
+import com.radi.radisconstruct.tools.OriginalToolCatalog;
 
 /**
  * Bridges Part Builder output selection to a real registered material part.
@@ -17,11 +18,9 @@ public final class PartBuilderOutput {
         Objects.requireNonNull(parts, "parts");
         Objects.requireNonNull(stats, "stats");
         if (partId == null || material == null) return false;
-        String type = parts.all().get(partId);
-        if (!("HeadMaterialStats".equals(type) || "HandleMaterialStats".equals(type)
-            || "ExtraMaterialStats".equals(type))) return false;
         return "tconstruct".equals(material.namespace()) && !material.hasVariant()
-            && stats.all().containsKey(material.path());
+            && parts.all().containsKey(partId)
+            && OriginalToolCatalog.compatible(partId).contains(material.path());
     }
 
     /**

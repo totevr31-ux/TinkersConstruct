@@ -33,15 +33,9 @@ public final class ToolPartItems {
 
     public static void initialize() {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(output -> {
-            var parts = ToolPartCatalog.load();
-            var stats = MaterialStatsCatalog.load();
             for (ToolPartItem item : REGISTERED.values()) {
-                for (String metal : stats.all().keySet()) {
-                    var material = new MaterialVariantId("tconstruct", metal, "");
-                    if (PartBuilderOutput.canProduce(item.partId(), material, parts, stats)) {
-                        output.accept(item.withMaterial(material));
-                    }
-                }
+                for (String material : com.radi.radisconstruct.tools.OriginalToolCatalog.compatible(item.partId()))
+                    output.accept(item.withMaterial(new MaterialVariantId("tconstruct", material, "")));
             }
         });
     }
