@@ -82,4 +82,33 @@ class NativeMoltenFluidsTest {
         for (var metal : NativeMoltenFluids.Metal.values())
             assertEquals(expected.get(metal.id()), metal.temperature(), metal.id());
     }
+    @Test void nativeAttributesAndWorldLightPreserveAllOriginalMetalValues() throws Exception {
+        String original = java.nio.file.Files.readString(java.nio.file.Path.of(
+            "upstream/Hephaestus/src/main/java/slimeknights/tconstruct/fluids/TinkerFluids.java"));
+        String section = original.split("// metal ores", 2)[1].split("/\\*\\* Creates a builder", 2)[0];
+        var matcher = java.util.regex.Pattern.compile(
+            "register\\(\"(molten_[a-z_]+)\",\\s*hotBuilder\\(\\)\\.temperature\\(\\s*(\\d+)\\).*?,\\s*(\\d+)\\);").matcher(section);
+        var expected = new java.util.HashMap<String, int[]>();
+        while (matcher.find()) expected.put(matcher.group(1), new int[] {
+            Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3))});
+        assertEquals(36, expected.size());
+        for (var metal : NativeMoltenFluids.Metal.values()) {
+            var values = expected.get(metal.id());
+            assertEquals(values[1], NativeMoltenFluids.block(metal).defaultBlockState().getLightEmission());
+            for (var fluid : List.of(NativeMoltenFluids.source(metal), NativeMoltenFluids.flowing(metal))) {
+                var variant = FluidVariant.of(fluid);
+                assertEquals(values[0], net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getTemperature(variant));
+                assertEquals(values[1], net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getLuminance(variant));
+                assertEquals(10000, net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getViscosity(variant, null));
+                assertFalse(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.isLighterThanAir(variant));
+                assertEquals(net.minecraft.network.chat.Component.translatable("fluid.tconstruct." + metal.id()),
+                    net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getName(variant));
+                assertEquals(net.minecraft.sounds.SoundEvents.BUCKET_FILL_LAVA,
+                    net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getFillSound(variant));
+                assertEquals(net.minecraft.sounds.SoundEvents.BUCKET_EMPTY_LAVA,
+                    net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes.getEmptySound(variant));
+            }
+        }
+    }
+
 }

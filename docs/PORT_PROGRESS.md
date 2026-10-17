@@ -4,6 +4,13 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: native molten fluid attributes and world light
+
+- Connected all 36 source/flowing pairs to Fabric FluidVariantAttributes: original temperatures, viscosity 10000, liquid classification, translated names and lava bucket fill/empty sounds. Native world LiquidBlocks now emit their original individual luminance values rather than zero light.
+- Added a source-driven regression covering both variants of every metal and actual world block light against the preserved original registry declarations. Corrected the stale initializer log that still claimed only five metals.
+- Validation: **111 tests**, zero failures/errors/skips; Java 25 build, strict JAR verification, unchanged 19,850-file original source verification and production cached bootstrap passed. JAR SHA-256: `1b57d31b3ee687a022159c234bc67c2c7f477efa38779f261a625877f779ef20`.
+- Construction-stage CI passed: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/39009715263 . The new attribute commit requires its own CI. Physical molten flow/damage behavior and client rendering remain incomplete; exposing native attributes does not establish full fluid parity. No world/client test is claimed; eula=false is preserved.
+
 ### 2026-10-17: original construction foundations
 
 - Registered original grout (including original strength, friction, sand sound and instrument) and seared brick, with original textures/models and native grout loot.
