@@ -131,6 +131,14 @@ with zipfile.ZipFile(jar) as z:
     for kind in ('table', 'basin'):
         assert 'loader' not in json.loads(z.read(f'assets/tconstruct/models/block/template/{kind}.json'))
         assert f'data/tconstruct/loot_table/blocks/seared_{kind}.json' in names
+    for name, variants in (('seared_drain', 8), ('seared_faucet', 5)):
+        assert len(json.loads(z.read(f'assets/tconstruct/blockstates/{name}.json'))['variants']) == variants
+        assert f'assets/tconstruct/items/{name}.json' in names
+        assert f'data/tconstruct/loot_table/blocks/{name}.json' in names
+    for tag in ('floor', 'wall'):
+        assert 'tconstruct:seared_drain' in json.loads(z.read(f'data/tconstruct/tags/block/smeltery/{tag}.json'))['values']
+    for template in ('io', 'io_fluid', 'faucet', 'faucet_up'):
+        assert 'loader' not in json.loads(z.read(f'assets/tconstruct/models/block/template/{template}.json'))
     original_lava = json.loads(z.read('assets/radisconstruct/reference/smeltery/lava_fuel.json'))
     assert original_lava['fluid'] == {'amount': 50, 'name': 'minecraft:lava'}
     assert original_lava['duration'] == 100 and original_lava['temperature'] == 1000

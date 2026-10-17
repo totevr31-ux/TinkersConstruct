@@ -214,8 +214,8 @@ write('data/tconstruct/loot_table/blocks/smeltery_controller.json', {
 # blocks go in tags until those blocks/tanks are ported.
 for tag, values in (
     ('seared_blocks', ['tconstruct:seared_bricks']),
-    ('smeltery/floor', ['tconstruct:seared_bricks']),
-    ('smeltery/wall', ['tconstruct:seared_bricks', 'tconstruct:seared_fuel_tank']),
+    ('smeltery/floor', ['tconstruct:seared_bricks', 'tconstruct:seared_drain']),
+    ('smeltery/wall', ['tconstruct:seared_bricks', 'tconstruct:seared_fuel_tank', 'tconstruct:seared_drain']),
     ('smeltery/tanks', ['tconstruct:seared_fuel_tank']),
     ('seared_tanks', ['tconstruct:seared_fuel_tank']),
     ('smeltery', ['#tconstruct:smeltery/floor',
@@ -359,6 +359,43 @@ for rel in casting_paths:
             recipe['result']['id'] = recipe['result'].pop('item')
     write(f'data/tconstruct/recipe/{rel}', recipe)
 write('assets/radisconstruct/casting-recipes.json', casting_paths)
+
+# Native Drain/Faucet static model trees, with original texture bytes.
+visited_models = set()
+def native_model(part):
+    if part in visited_models:
+        return
+    visited_models.add(part)
+    source = f'main/resources/{asset}/{part}'
+    model = json.loads((UPSTREAM / source).read_text())
+    legacy = ('loader', 'fluid', 'fluids', 'items', 'colors', 'retextured')
+    if any(key in model for key in legacy):
+        for key in legacy:
+            model.pop(key, None)
+        write(f'{asset}/{part}', model)
+    else:
+        copy(source, f'{asset}/{part}')
+    parent = model.get('parent', '')
+    if parent.startswith('tconstruct:'):
+        native_model('models/' + parent.removeprefix('tconstruct:') + '.json')
+    for texture in model.get('textures', {}).values():
+        if texture.startswith('tconstruct:'):
+            texture_path = 'textures/' + texture.removeprefix('tconstruct:') + '.png'
+            copy(f'main/resources/{asset}/{texture_path}', f'{asset}/{texture_path}')
+            if (UPSTREAM / f'main/resources/{asset}/{texture_path}.mcmeta').exists():
+                copy(f'main/resources/{asset}/{texture_path}.mcmeta', f'{asset}/{texture_path}.mcmeta')
+for name in ('seared_drain', 'seared_faucet'):
+    copy(f'main/resources/{asset}/blockstates/{name}.json', f'{asset}/blockstates/{name}.json')
+    native_model(f'models/item/{name}.json')
+    states = json.loads((UPSTREAM / f'main/resources/{asset}/blockstates/{name}.json').read_text())
+    for variant in states['variants'].values():
+        native_model('models/' + variant['model'].removeprefix('tconstruct:') + '.json')
+    write(f'{asset}/items/{name}.json', {'model': {'type': 'minecraft:model', 'model': f'tconstruct:item/{name}'}})
+    translations[f'block.tconstruct.{name}'] = lang_source[f'block.tconstruct.{name}']
+    write(f'data/tconstruct/loot_table/blocks/{name}.json', {
+        'type': 'minecraft:block', 'pools': [{'rolls': 1.0,
+            'condition': {'type': 'minecraft:survives_explosion'},
+            'entries': [{'type': 'minecraft:item', 'name': f'tconstruct:{name}'}]}]})
 
 write(f'{asset}/lang/en_us.json', translations)
 for tag in ('mineable/pickaxe', 'needs_iron_tool', 'needs_diamond_tool'):

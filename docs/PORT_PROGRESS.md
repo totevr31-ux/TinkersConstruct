@@ -4,6 +4,16 @@ Audit: 2026-10-17 (earlier checkpoints retained). Target: Minecraft 26.3, Fabric
 
 ## Current work
 
+### 2026-10-17: native Drain and Faucet transport
+
+- Added original `seared_drain` and `seared_faucet` registrations, native block entities, facing/collision states, static original models/textures and loot. Drain is in original floor/wall roles and participates in existing servant ownership.
+- Drain exposes a validated fluid proxy to the formed controller. Retained pipe/storage views recheck the current owner on every access; an invalidated owner or removed drain cannot expose its old tank.
+- Ported original Faucet state machine: 9000-droplet packets, 810 droplets/tick, graceful stop after the current packet, powered waiting and rising-edge activation. Each source-to-buffer and buffer-to-receiver operation is transactional. Buffer/mode/stop/power/render identity persist through native save codecs.
+- World adapter queries real sided Fabric storages and pauses on unloaded neighbor chunks. Physical receiver removal preserves the documented upstream behavior: the remaining in-flight packet is discarded; this is distinct from chunk unload and is covered explicitly, not hidden as conservation.
+- Validation: **107 tests**, zero failures/errors/skips; build, original 19,850-file verification, strict JAR/resource check and cached production bootstrap passed. Integrated ordered tank -> validated Drain -> Faucet -> original Basin recipe produces an actual iron block while checking fluid conservation on every normal pouring step. Tests also cover packet stopping, receiver backpressure, powered retry, mid-packet save/reload and stale ownership.
+- Latest JAR SHA-256: `20d6b588b2d69ec8248773c5a4883bd56e1e3b84d9c5f571a02bdb02a1cbae51`. Casting-stage CI passed: https://github.com/totevr31-ux/TinkersConstruct/actions/runs/39009043967 .
+- No loaded-world/client test is claimed. Still missing: dynamic stream/drain/casting rendering and original sounds, retexturing, richer casting recipes, full survival acquisition and remaining Smeltery systems. Continue independent development; the existing unanswered EULA question only gates a world-starting server.
+
 ### 2026-10-17: native Casting Table and Casting Basin
 
 - Rechecked all remote heads, local commits and four open PRs before continuing; #62 remains the only active Smeltery PR. Stayed on the separate `radisconstruct-smeltery-next` branch; no primary branch was merged.
@@ -91,7 +101,7 @@ Branch `radisconstruct-smeltery-next` starts at `a250ae47aacd109c6c9a224527993a9
 | Fuel tank | Four-bucket native storage and persistence existed; container interaction now implemented and transaction tested. Rendering, retained-fluid block item and live player checks remain. |
 | Melting | Slot/inventory/heating modules exist; Standard native codec and live lookup now cover 32 original recipes across 11 metals. Reload changes revalidate heat/time; raw cobalt ore serializer/default yield and Fabric item automation now added. Conditional iron/sparse/dense/damageable/material recipes and GUI remain missing. |
 | Molten metals | All 36 metal/alloy source/flowing pairs, original sprites/animations and temperatures now registered. Nonmetal fluids, bucket items and original physical/thermal parity remain incomplete. |
-| Drain, faucet, casting table/basin | Native Table/Basin with 23 original recipes, transactional cooling, persistence and interactions now implemented; Drain/Faucet and full casting visuals/recipe catalog remain open. |
+| Drain, faucet, casting table/basin | Native Table/Basin (23 recipes), validated Drain ownership and original packet-based Faucet now implemented and subsystem integrated. Full dynamic visuals, richer recipes and live-world testing remain open. |
 | Alloying | Native original matching/atomic crafting is connected to the controller; Rose Gold recipe active and subsystem tested. Remaining alloy data/inputs and live-world tests are open. |
 | Persistence/sync | Controller tank, fuel and melting snapshots exist. Live world reload and client synchronization unverified; ordered tank sync packet unported. |
 | Materials/Part Builder/Tinker Station | Extensive separate stage1 work exists (PRs through #52); not reimplemented or merged here. Must validate its artifact separately. |
